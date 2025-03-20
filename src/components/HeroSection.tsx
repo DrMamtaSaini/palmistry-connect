@@ -90,9 +90,9 @@ const HeroSection = () => {
           <div className="relative">
             <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl animate-pulse-slow"></div>
             <img 
-              src="/lovable-uploads/461a08e3-284c-4a12-bb68-28e798ff7827.png" 
-              alt="AI Palm Reading" 
-              className="relative max-h-[600px] object-contain z-10"
+              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+              alt="Palm Reading Analysis" 
+              className="relative max-h-[600px] object-contain z-10 rounded-lg shadow-elegant"
             />
           </div>
         </div>
