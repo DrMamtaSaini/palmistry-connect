@@ -56,6 +56,21 @@ const Footer = () => {
                   Contact
                 </Link>
               </li>
+              <li>
+                <Link to="/support" className="text-muted-foreground hover:text-primary transition-colors">
+                  Support
+                </Link>
+              </li>
+              <li>
+                <Link to="/documentation" className="text-muted-foreground hover:text-primary transition-colors">
+                  Documentation
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors">
+                  FAQ
+                </Link>
+              </li>
             </ul>
           </div>
           
@@ -73,8 +88,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors">
-                  FAQ
+                <Link to="/cancellation" className="text-muted-foreground hover:text-primary transition-colors">
+                  Cancellation & Refund Policy
                 </Link>
               </li>
             </ul>
