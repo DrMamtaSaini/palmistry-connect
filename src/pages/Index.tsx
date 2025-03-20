@@ -1,12 +1,179 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Hand, Users, MessageCircle, Star } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import HeroSection from '@/components/HeroSection';
+import FeatureCard from '@/components/FeatureCard';
+import { revealAnimation } from '@/lib/animations';
 
 const Index = () => {
+  useEffect(() => {
+    const cleanup = revealAnimation();
+    return cleanup;
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      <Header />
+      
+      {/* Hero section */}
+      <HeroSection />
+      
+      {/* Features section */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="content-container">
+          <div className="text-center max-w-3xl mx-auto mb-16 reveal">
+            <h2 className="heading-lg mb-4">Advanced AI Palm Reading Features</h2>
+            <p className="text-muted-foreground text-lg">
+              Our powerful AI technology analyzes your palm's unique features to provide detailed, 
+              accurate insights about your life and relationships.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard 
+              title="Detailed Palm Analysis" 
+              description="Our AI analyzes your palm lines, mounts, and skin texture to create comprehensive insights into your personality, career, health, and more."
+              icon={Hand}
+              index={0}
+            />
+            <FeatureCard 
+              title="Compatibility Matching" 
+              description="Discover your relationship compatibility by analyzing both your palm and your partner's palm, revealing strengths and potential challenges."
+              icon={Users}
+              index={1}
+            />
+            <FeatureCard 
+              title="Multilingual Reports" 
+              description="Access your palm reading reports in multiple languages including English, Hindi, Spanish, French, and more for global accessibility."
+              icon={MessageCircle}
+              index={2}
+            />
+            <FeatureCard 
+              title="AI Chatbot Guidance" 
+              description="Get personalized answers to your questions about your palm reading report from our intelligent AI chatbot."
+              icon={MessageCircle}
+              index={3}
+            />
+            <FeatureCard 
+              title="Personalized Insights" 
+              description="Receive tailored advice based on your unique palm features, helping you make better decisions in career, relationships, and life choices."
+              icon={Star}
+              index={4}
+            />
+            <FeatureCard 
+              title="Future Predictions" 
+              description="Explore potential future paths with our AI-generated forecasts based on the timeline indicators in your palm."
+              icon={Star}
+              index={5}
+            />
+          </div>
+        </div>
+      </section>
+      
+      {/* Call to action */}
+      <section className="py-24 bg-muted relative overflow-hidden">
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full filter blur-3xl" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full filter blur-3xl" />
+        
+        <div className="content-container relative z-10 text-center">
+          <div className="max-w-3xl mx-auto reveal">
+            <h2 className="heading-lg mb-6">Discover Your Destiny Today</h2>
+            <p className="text-muted-foreground text-lg mb-10">
+              Unlock the secrets hidden in your palm and gain valuable insights about your life path, relationships, and future possibilities.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-6">
+              <Link 
+                to="/palm-reading" 
+                className="px-8 py-3 rounded-full bg-primary text-primary-foreground text-base font-medium transition-all hover:bg-primary/90"
+              >
+                Try Palm Reading
+              </Link>
+              <Link 
+                to="/pricing" 
+                className="px-8 py-3 rounded-full bg-secondary text-secondary-foreground text-base font-medium transition-all hover:bg-secondary/80"
+              >
+                View Pricing
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Testimonials section */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="content-container">
+          <div className="text-center max-w-3xl mx-auto mb-16 reveal">
+            <h2 className="heading-lg mb-4">What Our Users Say</h2>
+            <p className="text-muted-foreground text-lg">
+              Thousands of users have discovered meaningful insights through our AI palm reading technology.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="glass-panel p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="font-bold text-primary">S</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-semibold">Sarah M.</h3>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-muted-foreground">"The detailed analysis of my palm was shockingly accurate. It revealed things about my personality and career path that resonated deeply with me."</p>
+            </div>
+            
+            <div className="glass-panel p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="font-bold text-primary">R</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-semibold">Raj K.</h3>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-muted-foreground">"The compatibility analysis for me and my partner was eye-opening. It helped us understand our relationship dynamics and has improved our communication."</p>
+            </div>
+            
+            <div className="glass-panel p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="font-bold text-primary">J</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-semibold">Jessica L.</h3>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-muted-foreground">"I was skeptical at first, but the insights about my health tendencies were spot on. The report helped me make better lifestyle choices."</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <Footer />
     </div>
   );
 };
