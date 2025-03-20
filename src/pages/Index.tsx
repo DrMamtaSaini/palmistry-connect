@@ -9,13 +9,19 @@ import FeatureCard from '@/components/FeatureCard';
 import { revealAnimation } from '@/lib/animations';
 
 const Index = () => {
+  console.log("Index page rendering...");
+  
   useEffect(() => {
+    console.log("Index page mounted");
     const cleanup = revealAnimation();
-    return cleanup;
+    return () => {
+      console.log("Index page unmounting");
+      cleanup();
+    };
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       
       {/* Hero section */}

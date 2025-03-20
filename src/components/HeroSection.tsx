@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Hand, Users } from 'lucide-react';
 
 const HeroSection = () => {
+  console.log("HeroSection rendering...");
+  
   return (
     <div className="min-h-screen flex flex-col justify-center pt-16 relative overflow-hidden">
       {/* Background elements */}

@@ -131,6 +131,14 @@
     @apply max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8;
   }
   
+  .shadow-glass {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-elegant {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
   .page-transition-enter {
     @apply opacity-0;
   }
@@ -145,6 +153,22 @@
   
   .page-transition-exit-active {
     @apply opacity-0 transition-opacity duration-300;
+  }
+  
+  .animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.8s ease-in-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
