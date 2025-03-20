@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Hand, Users, MessageCircle, Star } from 'lucide-react';
+import { Hand, Users, MessageCircle, Star, Brain, Sparkles, Zap } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
@@ -28,7 +28,10 @@ const Index = () => {
       <HeroSection />
       
       {/* Features section */}
-      <section className="py-24 relative overflow-hidden">
+      <section className="py-24 relative overflow-hidden bg-background">
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full filter blur-3xl" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-secondary/5 rounded-full filter blur-3xl" />
+        
         <div className="content-container">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="heading-lg mb-4">Advanced AI Palm Reading Features</h2>
@@ -60,19 +63,19 @@ const Index = () => {
             <FeatureCard 
               title="AI Chatbot Guidance" 
               description="Get personalized answers to your questions about your palm reading report from our intelligent AI chatbot."
-              icon={MessageCircle}
+              icon={Brain}
               index={3}
             />
             <FeatureCard 
               title="Personalized Insights" 
               description="Receive tailored advice based on your unique palm features, helping you make better decisions in career, relationships, and life choices."
-              icon={Star}
+              icon={Sparkles}
               index={4}
             />
             <FeatureCard 
               title="Future Predictions" 
               description="Explore potential future paths with our AI-generated forecasts based on the timeline indicators in your palm."
-              icon={Star}
+              icon={Zap}
               index={5}
             />
           </div>
