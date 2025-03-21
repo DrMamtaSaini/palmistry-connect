@@ -21,21 +21,21 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0a1323]">
       <Header />
       
       {/* Hero section */}
       <HeroSection />
       
       {/* Features section */}
-      <section className="py-24 relative overflow-hidden bg-background">
-        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full filter blur-3xl" />
+      <section className="py-24 relative overflow-hidden bg-[#0a1323]">
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-[#00FF7F]/5 rounded-full filter blur-3xl" />
         <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-secondary/5 rounded-full filter blur-3xl" />
         
         <div className="content-container">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-            <h2 className="heading-lg mb-4">Advanced AI Palm Reading Features</h2>
-            <p className="text-muted-foreground text-lg">
+            <h2 className="heading-lg mb-4 text-white">Advanced AI Palm Reading Features</h2>
+            <p className="text-blue-200 text-lg">
               Our powerful AI technology analyzes your palm's unique features to provide detailed, 
               accurate insights about your life and relationships.
             </p>
@@ -83,20 +83,20 @@ const Index = () => {
       </section>
       
       {/* Call to action */}
-      <section className="py-24 bg-muted relative overflow-hidden">
-        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full filter blur-3xl" />
-        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full filter blur-3xl" />
+      <section className="py-24 bg-[#0c172b] relative overflow-hidden">
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-[#00FF7F]/5 rounded-full filter blur-3xl" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-[#00FF7F]/5 rounded-full filter blur-3xl" />
         
         <div className="content-container relative z-10 text-center">
           <div className="max-w-3xl mx-auto reveal">
-            <h2 className="heading-lg mb-6">Discover Your Destiny Today</h2>
-            <p className="text-muted-foreground text-lg mb-10">
+            <h2 className="heading-lg mb-6 text-white">Discover Your Destiny Today</h2>
+            <p className="text-blue-200 text-lg mb-10">
               Unlock the secrets hidden in your palm and gain valuable insights about your life path, relationships, and future possibilities.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
               <Link 
                 to="/palm-reading" 
-                className="px-8 py-3 rounded-full bg-primary text-primary-foreground text-base font-medium transition-all hover:bg-primary/90"
+                className="px-8 py-3 rounded-full bg-[#00FF7F] text-white text-base font-medium transition-all hover:bg-[#00FF7F]/90"
               >
                 Try Palm Reading
               </Link>
@@ -115,68 +115,68 @@ const Index = () => {
       <section className="py-24 relative overflow-hidden">
         <div className="content-container">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-            <h2 className="heading-lg mb-4">What Our Users Say</h2>
-            <p className="text-muted-foreground text-lg">
+            <h2 className="heading-lg mb-4 text-white">What Our Users Say</h2>
+            <p className="text-blue-200 text-lg">
               Thousands of users have discovered meaningful insights through our AI palm reading technology.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="glass-panel p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
+            <div className="bg-gray-300/80 p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
               <div className="flex items-center mb-4">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="font-bold text-primary">S</span>
+                  <div className="w-12 h-12 rounded-full bg-[#00FF7F] flex items-center justify-center">
+                    <span className="font-bold text-white">S</span>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="font-semibold">Sarah M.</h3>
+                  <h3 className="font-semibold text-white">Sarah M.</h3>
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                      <Star key={i} className="h-4 w-4 fill-[#00FF7F] text-[#00FF7F]" />
                     ))}
                   </div>
                 </div>
               </div>
-              <p className="text-muted-foreground">"The detailed analysis of my palm was shockingly accurate. It revealed things about my personality and career path that resonated deeply with me."</p>
+              <p className="text-blue-200">"The detailed analysis of my palm was shockingly accurate. It revealed things about my personality and career path that resonated deeply with me."</p>
             </div>
             
-            <div className="glass-panel p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
+            <div className="bg-gray-300/80 p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
               <div className="flex items-center mb-4">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="font-bold text-primary">R</span>
+                  <div className="w-12 h-12 rounded-full bg-[#00FF7F] flex items-center justify-center">
+                    <span className="font-bold text-white">R</span>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="font-semibold">Raj K.</h3>
+                  <h3 className="font-semibold text-white">Raj K.</h3>
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                      <Star key={i} className="h-4 w-4 fill-[#00FF7F] text-[#00FF7F]" />
                     ))}
                   </div>
                 </div>
               </div>
-              <p className="text-muted-foreground">"The compatibility analysis for me and my partner was eye-opening. It helped us understand our relationship dynamics and has improved our communication."</p>
+              <p className="text-blue-200">"The compatibility analysis for me and my partner was eye-opening. It helped us understand our relationship dynamics and has improved our communication."</p>
             </div>
             
-            <div className="glass-panel p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
+            <div className="bg-gray-300/80 p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
               <div className="flex items-center mb-4">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="font-bold text-primary">J</span>
+                  <div className="w-12 h-12 rounded-full bg-[#00FF7F] flex items-center justify-center">
+                    <span className="font-bold text-white">J</span>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="font-semibold">Jessica L.</h3>
+                  <h3 className="font-semibold text-white">Jessica L.</h3>
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                      <Star key={i} className="h-4 w-4 fill-[#00FF7F] text-[#00FF7F]" />
                     ))}
                   </div>
                 </div>
               </div>
-              <p className="text-muted-foreground">"I was skeptical at first, but the insights about my health tendencies were spot on. The report helped me make better lifestyle choices."</p>
+              <p className="text-blue-200">"I was skeptical at first, but the insights about my health tendencies were spot on. The report helped me make better lifestyle choices."</p>
             </div>
           </div>
         </div>

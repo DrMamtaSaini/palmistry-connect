@@ -14,17 +14,17 @@ const FeatureCard = ({ title, description, icon: Icon, className, index = 0 }: F
   return (
     <div 
       className={cn(
-        "glass-panel p-8 rounded-2xl h-full hover:shadow-elegant transition-all duration-500",
+        "bg-gray-300/90 p-8 rounded-2xl h-full transition-all duration-500",
         "animate-fade-in opacity-0",
         className
       )}
       style={{ animationDelay: `${index * 150}ms`, animationFillMode: 'forwards' }}
     >
-      <div className="rounded-full p-3 inline-flex items-center justify-center bg-primary bg-opacity-10 mb-4">
-        <Icon className="h-6 w-6 text-primary" />
+      <div className="rounded-full p-3 inline-flex items-center justify-center bg-[#00FF7F] mb-4 w-16 h-16">
+        <Icon className="h-8 w-8 text-white" />
       </div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground">{description}</p>
+      <h3 className="text-2xl font-semibold mb-3 text-white">{title}</h3>
+      <p className="text-blue-200/80">{description}</p>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -164,7 +165,7 @@
   }
   
   .heading-gradient {
-    background: linear-gradient(90deg, rgba(142,255,167,1) 0%, rgba(52,217,196,1) 100%);
+    background: linear-gradient(90deg, #00FF7F 0%, #00E676 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -221,6 +222,6 @@
 
 .palm-notification {
   background: rgba(20, 39, 78, 0.8);
-  border-left: 4px solid #34d9c4;
+  border-left: 4px solid #00FF7F;
   animation: pulse-slow 4s ease-in-out infinite;
 }
