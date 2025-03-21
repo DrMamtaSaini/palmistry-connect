@@ -35,7 +35,7 @@ const Index = () => {
         <div className="content-container">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="heading-lg mb-4 text-white">Advanced AI Palm Reading Features</h2>
-            <p className="text-blue-200 text-lg">
+            <p className="text-black text-lg font-medium">
               Our powerful AI technology analyzes your palm's unique features to provide detailed, 
               accurate insights about your life and relationships.
             </p>
@@ -90,7 +90,7 @@ const Index = () => {
         <div className="content-container relative z-10 text-center">
           <div className="max-w-3xl mx-auto reveal">
             <h2 className="heading-lg mb-6 text-white">Discover Your Destiny Today</h2>
-            <p className="text-blue-200 text-lg mb-10">
+            <p className="text-black text-lg font-medium mb-10">
               Unlock the secrets hidden in your palm and gain valuable insights about your life path, relationships, and future possibilities.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
@@ -116,7 +116,7 @@ const Index = () => {
         <div className="content-container">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="heading-lg mb-4 text-white">What Our Users Say</h2>
-            <p className="text-blue-200 text-lg">
+            <p className="text-black text-lg font-medium">
               Thousands of users have discovered meaningful insights through our AI palm reading technology.
             </p>
           </div>
@@ -138,7 +138,7 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-              <p className="text-blue-200">"The detailed analysis of my palm was shockingly accurate. It revealed things about my personality and career path that resonated deeply with me."</p>
+              <p className="text-black font-medium">"The detailed analysis of my palm was shockingly accurate. It revealed things about my personality and career path that resonated deeply with me."</p>
             </div>
             
             <div className="bg-gray-300/80 p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
@@ -157,7 +157,7 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-              <p className="text-blue-200">"The compatibility analysis for me and my partner was eye-opening. It helped us understand our relationship dynamics and has improved our communication."</p>
+              <p className="text-black font-medium">"The compatibility analysis for me and my partner was eye-opening. It helped us understand our relationship dynamics and has improved our communication."</p>
             </div>
             
             <div className="bg-gray-300/80 p-8 rounded-2xl hover:shadow-elegant transition-all duration-500 reveal">
@@ -176,7 +176,7 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-              <p className="text-blue-200">"I was skeptical at first, but the insights about my health tendencies were spot on. The report helped me make better lifestyle choices."</p>
+              <p className="text-black font-medium">"I was skeptical at first, but the insights about my health tendencies were spot on. The report helped me make better lifestyle choices."</p>
             </div>
           </div>
         </div>
