@@ -18,13 +18,6 @@ const HeroSection = () => {
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMDIwMjAiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptNiA2djZoNnYtNmgtNnptLTEyIDBoNnY2aC02di02em0xMiAwaDZ2NmgtNnYtNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50"></div>
       
-      {/* Floating notification */}
-      <div className="palm-notification absolute bottom-10 left-10 right-10 md:left-auto md:right-auto md:bottom-auto md:top-32 md:left-10 max-w-sm p-4 rounded-lg shadow-lg z-20">
-        <p className="text-white text-sm">
-          <span className="font-bold">Sophie from Berlin</span> has just generated her Palm Analysis.
-        </p>
-      </div>
-      
       <div className="content-container relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         {/* Left content */}
         <div className="flex flex-col items-start text-left">
@@ -43,7 +36,7 @@ const HeroSection = () => {
             </span>
           </h1>
           
-          <p className="text-xl text-blue-200 max-w-2xl mb-10 animate-fade-in" style={{ animationDelay: '400ms' }}>
+          <p className="text-xl text-black font-medium max-w-2xl mb-10 animate-fade-in" style={{ animationDelay: '400ms' }}>
             Our advanced AI analyzes your palm lines to reveal insights about your personality, 
             relationships, career, and more with stunning accuracy.
           </p>
