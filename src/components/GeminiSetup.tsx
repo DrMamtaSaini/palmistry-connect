@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Key } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
 
 interface GeminiSetupProps {
   variant?: 'button' | 'card';
@@ -23,11 +24,16 @@ const GeminiSetup = ({ variant = 'button', className }: GeminiSetupProps) => {
   const { apiKey, setApiKey, isConfigured } = useGemini();
   const [tempApiKey, setTempApiKey] = useState(apiKey || '');
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
   
   const handleSave = () => {
     if (tempApiKey.trim()) {
       setApiKey(tempApiKey.trim());
       setIsOpen(false);
+      toast({
+        title: "API Key Saved",
+        description: "Your Gemini API key has been saved successfully.",
+      });
     }
   };
   
@@ -36,16 +42,21 @@ const GeminiSetup = ({ variant = 'button', className }: GeminiSetupProps) => {
     setTempApiKey('');
     setIsOpen(false);
     localStorage.removeItem('gemini_api_key');
+    toast({
+      title: "API Key Removed",
+      description: "Your Gemini API key has been removed.",
+      variant: "destructive",
+    });
   };
   
   if (variant === 'card') {
     return (
-      <div className={`bg-gray-300/90 p-6 rounded-2xl ${className}`}>
+      <div className={`bg-gray-100 p-6 rounded-2xl shadow-md ${className}`}>
         <div className="text-center">
           <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-4 mx-auto">
             <Key className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="text-xl font-semibold mb-2 text-white">Gemini API Setup</h3>
+          <h3 className="text-xl font-semibold mb-2 text-black">Gemini API Setup</h3>
           <p className="text-black font-medium mb-4">
             {isConfigured 
               ? "Gemini API is configured and ready to use" 
