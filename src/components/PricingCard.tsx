@@ -61,8 +61,8 @@ const PricingCard = ({
           {price !== "Free" && <span className="ml-1 text-sm opacity-80">USD</span>}
         </div>
         <p className={cn(
-          "text-sm",
-          highlighted ? "text-primary-foreground/80" : "text-muted-foreground"
+          "text-sm font-medium",
+          highlighted ? "text-primary-foreground/80" : "text-black"
         )}>
           {description}
         </p>
@@ -85,10 +85,10 @@ const PricingCard = ({
               )} />
             </div>
             <span className={cn(
-              "text-sm",
+              "text-sm font-medium",
               highlighted 
                 ? feature.included ? "text-primary-foreground" : "text-primary-foreground/60" 
-                : feature.included ? "text-foreground" : "text-muted-foreground"
+                : feature.included ? "text-black" : "text-black/60"
             )}>
               {feature.text}
             </span>

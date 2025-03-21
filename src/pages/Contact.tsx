@@ -56,34 +56,34 @@ const Contact = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="glass-panel p-6 rounded-2xl flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-gray-300/90 p-6 rounded-2xl flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                 <Mail className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Email Us</h3>
-              <p className="text-muted-foreground mb-4">Our support team is always ready to help</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">Email Us</h3>
+              <p className="text-black font-medium mb-4">Our support team is always ready to help</p>
               <a href="mailto:support@palmistryai.com" className="text-primary hover:underline">
                 support@palmistryai.com
               </a>
             </div>
             
-            <div className="glass-panel p-6 rounded-2xl flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-gray-300/90 p-6 rounded-2xl flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                 <Phone className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Call Us</h3>
-              <p className="text-muted-foreground mb-4">Mon-Fri from 9am to 5pm (EST)</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">Call Us</h3>
+              <p className="text-black font-medium mb-4">Mon-Fri from 9am to 5pm (EST)</p>
               <a href="tel:+1234567890" className="text-primary hover:underline">
                 +1 (234) 567-890
               </a>
             </div>
             
-            <div className="glass-panel p-6 rounded-2xl flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-gray-300/90 p-6 rounded-2xl flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                 <MapPin className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Visit Us</h3>
-              <p className="text-muted-foreground mb-4">Our headquarters location</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">Visit Us</h3>
+              <p className="text-black font-medium mb-4">Our headquarters location</p>
               <address className="not-italic text-primary">
                 123 AI Avenue, Digital District<br />
                 Tech City, TC 12345
