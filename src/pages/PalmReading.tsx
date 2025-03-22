@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Hand, Upload, AlertCircle } from 'lucide-react';
@@ -6,11 +5,14 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ImageUploader from '@/components/ImageUploader';
 import { revealAnimation } from '@/lib/animations';
+import GeminiSetup from '@/components/GeminiSetup';
+import { useGemini } from '@/contexts/GeminiContext';
 
 const PalmReading = () => {
   const [palmImage, setPalmImage] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const { isConfigured } = useGemini();
   
   useEffect(() => {
     const cleanup = revealAnimation();
@@ -49,10 +51,21 @@ const PalmReading = () => {
               Upload a clear image of your palm and our AI will analyze it to reveal insights about your personality, 
               career, health, relationships, and more.
             </p>
+            
+            <div className="mt-6">
+              <GeminiSetup variant="button" className="mx-auto" />
+            </div>
           </div>
           
           <div className="max-w-3xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal">
             <h2 className="heading-md mb-6 text-center">Upload Your Palm Image</h2>
+            
+            {!isConfigured && (
+              <div className="mb-8 p-4 bg-amber-50 text-amber-800 rounded-lg">
+                <p className="font-medium">Please configure your Gemini API key before uploading.</p>
+                <p className="text-sm mt-1">Click the "Configure Gemini API Key" button above to set up your key.</p>
+              </div>
+            )}
             
             <div className="grid gap-8 mb-8">
               <div>
@@ -97,10 +110,10 @@ const PalmReading = () => {
             <div className="flex justify-center">
               <button
                 onClick={handleUpload}
-                disabled={!palmImage || isUploading}
+                disabled={!palmImage || isUploading || !isConfigured}
                 className={`
                   px-8 py-3 rounded-full text-base font-medium flex items-center transition-all
-                  ${!palmImage 
+                  ${(!palmImage || !isConfigured)
                     ? 'bg-muted text-muted-foreground cursor-not-allowed' 
                     : 'bg-primary text-primary-foreground hover:bg-primary/90'
                   }
