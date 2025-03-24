@@ -1,5 +1,4 @@
 
-// Fix import to use the correct hooks path
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,

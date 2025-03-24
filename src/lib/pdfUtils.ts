@@ -13,33 +13,7 @@ ${JSON.stringify(content, null, 2)}
 This is a sample PDF report generated for demonstration purposes.
     `;
     
-    // Create blob with proper content type
-    const blob = new Blob([pdfContent], { type: 'application/pdf' });
-    
-    // Create object URL
-    const url = URL.createObjectURL(blob);
-    
-    // Create an invisible iframe to handle the download without navigation
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    
-    // Use iframe to trigger download
-    iframe.src = url;
-    
-    // Create download link and trigger click
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'palm-reading-report.pdf';
-    link.click();
-    
-    // Clean up
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-      URL.revokeObjectURL(url);
-    }, 1000);
-    
-    return true;
+    return createAndDownloadPDF(pdfContent, 'palm-reading-report.pdf');
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw error;
@@ -87,33 +61,7 @@ SECTION 5: FUTURE TIMELINE PREDICTIONS
 This is a sample 70-page demo report for preview purposes.
     `;
     
-    // Create blob with proper content type
-    const blob = new Blob([demoContent], { type: 'application/pdf' });
-    
-    // Create object URL
-    const url = URL.createObjectURL(blob);
-    
-    // Create an invisible iframe to handle the download without navigation
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    
-    // Use iframe to trigger download
-    iframe.src = url;
-    
-    // Create download link and trigger click
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'demo-palm-reading-report.pdf';
-    link.click();
-    
-    // Clean up
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-      URL.revokeObjectURL(url);
-    }, 1000);
-    
-    return true;
+    return createAndDownloadPDF(demoContent, 'demo-palm-reading-report.pdf');
   } catch (error) {
     console.error('Error generating demo PDF:', error);
     throw error;
@@ -123,26 +71,31 @@ This is a sample 70-page demo report for preview purposes.
 // Add a helper function to create and download any PDF
 export const createAndDownloadPDF = (content: string, filename: string) => {
   try {
+    console.log('Creating and downloading PDF...');
+    
     // Create blob with content
     const blob = new Blob([content], { type: 'application/pdf' });
     
     // Create downloadable link
     const url = URL.createObjectURL(blob);
     
-    // Create anchor element for download
+    // Create direct download link instead of using iframe
     const a = document.createElement('a');
+    a.style.display = 'none';
     a.href = url;
-    a.download = filename || 'download.pdf';
+    a.download = filename;
     document.body.appendChild(a);
     
     // Trigger download
+    console.log('Triggering download...');
     a.click();
     
     // Cleanup
     setTimeout(() => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    }, 100);
+      console.log('Download cleanup complete');
+    }, 1000);
     
     return true;
   } catch (error) {

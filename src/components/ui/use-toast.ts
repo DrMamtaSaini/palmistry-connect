@@ -1,5 +1,5 @@
 
-// Fix import to use the correct hooks path
+// Re-export from the hooks directory
 import { useToast, toast } from "@/hooks/use-toast";
 
 export { useToast, toast };
