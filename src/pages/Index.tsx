@@ -1,12 +1,14 @@
-
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Hand, Users, MessageCircle, Star, Brain, Sparkles, Zap } from 'lucide-react';
+import { Hand, Users, MessageCircle, Star, Brain, Sparkles, Zap, BookOpen, Download } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import FeatureCard from '@/components/FeatureCard';
 import { revealAnimation } from '@/lib/animations';
+import { generateDemoReport } from '@/lib/pdfUtils';
+import { toast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Index = () => {
   console.log("Index page rendering...");
@@ -19,6 +21,28 @@ const Index = () => {
       cleanup();
     };
   }, []);
+
+  const handleDownloadDemo = async () => {
+    toast({
+      title: "Generating Demo PDF",
+      description: "Your sample report is being prepared for download...",
+    });
+    
+    try {
+      await generateDemoReport();
+      
+      toast({
+        title: "Success",
+        description: "Your demo report has been downloaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate the demo report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0a1323]">
@@ -78,6 +102,100 @@ const Index = () => {
               icon={Zap}
               index={5}
             />
+          </div>
+        </div>
+      </section>
+      
+      {/* Demo Report Section */}
+      <section className="py-24 relative overflow-hidden bg-[#0a1323]">
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-[#00FF7F]/5 rounded-full filter blur-3xl" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-secondary/5 rounded-full filter blur-3xl" />
+        
+        <div className="content-container">
+          <div className="text-center max-w-3xl mx-auto mb-16 reveal">
+            <h2 className="heading-lg mb-4 text-white">Preview Our Detailed Reports</h2>
+            <p className="text-black text-lg font-medium">
+              Explore a sample of our comprehensive 70-page palm reading analysis report and discover 
+              the depth of insights you can gain from our premium service.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center reveal">
+            <div className="glass-panel rounded-2xl p-6 lg:p-10">
+              <div className="flex items-center mb-6">
+                <BookOpen className="h-6 w-6 text-[#00FF7F] mr-3" />
+                <h3 className="text-2xl font-semibold text-white">70-Page Comprehensive Analysis</h3>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                <Card className="border-[#00FF7F]/20">
+                  <CardHeader>
+                    <CardTitle>Deep Personality Insights</CardTitle>
+                    <CardDescription>Pages 5-15</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p>Detailed analysis of your character traits, emotional patterns, and cognitive strengths based on palm line configurations.</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-[#00FF7F]/20">
+                  <CardHeader>
+                    <CardTitle>Life Path & Career Trajectory</CardTitle>
+                    <CardDescription>Pages 16-30</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p>Comprehensive breakdown of your professional path, key milestones, and potential opportunities identified through fate line analysis.</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-[#00FF7F]/20">
+                  <CardHeader>
+                    <CardTitle>Relationship Dynamics</CardTitle>
+                    <CardDescription>Pages 31-45</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p>In-depth exploration of your relationship patterns, emotional connections, and compatibility indicators.</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-[#00FF7F]/20">
+                  <CardHeader>
+                    <CardTitle>Health & Wellbeing Forecast</CardTitle>
+                    <CardDescription>Pages 46-60</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p>Personalized wellness insights and potential health considerations based on your palm's unique indicators.</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-[#00FF7F]/20">
+                  <CardHeader>
+                    <CardTitle>Future Timeline Predictions</CardTitle>
+                    <CardDescription>Pages 61-70</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p>Detailed timeline analysis with key turning points and potential future scenarios based on advanced predictive algorithms.</p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <button 
+                onClick={handleDownloadDemo}
+                className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-full bg-[#00FF7F] text-primary-foreground hover:bg-[#00FF7F]/90 transition-colors"
+              >
+                <Download className="h-5 w-5" />
+                <span>Download Sample Report</span>
+              </button>
+            </div>
+            
+            <div className="relative hidden lg:block">
+              <div className="absolute -inset-4 bg-[#00FF7F]/20 rounded-full blur-2xl animate-pulse-slow"></div>
+              <img 
+                src="https://images.unsplash.com/photo-1589860170912-6b83cf6f8809?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" 
+                alt="Sample Palm Reading Report" 
+                className="relative z-10 w-full max-h-[700px] object-cover rounded-lg shadow-elegant"
+              />
+            </div>
           </div>
         </div>
       </section>
