@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import PalmReading from "./pages/PalmReading";
+import PalmReadingResult from "./pages/PalmReadingResult";
 import Compatibility from "./pages/Compatibility";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/palm-reading" element={<PalmReading />} />
+            <Route path="/palm-reading-result" element={<PalmReadingResult />} />
             <Route path="/compatibility" element={<Compatibility />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contact" element={<Contact />} />

@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Hand, Upload, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -7,12 +8,15 @@ import ImageUploader from '@/components/ImageUploader';
 import { revealAnimation } from '@/lib/animations';
 import GeminiSetup from '@/components/GeminiSetup';
 import { useGemini } from '@/contexts/GeminiContext';
+import { useToast } from '@/components/ui/use-toast';
 
 const PalmReading = () => {
   const [palmImage, setPalmImage] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const { isConfigured } = useGemini();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   useEffect(() => {
     const cleanup = revealAnimation();
@@ -32,6 +36,21 @@ const PalmReading = () => {
     setTimeout(() => {
       setIsUploading(false);
       setUploadSuccess(true);
+      
+      // Store a flag in localStorage to indicate palm has been analyzed
+      localStorage.setItem('palmAnalyzed', 'true');
+      
+      // Show toast notification
+      toast({
+        title: "Analysis Complete",
+        description: "Your palm reading results are ready to view.",
+        duration: 3000,
+      });
+      
+      // Redirect to results page after a short delay
+      setTimeout(() => {
+        navigate('/palm-reading-result');
+      }, 1500);
     }, 2000);
   };
   
@@ -141,7 +160,7 @@ const PalmReading = () => {
                 <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium">Palm image uploaded successfully!</p>
-                  <p className="text-sm mt-1">Your analysis is being prepared. Please check the <Link to="/pricing" className="underline">pricing options</Link> to view your detailed report.</p>
+                  <p className="text-sm mt-1">Your analysis is being prepared. You'll be redirected to your results shortly.</p>
                 </div>
               </div>
             )}
