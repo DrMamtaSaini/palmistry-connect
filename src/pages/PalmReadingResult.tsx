@@ -1,10 +1,11 @@
-
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, BookOpen } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { revealAnimation } from '@/lib/animations';
+import { generatePDF } from '@/lib/pdfUtils';
+import { toast } from '@/hooks/use-toast';
 
 const PalmReadingResult = () => {
   const navigate = useNavigate();
@@ -22,6 +23,31 @@ const PalmReadingResult = () => {
       cleanup();
     };
   }, [navigate]);
+
+  const handleDownload = async () => {
+    toast({
+      title: "Generating PDF",
+      description: "Your report is being prepared for download...",
+    });
+    
+    try {
+      await generatePDF({
+        title: "Complete Palm Reading Analysis",
+        // Add more content here for the PDF
+      });
+      
+      toast({
+        title: "Success",
+        description: "Your report has been downloaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate the report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <div className="min-h-screen">
@@ -43,11 +69,14 @@ const PalmReadingResult = () => {
           
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="heading-md">Reading Summary</h2>
+              <h2 className="heading-md">Complete Analysis (70+ Pages)</h2>
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                <button 
+                  onClick={handleDownload}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
                   <Download className="h-4 w-4" />
-                  <span>Download PDF</span>
+                  <span>Download Full Report</span>
                 </button>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors">
                   <Share2 className="h-4 w-4" />
@@ -95,19 +124,39 @@ const PalmReadingResult = () => {
             </div>
             
             <div className="mb-12">
-              <h3 className="text-xl font-semibold mb-4">Major Life Lines Analysis</h3>
-              <div className="grid md:grid-cols-3 gap-6">
+              <h3 className="text-xl font-semibold mb-4">Comprehensive Life Analysis</h3>
+              <div className="grid gap-6">
                 <div className="p-6 border border-primary/20 rounded-xl">
-                  <h4 className="font-medium mb-2">Heart Line</h4>
-                  <p className="text-black">Your heart line indicates emotional stability and capacity for deep connections. You approach relationships with authenticity and value loyalty above all.</p>
+                  <h4 className="font-medium mb-4">Detailed Career Trajectory (Pages 5-15)</h4>
+                  <p className="text-black mb-4">Your palm shows exceptional career potential with multiple branching opportunities. The intersection of your fate line with other major lines indicates:</p>
+                  <ul className="list-disc list-inside space-y-2 text-black">
+                    <li>Leadership roles in innovative fields</li>
+                    <li>Entrepreneurial success markers</li>
+                    <li>Creative problem-solving abilities</li>
+                    <li>Strategic thinking capabilities</li>
+                  </ul>
                 </div>
+
                 <div className="p-6 border border-primary/20 rounded-xl">
-                  <h4 className="font-medium mb-2">Head Line</h4>
-                  <p className="text-black">Your head line shows analytical thinking and strategic planning abilities. You make decisions carefully, considering multiple perspectives.</p>
+                  <h4 className="font-medium mb-4">Deep Relationship Analysis (Pages 16-30)</h4>
+                  <p className="text-black mb-4">Your heart and head lines reveal complex relationship patterns:</p>
+                  <ul className="list-disc list-inside space-y-2 text-black">
+                    <li>Deep emotional connections with select individuals</li>
+                    <li>Strong family bonds and genetic influences</li>
+                    <li>Professional relationship dynamics</li>
+                    <li>Friendship circle analysis</li>
+                  </ul>
                 </div>
+
                 <div className="p-6 border border-primary/20 rounded-xl">
-                  <h4 className="font-medium mb-2">Life Line</h4>
-                  <p className="text-black">Your life line indicates vitality and resilience. The depth suggests good health and energy for pursuing your goals and passions.</p>
+                  <h4 className="font-medium mb-4">Financial Prosperity Indicators (Pages 31-45)</h4>
+                  <p className="text-black mb-4">Multiple wealth lines and markers suggest:</p>
+                  <ul className="list-disc list-inside space-y-2 text-black">
+                    <li>Investment opportunities and timing</li>
+                    <li>Risk assessment capabilities</li>
+                    <li>Long-term financial stability indicators</li>
+                    <li>Wealth accumulation patterns</li>
+                  </ul>
                 </div>
               </div>
             </div>
