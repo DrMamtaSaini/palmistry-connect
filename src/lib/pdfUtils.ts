@@ -427,7 +427,7 @@ function getRandomAbility(baseInsight: string) {
     if (baseInsight.includes(k)) key = k;
   });
   
-  const options = abilities[key as keyof typeof abilities];
+  const options = abilities[key as keyof abilities];
   return options[Math.floor(Math.random() * options.length)];
 }
 
@@ -712,8 +712,74 @@ export const printHTMLAsPDF = (htmlContent: string, filename: string) => {
   }
 };
 
-// Import toast functionality
-import { toast } from "@/hooks/use-toast";
+// Function to download text as PDF using jsPDF
+const downloadTextAsPDF = async (text: string, filename: string) => {
+  try {
+    console.log('Attempting to download text as PDF using jsPDF...');
 
-// Keep the downloadTextAsPDF and createAndDownloadPDF functions for reference but they're not used
-// ... keep existing code (downloadTextAsPDF and createAndDownloadPDF functions)
+    // Dynamically import jsPDF
+    const { jsPDF } = await import('jspdf');
+
+    const pdf = new jsPDF();
+    pdf.text(text, 10, 10);
+    pdf.save(filename);
+
+    toast({
+      title: "Success",
+      description: `Your ${filename} is ready for download.`,
+    });
+
+    console.log('jsPDF download complete');
+    return true;
+  } catch (error) {
+    console.error('Error using jsPDF:', error);
+    toast({
+      title: "Error",
+      description: "Failed to generate the PDF. Please ensure jsPDF is correctly configured.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+// Function to create and download a PDF
+const createAndDownloadPDF = async (content: any, filename: string = 'palm-reading-report.pdf') => {
+  try {
+    console.log('Attempting to create and download PDF using html2pdf...');
+
+    // Dynamically import html2pdf
+    const html2pdf = await import('html2pdf.js');
+
+    const element = document.createElement('div');
+    element.innerHTML = content;
+    document.body.appendChild(element);
+
+    const opt = {
+      margin: 1,
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    await html2pdf.default().from(element).set(opt).save();
+
+    document.body.removeChild(element);
+
+    toast({
+      title: "Success",
+      description: `Your ${filename} is ready for download.`,
+    });
+
+    console.log('html2pdf download complete');
+    return true;
+  } catch (error) {
+    console.error('Error using html2pdf:', error);
+    toast({
+      title: "Error",
+      description: "Failed to generate the PDF. Please ensure html2pdf is correctly configured.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
