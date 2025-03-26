@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 export const generatePDF = async (content: any, isDetailed: boolean = true) => {
@@ -844,4 +845,64 @@ const downloadTextAsPDF = async (text: string, filename: string) => {
 
     toast({
       title: "Success",
-      description: `Your ${filename} is ready for
+      description: `Your ${filename} is ready for download.`,
+    });
+
+    console.log('jsPDF download complete');
+    return true;
+  } catch (error) {
+    console.error('Error using jsPDF:', error);
+    toast({
+      title: "Error",
+      description: "Failed to generate the PDF. Please ensure jsPDF is correctly configured.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+// Function to generate a demo report for download
+export const generateDemoReport = async () => {
+  const demoContent = {
+    sections: [
+      {
+        name: "Personality Traits",
+        insights: [
+          "Strong Leadership Qualities",
+          "Creative Problem-Solving",
+          "Emotional Intelligence",
+          "Resilience Under Pressure"
+        ]
+      },
+      {
+        name: "Career Path",
+        insights: [
+          "Natural Management Abilities",
+          "Entrepreneurial Potential",
+          "Strategic Vision",
+          "Success Through Persistence"
+        ]
+      },
+      {
+        name: "Relationships",
+        insights: [
+          "Deep Emotional Connections",
+          "Communication Strengths",
+          "Loyalty and Dedication",
+          "Harmonious Partnership Potential"
+        ]
+      },
+      {
+        name: "Health and Wellbeing",
+        insights: [
+          "Stress Management Indicators",
+          "Physical Resilience",
+          "Mind-Body Balance",
+          "Intuitive Health Awareness"
+        ]
+      }
+    ]
+  };
+  
+  return generatePDF(demoContent, true);
+};
