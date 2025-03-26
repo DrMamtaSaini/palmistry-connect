@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import * as React from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import GeminiAI from '@/lib/gemini';
 
 interface GeminiContextType {
@@ -18,11 +19,11 @@ const GeminiContext = createContext<GeminiContextType>({
 
 export const useGemini = () => useContext(GeminiContext);
 
-export const GeminiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [apiKey, setApiKey] = useState<string | null>(null);
-  const [gemini, setGemini] = useState<GeminiAI | null>(null);
+export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
+  const [apiKey, setApiKey] = React.useState<string | null>(null);
+  const [gemini, setGemini] = React.useState<GeminiAI | null>(null);
   
-  useEffect(() => {
+  React.useEffect(() => {
     // Try to load the API key from localStorage
     const savedApiKey = localStorage.getItem('gemini_api_key');
     if (savedApiKey) {
@@ -30,7 +31,7 @@ export const GeminiProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, []);
   
-  useEffect(() => {
+  React.useEffect(() => {
     if (apiKey) {
       // Save the API key to localStorage
       localStorage.setItem('gemini_api_key', apiKey);
