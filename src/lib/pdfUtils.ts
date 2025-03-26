@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 export const generatePDF = async (content: any, isDetailed: boolean = true) => {
@@ -42,10 +43,18 @@ export const generatePDF = async (content: any, isDetailed: boolean = true) => {
       page-break-before: avoid;
     }
     .insight {
-      padding: 8px;
-      margin: 5px 0;
+      padding: 12px;
+      margin: 10px 0;
       background-color: #f9f9f9;
       border-left: 3px solid #00FF7F;
+    }
+    .insight-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #006400;
+    }
+    .insight-content {
+      line-height: 1.5;
     }
     .detailed-insight {
       padding: 15px;
@@ -112,14 +121,31 @@ export const generatePDF = async (content: any, isDetailed: boolean = true) => {
         pageCount += section.insights.length + 4; // Each insight plus subsections takes approximately 5 pages
       });
       
+      // Add more sections to TOC for a longer report
       htmlContent += `
       <div class="toc-item">
         <span>Future Timeline Predictions</span>
         <span class="page-number">${pageCount}</span>
       </div>
       <div class="toc-item">
-        <span>Conclusion & Recommendations</span>
+        <span>Past Life Influences</span>
         <span class="page-number">${pageCount + 8}</span>
+      </div>
+      <div class="toc-item">
+        <span>Chakra Analysis</span>
+        <span class="page-number">${pageCount + 16}</span>
+      </div>
+      <div class="toc-item">
+        <span>Spiritual Development</span>
+        <span class="page-number">${pageCount + 24}</span>
+      </div>
+      <div class="toc-item">
+        <span>Ancestral Connections</span>
+        <span class="page-number">${pageCount + 32}</span>
+      </div>
+      <div class="toc-item">
+        <span>Conclusion & Recommendations</span>
+        <span class="page-number">${pageCount + 40}</span>
       </div>
     </div>
   </div>
@@ -162,10 +188,14 @@ export const generatePDF = async (content: any, isDetailed: boolean = true) => {
       } else {
         htmlContent += `
   <div class="section">
-    <h2>${section.name}</h2>`;
+    <h2>${section.name}</h2>
+    <p class="analysis-paragraph">
+      This section examines your ${section.name.toLowerCase()} as revealed through the distinct patterns in your palm.
+      These insights provide valuable guidance for personal growth and self-understanding.
+    </p>`;
       }
 
-      // Add insights with expanded content for detailed reports
+      // Add insights with expanded content for both reports
       section.insights.forEach((insight: string) => {
         if (isDetailed) {
           htmlContent += `
@@ -196,8 +226,16 @@ export const generatePDF = async (content: any, isDetailed: boolean = true) => {
       </div>
     </div>`;
         } else {
+          // Enhanced basic report with more content, not just headings
           htmlContent += `
-      <div class="insight">${insight}</div>`;
+    <div class="insight">
+      <div class="insight-title">${insight}</div>
+      <div class="insight-content">
+        <p>Your palm indicates a natural inclination toward ${insight.toLowerCase()}, as shown by the ${getRandomPalmFeature()} in your palm.</p>
+        <p>This suggests that you have a strong capacity for ${getRandomTrait(insight.toLowerCase())} in your daily life and interactions.</p>
+        <p>Consider how you might further develop this quality to enhance your personal and professional growth.</p>
+      </div>
+    </div>`;
         }
       });
 
@@ -323,6 +361,216 @@ export const generatePDF = async (content: any, isDetailed: boolean = true) => {
   </div>
 
   <div class="chapter">
+    <h2>Past Life Influences</h2>
+    <p class="analysis-paragraph">
+      While modern palmistry focuses primarily on present characteristics and future potentials, some traditions 
+      believe that certain rare markings in the palm can indicate influences from past lives or ancestral patterns.
+    </p>
+    
+    <div class="subsection">
+      <h3>Past Talents & Abilities</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          Certain unusual formations in your palm may indicate talents or abilities that come naturally to you from
+          past experiences. The ${getRandomPalmFeature()} suggests an affinity for ${getRandomField("Creative")}.
+        </p>
+        <p class="analysis-paragraph">
+          You may find that you have an unexplained familiarity or comfort with certain activities or environments
+          that could be connected to these deep-seated abilities.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Karmic Patterns</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          Your palm contains what some palmists would consider karmic markers, particularly in the
+          ${getRandomPalmFeature()} area. These suggest themes that may recur in your life as opportunities for 
+          growth and resolution.
+        </p>
+        <p class="analysis-paragraph">
+          Pay special attention to situations involving ${getRandomLifeArea()} and ${getRandomLifeArea()}, as these
+          may be areas where you're working through important life lessons.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Soul Purpose Indicators</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The unique combination of your fate line and heart line suggests a soul purpose connected to
+          ${getRandomField("Emotional")}. This may manifest as a natural inclination toward helping others
+          or creating meaningful connections.
+        </p>
+        <p class="analysis-paragraph">
+          When you engage in activities aligned with this purpose, you'll likely experience a profound sense of
+          fulfillment and rightness that goes beyond ordinary satisfaction.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter">
+    <h2>Chakra Analysis</h2>
+    <p class="analysis-paragraph">
+      In some palmistry traditions, certain areas of the hand correspond to energy centers or chakras in the body.
+      Your palm reveals interesting patterns related to your energetic balance.
+    </p>
+    
+    <div class="subsection">
+      <h3>Root Chakra (Base of Palm)</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The base of your palm shows strong, well-defined lines indicating a generally balanced root chakra.
+          This suggests you have a good foundation of security and stability in your life, though occasional
+          stress may temporarily disrupt this balance.
+        </p>
+        <p class="analysis-paragraph">
+          Practices that ground you, such as spending time in nature or engaging in physical activity, can help
+          maintain and strengthen this energetic balance.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Heart Chakra (Center of Palm)</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The center of your palm and your heart line show interesting patterns that suggest an active but
+          sometimes fluctuating heart chakra energy. Your capacity for compassion and connection is strong,
+          but you may sometimes protect yourself by temporarily closing this energy center.
+        </p>
+        <p class="analysis-paragraph">
+          Practices involving giving and receiving love unconditionally can help balance this energy center
+          and enhance your already significant capacity for meaningful relationships.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Third Eye Chakra (Mount of Jupiter)</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The mount of Jupiter in your palm shows markings associated with an active third eye chakra. This suggests
+          a natural intuitive ability and capacity for insight that extends beyond analytical thinking.
+        </p>
+        <p class="analysis-paragraph">
+          You likely have experiences where you "just know" something without being able to explain how. Developing
+          this intuitive capacity through meditation or mindfulness practices could enhance this natural gift.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter">
+    <h2>Spiritual Development</h2>
+    <p class="analysis-paragraph">
+      Your palm contains indicators related to your spiritual journey and potential for inner growth.
+      These are found primarily in the subtle markings and relationships between major lines.
+    </p>
+    
+    <div class="subsection">
+      <h3>Spiritual Awareness</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The ${getRandomPalmFeature()} in your palm indicates a natural capacity for spiritual awareness and
+          connection to something greater than yourself. This suggests you have the ability to perceive deeper
+          meanings and patterns in everyday experiences.
+        </p>
+        <p class="analysis-paragraph">
+          Your spiritual journey may include periods of questioning and seeking, alternating with periods of
+          clarity and connection. This rhythm is healthy and contributes to authentic spiritual growth.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Intuitive Gifts</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          Several markers in your palm suggest intuitive gifts, particularly related to ${getRandomLifeArea()}.
+          You may find that you have insights or "gut feelings" about situations that later prove accurate.
+        </p>
+        <p class="analysis-paragraph">
+          Developing a practice of listening to and honoring these intuitive impressions can strengthen this
+          natural ability and help you navigate life choices with greater confidence and alignment.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Path of Service</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The configuration of your heart and fate lines suggests that service to others is an important aspect
+          of your spiritual development. You may find the greatest fulfillment when using your gifts to benefit
+          others in some way.
+        </p>
+        <p class="analysis-paragraph">
+          This doesn't necessarily mean formal volunteer work or selfless sacrifice - your service might
+          express through your career, creative endeavors, or personal relationships where your unique gifts
+          make a positive difference.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter">
+    <h2>Ancestral Connections</h2>
+    <p class="analysis-paragraph">
+      Some palmistry traditions consider certain patterns to be inherited or influenced by ancestral factors.
+      Your palm shows several interesting features in this regard.
+    </p>
+    
+    <div class="subsection">
+      <h3>Inherited Traits</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The shape of your fingers and certain baseline patterns in your palm suggest inherited traits related to
+          ${getRandomTrait("Leadership")} and ${getRandomTrait("Creativity")}. These qualities may run in your family
+          line, whether or not they've been consciously recognized or developed.
+        </p>
+        <p class="analysis-paragraph">
+          You might notice echoes of these traits in family members across different generations, expressed in
+          various ways according to individual circumstances and cultural contexts.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Family Patterns</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          Certain markers in your palm suggest awareness of family patterns, particularly around ${getRandomLifeArea()}.
+          You may have an inherent understanding of the unspoken dynamics in your family system and the ability to
+          see beyond surface behaviors to underlying motivations and needs.
+        </p>
+        <p class="analysis-paragraph">
+          This awareness puts you in a position to potentially heal or transform limiting family patterns, creating
+          new possibilities for yourself and potentially for future generations.
+        </p>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <h3>Ancestral Gifts</h3>
+      <div class="detailed-insight">
+        <p class="analysis-paragraph">
+          The ${getRandomPalmFeature()} in your palm is sometimes associated with special gifts or abilities that
+          have been present in your ancestral line. This might manifest as a natural talent or affinity that seems
+          to come from "nowhere" but actually represents the fruition of generations of development.
+        </p>
+        <p class="analysis-paragraph">
+          Honoring and developing these gifts can be a way of honoring your ancestors and bringing their positive
+          legacy forward into the present and future.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter">
     <h2>Conclusion & Recommendations</h2>
     <p class="analysis-paragraph">
       Your palm reading reveals a unique combination of traits, potentials, and life patterns that reflect your 
@@ -401,7 +649,7 @@ function getRandomPalmFeature() {
 }
 
 function getRandomTrait(baseInsight: string) {
-  const traits = {
+  const traits: Record<string, string[]> = {
     "Leadership": ["decisive action", "strategic vision", "inspirational influence", "confident direction"],
     "Creativity": ["innovative thinking", "artistic expression", "original problem-solving", "imaginative approaches"],
     "Emotional Intelligence": ["empathetic understanding", "social awareness", "emotional regulation", "interpersonal sensitivity"],
@@ -410,12 +658,12 @@ function getRandomTrait(baseInsight: string) {
   
   // Try to match the insight to a specific trait category, otherwise use default
   const key = Object.keys(traits).find(k => baseInsight.includes(k)) || "default";
-  const options = traits[key as keyof typeof traits];
+  const options = traits[key];
   return options[Math.floor(Math.random() * options.length)];
 }
 
 function getRandomAbility(baseInsight: string) {
-  const abilities = {
+  const abilities: Record<string, string[]> = {
     "Leadership": ["make difficult decisions under pressure", "inspire others to achieve their best", "see the big picture while managing details", "build effective teams"],
     "Creativity": ["think outside conventional boundaries", "connect seemingly unrelated concepts", "find innovative solutions to complex problems", "express ideas in unique ways"],
     "Emotional": ["understand others' perspectives deeply", "navigate complex social dynamics", "build meaningful relationships", "communicate with authenticity"],
@@ -427,12 +675,12 @@ function getRandomAbility(baseInsight: string) {
     if (baseInsight.includes(k)) key = k;
   });
   
-  const options = abilities[key as keyof typeof abilities];
+  const options = abilities[key];
   return options[Math.floor(Math.random() * options.length)];
 }
 
 function getRandomField(baseInsight: string) {
-  const fields = {
+  const fields: Record<string, string[]> = {
     "Leadership": ["management", "entrepreneurship", "organizational development", "strategic planning"],
     "Creative": ["design", "innovation", "artistic endeavors", "content creation"],
     "Emotional": ["counseling", "relationship building", "team development", "conflict resolution"],
@@ -446,7 +694,7 @@ function getRandomField(baseInsight: string) {
     if (baseInsight.includes(k)) key = k;
   });
   
-  const options = fields[key as keyof typeof fields];
+  const options = fields[key];
   return options[Math.floor(Math.random() * options.length)];
 }
 
@@ -493,144 +741,16 @@ function getRandomHistoricalContext() {
 }
 
 function getRandomTimePeriod(timeframe: string) {
-  const periods = {
+  const periods: Record<string, string[]> = {
     "short": ["transition and adjustment", "new beginnings", "intense learning", "important decision-making"],
     "medium": ["steady growth and development", "relationship building", "skill mastery", "opportunity expansion"],
     "long": ["significant achievement", "major life transitions", "goal realization", "identity transformation"],
     "very long": ["legacy building", "wisdom integration", "life purpose fulfillment", "holistic life balance"]
   };
   
-  const options = periods[timeframe as keyof typeof periods] || periods.short;
+  const options = periods[timeframe] || periods.short;
   return options[Math.floor(Math.random() * options.length)];
 }
-
-export const generateDemoReport = async () => {
-  console.log('Generating demo PDF report');
-  
-  try {
-    // Create a nicely formatted HTML demo report
-    const htmlDemoContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Demo Palm Reading Analysis Report</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      margin: 40px;
-      color: #333;
-    }
-    h1 {
-      color: #006400;
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 24px;
-    }
-    h2 {
-      color: #008000;
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 18px;
-    }
-    h3 {
-      color: #008000;
-      margin-top: 20px;
-      margin-bottom: 10px;
-      font-size: 16px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
-    }
-    .section {
-      margin-bottom: 30px;
-    }
-    .section-content {
-      margin-left: 20px;
-    }
-    .preview-note {
-      background-color: #f7f7f7;
-      border: 1px dashed #ccc;
-      padding: 15px;
-      margin: 30px 0;
-      text-align: center;
-      font-style: italic;
-    }
-    .footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 12px;
-      color: #666;
-    }
-  </style>
-</head>
-<body>
-  <h1>COMPREHENSIVE PALM READING ANALYSIS</h1>
-  <h2>70-PAGE DETAILED REPORT</h2>
-
-  <div class="section">
-    <h3>SECTION 1: PERSONALITY TRAITS</h3>
-    <div class="section-content">
-      <p>- Strong Leadership Qualities</p>
-      <p>- Creative Thinking</p>
-      <p>- Emotional Intelligence</p>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>SECTION 2: LIFE PATH INSIGHTS</h3>
-    <div class="section-content">
-      <p>- Career Trajectory</p>
-      <p>- Relationship Patterns</p>
-      <p>- Financial Outlook</p>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>SECTION 3: COMPREHENSIVE LIFE ANALYSIS</h3>
-    <div class="section-content">
-      <p>- Detailed Career Trajectory</p>
-      <p>- Deep Relationship Analysis</p>
-      <p>- Financial Prosperity Indicators</p>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>SECTION 4: HEALTH & WELLBEING</h3>
-    <div class="section-content">
-      <p>- Overall Vitality Signs</p>
-      <p>- Stress Management Recommendations</p>
-      <p>- Exercise Recommendations</p>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>SECTION 5: FUTURE TIMELINE PREDICTIONS</h3>
-    <div class="section-content">
-      <p>- Next 6 Months Forecast</p>
-      <p>- 1-2 Years Outlook</p>
-      <p>- 3-5 Years Major Milestones</p>
-      <p>- 5+ Years Long-term Prosperity</p>
-    </div>
-  </div>
-
-  <div class="preview-note">
-    This is a sample of our 70-page comprehensive palm reading report.<br>
-    Purchase the full analysis to access all insights and personalized recommendations.
-  </div>
-
-  <div class="footer">
-    Copyright © ${new Date().getFullYear()} PalmReading.ai - All Rights Reserved
-  </div>
-</body>
-</html>
-    `;
-    
-    return printHTMLAsPDF(htmlDemoContent, 'demo-palm-reading-report.pdf');
-  } catch (error) {
-    console.error('Error generating demo PDF:', error);
-    throw error;
-  }
-};
 
 // Function to print HTML as PDF using browser's print functionality
 export const printHTMLAsPDF = (htmlContent: string, filename: string) => {
@@ -712,15 +832,15 @@ export const printHTMLAsPDF = (htmlContent: string, filename: string) => {
   }
 };
 
-// Function to download text as PDF using jsPDF
+// Additional backup methods in case the main method fails
+// These are kept for compatibility but may not be used in the primary flow
 const downloadTextAsPDF = async (text: string, filename: string) => {
   try {
     console.log('Attempting to download text as PDF using jsPDF...');
-
-    // Dynamically import jsPDF
-    const { jsPDF } = await import('jspdf');
-
+    
+    const jsPDF = (await import('jspdf')).default;
     const pdf = new jsPDF();
+    
     pdf.text(text, 10, 10);
     pdf.save(filename);
 
@@ -742,14 +862,12 @@ const downloadTextAsPDF = async (text: string, filename: string) => {
   }
 };
 
-// Function to create and download a PDF
 const createAndDownloadPDF = async (content: any, filename: string = 'palm-reading-report.pdf') => {
   try {
     console.log('Attempting to create and download PDF using html2pdf...');
-
-    // Dynamically import html2pdf
+    
     const html2pdf = await import('html2pdf.js');
-
+    
     const element = document.createElement('div');
     element.innerHTML = content;
     document.body.appendChild(element);
