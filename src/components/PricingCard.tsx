@@ -29,6 +29,9 @@ const PricingCard = ({
   highlighted = false,
   index = 0
 }: PricingCardProps) => {
+  // Add a "View Sample" link for all paid plans
+  const showSampleLink = price !== "Free";
+  
   return (
     <div 
       className={cn(
@@ -66,6 +69,18 @@ const PricingCard = ({
         )}>
           {description}
         </p>
+        
+        {showSampleLink && (
+          <Link 
+            to="/palm-reading-result" 
+            className={cn(
+              "text-xs mt-2 inline-block underline",
+              highlighted ? "text-primary-foreground/90" : "text-primary"
+            )}
+          >
+            View Sample Report
+          </Link>
+        )}
       </div>
       
       <ul className="space-y-3 mb-8 flex-grow">

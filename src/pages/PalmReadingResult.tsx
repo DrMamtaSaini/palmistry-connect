@@ -27,10 +27,10 @@ const PalmReadingResult = () => {
     };
   }, [navigate]);
 
-  const handleDownload = async () => {
+  const handleFullReportDownload = async () => {
     toast({
-      title: "Generating PDF",
-      description: "Your report is being prepared for download...",
+      title: "Generating Full Report",
+      description: "Your 70-page comprehensive report is being prepared for download...",
     });
     
     try {
@@ -62,11 +62,51 @@ const PalmReadingResult = () => {
             ]
           }
         ]
-      });
+      }, true); // true for detailed report
       
       toast({
         title: "Success",
-        description: "Your report has been downloaded successfully.",
+        description: "Your 70-page comprehensive report has been downloaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate the report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleBasicReportDownload = async () => {
+    toast({
+      title: "Generating Basic Report",
+      description: "Your 2-page basic report is being prepared for download...",
+    });
+    
+    try {
+      await generatePDF({
+        title: "Basic Palm Reading Analysis",
+        sections: [
+          {
+            name: "Personality Traits",
+            insights: [
+              "Leadership Potential",
+              "Creative Abilities"
+            ]
+          },
+          {
+            name: "Life Path Overview",
+            insights: [
+              "Career Direction",
+              "Relationship Tendencies"
+            ]
+          }
+        ]
+      }, false); // false for basic report
+      
+      toast({
+        title: "Success",
+        description: "Your basic report has been downloaded successfully.",
       });
     } catch (error) {
       toast({
@@ -100,11 +140,18 @@ const PalmReadingResult = () => {
               <h2 className="heading-md">Complete Analysis (70+ Pages)</h2>
               <div className="flex gap-3">
                 <button 
-                  onClick={handleDownload}
+                  onClick={handleFullReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   <Download className="h-4 w-4" />
                   <span>Download Full Report</span>
+                </button>
+                <button 
+                  onClick={handleBasicReportDownload}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Download Basic Report</span>
                 </button>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors">
                   <Share2 className="h-4 w-4" />
