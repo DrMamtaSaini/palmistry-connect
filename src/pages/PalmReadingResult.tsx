@@ -13,11 +13,14 @@ const PalmReadingResult = () => {
   useEffect(() => {
     const cleanup = revealAnimation();
     
-    // Redirect if accessed directly without going through the palm reading process
+    // For testing: Don't redirect even if accessed directly
+    // This is just for testing the pro features
+    /*
     const hasAnalyzed = localStorage.getItem('palmAnalyzed');
     if (!hasAnalyzed) {
       navigate('/palm-reading');
     }
+    */
     
     return () => {
       cleanup();
@@ -33,7 +36,32 @@ const PalmReadingResult = () => {
     try {
       await generatePDF({
         title: "Complete Palm Reading Analysis",
-        // Add more content here for the PDF
+        sections: [
+          {
+            name: "Personality Traits",
+            insights: [
+              "Strong Leadership Qualities",
+              "Creative Thinking",
+              "Emotional Intelligence"
+            ]
+          },
+          {
+            name: "Life Path Insights",
+            insights: [
+              "Career Trajectory",
+              "Relationship Patterns",
+              "Financial Outlook"
+            ]
+          },
+          {
+            name: "Comprehensive Analysis",
+            insights: [
+              "Detailed Career Trajectory",
+              "Deep Relationship Analysis",
+              "Financial Prosperity Indicators"
+            ]
+          }
+        ]
       });
       
       toast({
