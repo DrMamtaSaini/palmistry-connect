@@ -427,7 +427,7 @@ function getRandomAbility(baseInsight: string) {
     if (baseInsight.includes(k)) key = k;
   });
   
-  const options = abilities[key as keyof abilities];
+  const options = abilities[key as keyof typeof abilities];
   return options[Math.floor(Math.random() * options.length)];
 }
 
