@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { revealAnimation } from '@/lib/animations';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Heart, Loader2, Star, Calendar, Diamond, MapPin, Brain, HandShake, Sparkles } from 'lucide-react';
+import { ArrowLeft, Download, Heart, Loader2, Star, Calendar, Diamond, MapPin, Brain, Handshake, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { generatePDF } from '@/lib/pdfUtils';
@@ -263,7 +262,7 @@ const CompatibilityResult = () => {
                     {sections['Relationship Strengths'] && (
                       <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <HandShake className="h-5 w-5 text-green-500" />
+                          <Handshake className="h-5 w-5 text-green-500" />
                           Relationship Strengths
                         </h3>
                         <p>{sections['Relationship Strengths']}</p>
