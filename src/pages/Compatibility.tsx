@@ -1,17 +1,23 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Users, Upload, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ImageUploader from '@/components/ImageUploader';
 import { revealAnimation } from '@/lib/animations';
+import { useGemini } from '@/contexts/GeminiContext';
+import GeminiSetup from '@/components/GeminiSetup';
+import { useToast } from '@/hooks/use-toast';
 
 const Compatibility = () => {
   const [yourPalmImage, setYourPalmImage] = useState<File | null>(null);
   const [partnerPalmImage, setPartnerPalmImage] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [compatibilityResult, setCompatibilityResult] = useState<string | null>(null);
+  const { gemini, isConfigured } = useGemini();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
   useEffect(() => {
     const cleanup = revealAnimation();
@@ -26,16 +32,61 @@ const Compatibility = () => {
     setPartnerPalmImage(file);
   };
   
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!yourPalmImage || !partnerPalmImage) return;
+    
+    if (!isConfigured || !gemini) {
+      toast({
+        title: "API Key Required",
+        description: "Please configure your Gemini API key first.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsUploading(true);
     
-    // Simulate upload and analysis
-    setTimeout(() => {
+    try {
+      // Convert images to base64
+      const yourPalmBase64 = await fileToBase64(yourPalmImage);
+      const partnerPalmBase64 = await fileToBase64(partnerPalmImage);
+      
+      // Analyze compatibility using Gemini
+      const result = await gemini.checkCompatibility(yourPalmBase64, partnerPalmBase64);
+      
+      // Store result and navigate to results page
+      setCompatibilityResult(result);
+      
+      toast({
+        title: "Success",
+        description: "Compatibility analysis completed successfully!",
+      });
+      
+      // Store the result in sessionStorage to pass to a results page
+      sessionStorage.setItem('compatibilityResult', result);
+      
+      // Navigate to results page or display in the current page
+      // For now, we'll just display in the current page
+    } catch (error) {
+      console.error('Error during compatibility analysis:', error);
+      toast({
+        title: "Analysis Failed",
+        description: "There was a problem analyzing your palm images. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsUploading(false);
-      setUploadSuccess(true);
-    }, 2000);
+    }
+  };
+  
+  // Helper function to convert File to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
   
   return (
@@ -55,6 +106,12 @@ const Compatibility = () => {
               revealing relationship strengths, challenges, and future potential.
             </p>
           </div>
+          
+          {!isConfigured && (
+            <div className="max-w-4xl mx-auto mb-8 text-center">
+              <GeminiSetup variant="card" className="mx-auto max-w-md" />
+            </div>
+          )}
           
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal">
             <h2 className="heading-md mb-8 text-center">Upload Palm Images</h2>
@@ -89,10 +146,10 @@ const Compatibility = () => {
             <div className="flex justify-center">
               <button
                 onClick={handleUpload}
-                disabled={!yourPalmImage || !partnerPalmImage || isUploading}
+                disabled={!yourPalmImage || !partnerPalmImage || isUploading || !isConfigured}
                 className={`
                   px-8 py-3 rounded-full text-base font-medium flex items-center transition-all
-                  ${(!yourPalmImage || !partnerPalmImage) 
+                  ${(!yourPalmImage || !partnerPalmImage || !isConfigured) 
                     ? 'bg-muted text-muted-foreground cursor-not-allowed' 
                     : 'bg-primary text-primary-foreground hover:bg-primary/90'
                   }
@@ -115,12 +172,13 @@ const Compatibility = () => {
               </button>
             </div>
             
-            {uploadSuccess && (
-              <div className="mt-8 p-4 bg-green-50 text-green-800 rounded-lg flex items-start">
-                <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">Palm images uploaded successfully!</p>
-                  <p className="text-sm mt-1">Your compatibility analysis is being prepared. Please check the <Link to="/pricing" className="underline">pricing options</Link> to view your detailed report.</p>
+            {compatibilityResult && (
+              <div className="mt-12 border rounded-lg p-6 bg-white/50">
+                <h3 className="text-xl font-semibold mb-4">Compatibility Analysis</h3>
+                <div className="prose prose-sm max-w-none whitespace-pre-line">
+                  {compatibilityResult.split('\n').map((paragraph, i) => (
+                    <p key={i}>{paragraph}</p>
+                  ))}
                 </div>
               </div>
             )}

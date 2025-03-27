@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import PalmReading from "./pages/PalmReading";
 import PalmReadingResult from "./pages/PalmReadingResult";
 import Compatibility from "./pages/Compatibility";
+import CompatibilityResult from "./pages/CompatibilityResult";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import Contact from "./pages/Contact";
@@ -39,6 +40,7 @@ const App = () => {
               <Route path="/palm-reading" element={<PalmReading />} />
               <Route path="/palm-reading-result" element={<PalmReadingResult />} />
               <Route path="/compatibility" element={<Compatibility />} />
+              <Route path="/compatibility-result" element={<CompatibilityResult />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />

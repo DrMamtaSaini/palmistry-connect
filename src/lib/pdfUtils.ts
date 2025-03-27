@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 export const generatePDF = async (content: any, isDetailed: boolean = true) => {
@@ -847,58 +846,49 @@ const downloadTextAsPDF = async (text: string, filename: string) => {
       title: "Success",
       description: `Your ${filename} is ready for download.`,
     });
-
-    console.log('jsPDF download complete');
+    
     return true;
   } catch (error) {
-    console.error('Error using jsPDF:', error);
-    toast({
-      title: "Error",
-      description: "Failed to generate the PDF. Please ensure jsPDF is correctly configured.",
-      variant: "destructive",
-    });
-    return false;
+    console.error('Error creating PDF with jsPDF:', error);
+    throw error;
   }
 };
 
-// Function to generate a demo report for download
-export const generateDemoReport = async () => {
+// Add a function to generate a demo report for testing
+export const generateDemoReport = () => {
   const demoContent = {
+    name: "Sample User",
     sections: [
       {
-        name: "Personality Traits",
+        name: "Character Analysis",
         insights: [
           "Strong Leadership Qualities",
           "Creative Problem-Solving",
-          "Emotional Intelligence",
-          "Resilience Under Pressure"
+          "Emotional Intelligence"
         ]
       },
       {
-        name: "Career Path",
+        name: "Career Potential",
         insights: [
-          "Natural Management Abilities",
-          "Entrepreneurial Potential",
-          "Strategic Vision",
-          "Success Through Persistence"
+          "Natural Communication Skills",
+          "Strategic Thinking Ability",
+          "Entrepreneurial Tendencies"
         ]
       },
       {
-        name: "Relationships",
+        name: "Relationship Patterns",
         insights: [
           "Deep Emotional Connections",
-          "Communication Strengths",
-          "Loyalty and Dedication",
-          "Harmonious Partnership Potential"
+          "Loyalty and Commitment",
+          "Effective Conflict Resolution"
         ]
       },
       {
-        name: "Health and Wellbeing",
+        name: "Life Path",
         insights: [
-          "Stress Management Indicators",
-          "Physical Resilience",
-          "Mind-Body Balance",
-          "Intuitive Health Awareness"
+          "Resilience Through Challenges",
+          "Personal Growth Focus",
+          "Meaningful Life Purpose"
         ]
       }
     ]
