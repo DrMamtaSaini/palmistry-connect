@@ -849,50 +849,47 @@ const downloadTextAsPDF = async (text: string, filename: string) => {
     
     return true;
   } catch (error) {
-    console.error('Error creating PDF with jsPDF:', error);
+    console.error('Error using jsPDF:', error);
+    toast({
+      title: "Error",
+      description: "Failed to generate the PDF report. Please try again.",
+      variant: "destructive",
+    });
     throw error;
   }
 };
 
-// Add a function to generate a demo report for testing
-export const generateDemoReport = () => {
+// Helper function to generate a demo report when the API is not available
+export const generateDemoReport = async (isDetailed: boolean = true) => {
   const demoContent = {
-    name: "Sample User",
+    title: isDetailed ? "Complete Palm Reading Analysis" : "Basic Palm Reading Analysis",
     sections: [
       {
-        name: "Character Analysis",
+        name: "Personality Traits",
         insights: [
           "Strong Leadership Qualities",
-          "Creative Problem-Solving",
+          "Creative Thinking",
           "Emotional Intelligence"
         ]
       },
       {
-        name: "Career Potential",
+        name: "Life Path Insights",
         insights: [
-          "Natural Communication Skills",
-          "Strategic Thinking Ability",
-          "Entrepreneurial Tendencies"
+          "Career Trajectory",
+          "Relationship Patterns",
+          "Financial Outlook"
         ]
       },
       {
-        name: "Relationship Patterns",
+        name: "Future Prospects",
         insights: [
-          "Deep Emotional Connections",
-          "Loyalty and Commitment",
-          "Effective Conflict Resolution"
-        ]
-      },
-      {
-        name: "Life Path",
-        insights: [
-          "Resilience Through Challenges",
-          "Personal Growth Focus",
-          "Meaningful Life Purpose"
+          "Short-term Opportunities",
+          "Long-term Potential",
+          "Personal Development Areas"
         ]
       }
     ]
   };
   
-  return generatePDF(demoContent, true);
+  return generatePDF(demoContent, isDetailed);
 };

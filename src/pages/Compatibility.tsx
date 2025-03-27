@@ -9,12 +9,14 @@ import { revealAnimation } from '@/lib/animations';
 import { useGemini } from '@/contexts/GeminiContext';
 import GeminiSetup from '@/components/GeminiSetup';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Compatibility = () => {
   const [yourPalmImage, setYourPalmImage] = useState<File | null>(null);
   const [partnerPalmImage, setPartnerPalmImage] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [compatibilityResult, setCompatibilityResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { gemini, isConfigured } = useGemini();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -26,10 +28,12 @@ const Compatibility = () => {
   
   const handleYourImageSelect = (file: File) => {
     setYourPalmImage(file);
+    setError(null);
   };
   
   const handlePartnerImageSelect = (file: File) => {
     setPartnerPalmImage(file);
+    setError(null);
   };
   
   const handleUpload = async () => {
@@ -45,6 +49,7 @@ const Compatibility = () => {
     }
     
     setIsUploading(true);
+    setError(null);
     
     try {
       // Convert images to base64
@@ -65,10 +70,11 @@ const Compatibility = () => {
       // Store the result in sessionStorage to pass to a results page
       sessionStorage.setItem('compatibilityResult', result);
       
-      // Navigate to results page or display in the current page
-      // For now, we'll just display in the current page
+      // Navigate to results page
+      navigate('/compatibility-result');
     } catch (error) {
       console.error('Error during compatibility analysis:', error);
+      setError(error instanceof Error ? error.message : 'There was a problem analyzing your palm images. Please try again.');
       toast({
         title: "Analysis Failed",
         description: "There was a problem analyzing your palm images. Please try again.",
@@ -115,6 +121,16 @@ const Compatibility = () => {
           
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal">
             <h2 className="heading-md mb-8 text-center">Upload Palm Images</h2>
+            
+            {error && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Analysis Failed</AlertTitle>
+                <AlertDescription>
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div>
@@ -171,17 +187,6 @@ const Compatibility = () => {
                 )}
               </button>
             </div>
-            
-            {compatibilityResult && (
-              <div className="mt-12 border rounded-lg p-6 bg-white/50">
-                <h3 className="text-xl font-semibold mb-4">Compatibility Analysis</h3>
-                <div className="prose prose-sm max-w-none whitespace-pre-line">
-                  {compatibilityResult.split('\n').map((paragraph, i) => (
-                    <p key={i}>{paragraph}</p>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
           
           <div className="max-w-4xl mx-auto reveal">

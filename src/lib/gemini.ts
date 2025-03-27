@@ -14,7 +14,7 @@ export class GeminiAI {
 
   constructor(config: GeminiConfig) {
     this.apiKey = config.apiKey;
-    this.modelName = config.modelName || "gemini-pro-vision";
+    this.modelName = config.modelName || "gemini-1.5-flash";
   }
 
   async analyzePalm(imageBase64: string): Promise<string> {
@@ -122,7 +122,7 @@ export class GeminiAI {
   }
 
   // Method to initialize Gemini with user's API key
-  static initialize(apiKey: string, modelName: string = "gemini-pro-vision"): GeminiAI {
+  static initialize(apiKey: string, modelName: string = "gemini-1.5-flash"): GeminiAI {
     if (!apiKey) {
       throw new Error("Gemini API key is required");
     }
