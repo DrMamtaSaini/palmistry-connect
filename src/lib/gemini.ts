@@ -72,25 +72,28 @@ export class GeminiAI {
       
       let prompt = "Analyze these two palm images and provide detailed compatibility insights between these people. Include the following sections:\n";
       prompt += "1. Overall Compatibility (with percentage)\n";
-      prompt += "2. Hand Shape & Element Matching (Fire, Water, Earth, Air)\n";
-      prompt += "3. Heart Line Analysis (Love & Emotional Compatibility)\n";
-      prompt += "4. Head Line Analysis (Communication & Understanding)\n";
-      prompt += "5. Fate Line Comparison (Life Goals & Stability)\n";
-      prompt += "6. Venus Mount Analysis (Romantic & Physical Attraction)\n";
-      prompt += "7. Marriage Line Assessment (Commitment & Long-Term Potential)\n";
-      prompt += "8. Relationship Strengths\n";
-      prompt += "9. Relationship Challenges\n";
-      prompt += "10. Personalized Advice for Improving Compatibility\n\n";
+      prompt += "2. Guna Milan Analysis (Vedic Compatibility Score out of 36)\n";
+      prompt += "   - Include analysis of all eight Guna Milan factors: Varna, Vashya, Tara, Yoni, Maitri, Gana, Bhakoot, and Nadi\n";
+      prompt += "   - Provide individual scores for each factor and total score\n";
+      prompt += "3. Hand Shape & Element Matching (Fire, Water, Earth, Air)\n";
+      prompt += "4. Heart Line Analysis (Love & Emotional Compatibility)\n";
+      prompt += "5. Head Line Analysis (Communication & Understanding)\n";
+      prompt += "6. Fate Line Comparison (Life Goals & Stability)\n";
+      prompt += "7. Venus Mount Analysis (Romantic & Physical Attraction)\n";
+      prompt += "8. Marriage Line Assessment (Commitment & Long-Term Potential)\n";
+      prompt += "9. Relationship Strengths\n";
+      prompt += "10. Relationship Challenges\n";
+      prompt += "11. Personalized Advice for Improving Compatibility\n\n";
       
       if (nameA && nameB) {
         prompt += `Personalize the report for ${nameA} and ${nameB}. `;
       }
       
       if (birthdateA && birthdateB) {
-        prompt += `Consider their birthdates (${nameA}: ${birthdateA}, ${nameB}: ${birthdateB}) if relevant to the analysis. `;
+        prompt += `Consider their birthdates (${nameA}: ${birthdateA}, ${nameB}: ${birthdateB}) for the Guna Milan analysis. `;
       }
       
-      prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles.";
+      prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles and Vedic astrology. Provide actionable recommendations based on the analysis. If birthdates are provided, use them for more accurate Guna Milan calculations.";
       
       const requestBody = {
         contents: [
@@ -118,7 +121,7 @@ export class GeminiAI {
           temperature: 0.4,
           top_p: 0.95,
           top_k: 40,
-          max_output_tokens: 2048,
+          max_output_tokens: 4096, // Increased token limit for more detailed analysis
         }
       };
 
