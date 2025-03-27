@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, Upload, AlertCircle } from 'lucide-react';
+import { Users, Upload, AlertCircle, Camera } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ImageUploader from '@/components/ImageUploader';
@@ -10,10 +10,16 @@ import { useGemini } from '@/contexts/GeminiContext';
 import GeminiSetup from '@/components/GeminiSetup';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const Compatibility = () => {
   const [yourPalmImage, setYourPalmImage] = useState<File | null>(null);
   const [partnerPalmImage, setPartnerPalmImage] = useState<File | null>(null);
+  const [yourName, setYourName] = useState<string>('');
+  const [partnerName, setPartnerName] = useState<string>('');
+  const [yourBirthdate, setYourBirthdate] = useState<string>('');
+  const [partnerBirthdate, setPartnerBirthdate] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [compatibilityResult, setCompatibilityResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,19 +62,29 @@ const Compatibility = () => {
       const yourPalmBase64 = await fileToBase64(yourPalmImage);
       const partnerPalmBase64 = await fileToBase64(partnerPalmImage);
       
+      // Store names and birthdates in sessionStorage for the results page
+      sessionStorage.setItem('yourName', yourName);
+      sessionStorage.setItem('partnerName', partnerName);
+      sessionStorage.setItem('yourBirthdate', yourBirthdate);
+      sessionStorage.setItem('partnerBirthdate', partnerBirthdate);
+      
       // Analyze compatibility using Gemini
-      const result = await gemini.checkCompatibility(yourPalmBase64, partnerPalmBase64);
+      const result = await gemini.checkCompatibility(
+        yourPalmBase64, 
+        partnerPalmBase64,
+        yourName || undefined,
+        partnerName || undefined,
+        yourBirthdate || undefined,
+        partnerBirthdate || undefined
+      );
       
       // Store result and navigate to results page
-      setCompatibilityResult(result);
+      sessionStorage.setItem('compatibilityResult', result);
       
       toast({
         title: "Success",
         description: "Compatibility analysis completed successfully!",
       });
-      
-      // Store the result in sessionStorage to pass to a results page
-      sessionStorage.setItem('compatibilityResult', result);
       
       // Navigate to results page
       navigate('/compatibility-result');
@@ -134,7 +150,27 @@ const Compatibility = () => {
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div>
-                <h3 className="text-xl font-semibold mb-4 text-center">Your Palm</h3>
+                <h3 className="text-xl font-semibold mb-4 text-center">Your Information</h3>
+                <div className="space-y-4 mb-4">
+                  <div>
+                    <Label htmlFor="yourName">Your Name (Optional)</Label>
+                    <Input 
+                      id="yourName" 
+                      placeholder="Enter your name"
+                      value={yourName}
+                      onChange={(e) => setYourName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="yourBirthdate">Your Birthdate (Optional)</Label>
+                    <Input 
+                      id="yourBirthdate" 
+                      type="date"
+                      value={yourBirthdate}
+                      onChange={(e) => setYourBirthdate(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <ImageUploader 
                   onImageSelect={handleYourImageSelect}
                   label="Upload Your Palm Image"
@@ -143,7 +179,27 @@ const Compatibility = () => {
               </div>
               
               <div>
-                <h3 className="text-xl font-semibold mb-4 text-center">Partner's Palm</h3>
+                <h3 className="text-xl font-semibold mb-4 text-center">Partner's Information</h3>
+                <div className="space-y-4 mb-4">
+                  <div>
+                    <Label htmlFor="partnerName">Partner's Name (Optional)</Label>
+                    <Input 
+                      id="partnerName" 
+                      placeholder="Enter partner's name"
+                      value={partnerName}
+                      onChange={(e) => setPartnerName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="partnerBirthdate">Partner's Birthdate (Optional)</Label>
+                    <Input 
+                      id="partnerBirthdate" 
+                      type="date"
+                      value={partnerBirthdate}
+                      onChange={(e) => setPartnerBirthdate(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <ImageUploader 
                   onImageSelect={handlePartnerImageSelect}
                   label="Upload Partner's Palm Image"

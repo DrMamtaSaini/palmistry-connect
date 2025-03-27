@@ -66,16 +66,38 @@ export class GeminiAI {
     }
   }
 
-  async checkCompatibility(palm1Base64: string, palm2Base64: string): Promise<string> {
+  async checkCompatibility(palm1Base64: string, palm2Base64: string, nameA?: string, nameB?: string, birthdateA?: string, birthdateB?: string): Promise<string> {
     try {
       const endpoint = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+      
+      let prompt = "Analyze these two palm images and provide detailed compatibility insights between these people. Include the following sections:\n";
+      prompt += "1. Overall Compatibility (with percentage)\n";
+      prompt += "2. Hand Shape & Element Matching (Fire, Water, Earth, Air)\n";
+      prompt += "3. Heart Line Analysis (Love & Emotional Compatibility)\n";
+      prompt += "4. Head Line Analysis (Communication & Understanding)\n";
+      prompt += "5. Fate Line Comparison (Life Goals & Stability)\n";
+      prompt += "6. Venus Mount Analysis (Romantic & Physical Attraction)\n";
+      prompt += "7. Marriage Line Assessment (Commitment & Long-Term Potential)\n";
+      prompt += "8. Relationship Strengths\n";
+      prompt += "9. Relationship Challenges\n";
+      prompt += "10. Personalized Advice for Improving Compatibility\n\n";
+      
+      if (nameA && nameB) {
+        prompt += `Personalize the report for ${nameA} and ${nameB}. `;
+      }
+      
+      if (birthdateA && birthdateB) {
+        prompt += `Consider their birthdates (${nameA}: ${birthdateA}, ${nameB}: ${birthdateB}) if relevant to the analysis. `;
+      }
+      
+      prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles.";
       
       const requestBody = {
         contents: [
           {
             parts: [
               {
-                text: "Analyze these two palm images and provide insights about the compatibility between these two people. Consider their relationship potential, communication style, emotional connection, and long-term harmony based on palmistry principles."
+                text: prompt
               },
               {
                 inline_data: {
@@ -96,7 +118,7 @@ export class GeminiAI {
           temperature: 0.4,
           top_p: 0.95,
           top_k: 40,
-          max_output_tokens: 1024,
+          max_output_tokens: 2048,
         }
       };
 
