@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Heart, Loader2, Star, Calendar, Diamond, MapPin, Brain, Handshake, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { generatePDF } from '@/lib/pdfUtils';
+import { generatePDF, downloadTextAsPDF } from '@/lib/pdfUtils';
 import { useToast } from '@/hooks/use-toast';
 
 const CompatibilityResult = () => {
@@ -124,11 +125,18 @@ const CompatibilityResult = () => {
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
-      toast({
-        title: "Download Failed",
-        description: "There was a problem downloading your report. Please try again.",
-        variant: "destructive"
-      });
+      // Try fallback method
+      try {
+        const fileName = `Palm_Compatibility_${yourName ? yourName + '_' : ''}${partnerName ? partnerName : 'Report'}.txt`;
+        await downloadTextAsPDF(result, fileName);
+      } catch (fallbackError) {
+        console.error('Fallback method failed:', fallbackError);
+        toast({
+          title: "Download Failed",
+          description: "There was a problem downloading your report. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsDownloading(false);
     }
@@ -188,7 +196,9 @@ const CompatibilityResult = () => {
                       <span className="text-lg font-bold">{overallScore}%</span>
                       <span className="text-sm">High</span>
                     </div>
-                    <Progress value={overallScore} className="h-3" indicatorClassName={getScoreColor(overallScore)} />
+                    <Progress value={overallScore} className="h-3" style={{ backgroundColor: "var(--muted)" }}>
+                      <div className="h-full" style={{ width: `${overallScore}%`, backgroundColor: getScoreColor(overallScore) }}></div>
+                    </Progress>
                   </div>
                 </div>
               )}
@@ -208,8 +218,16 @@ const CompatibilityResult = () => {
                     <Progress 
                       value={(gunaMilanScore / 36) * 100} 
                       className="h-3" 
-                      indicatorClassName={getGunaMilanColor(gunaMilanScore)} 
-                    />
+                      style={{ backgroundColor: "var(--muted)" }}
+                    >
+                      <div 
+                        className="h-full" 
+                        style={{ 
+                          width: `${(gunaMilanScore / 36) * 100}%`,
+                          backgroundColor: getGunaMilanColor(gunaMilanScore)
+                        }} 
+                      ></div>
+                    </Progress>
                   </div>
                 </div>
               )}
@@ -217,7 +235,7 @@ const CompatibilityResult = () => {
           </div>
           
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-8 mb-12 reveal">
-            {result ? (
+            {Object.keys(sections).length > 0 ? (
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-6">
                   <TabsTrigger value="overview">
@@ -369,6 +387,10 @@ const CompatibilityResult = () => {
                   </div>
                 </TabsContent>
               </Tabs>
+            ) : result ? (
+              <div className="prose prose-lg max-w-none">
+                <pre className="whitespace-pre-wrap">{result}</pre>
+              </div>
             ) : (
               <div className="text-center py-12">
                 <Loader2 className="animate-spin h-12 w-12 mx-auto mb-4 text-primary" />
