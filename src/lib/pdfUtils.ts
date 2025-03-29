@@ -96,12 +96,29 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
       margin-left: 20px;
       margin-bottom: 15px;
     }
+    li {
+      margin-bottom: 5px;
+    }
     blockquote {
       border-left: 4px solid #00FF7F;
       padding-left: 15px;
       margin: 15px 0;
       font-style: italic;
       color: #555;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 20px 0;
+    }
+    strong {
+      font-weight: bold;
+    }
+    em {
+      font-style: italic;
+    }
+    .emoji {
+      font-size: 16px;
     }
   </style>
 </head>
@@ -134,26 +151,34 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
       // Handle horizontal rules
       .replace(/^---$/gm, '<hr>')
       // Handle emoji (keep them for now)
-      .replace(/📅|👤|👩|❤️|🌟|🖐|💓|🧠|🔮|🔥|💍|📜|✅|🔥|⚠|💡|✨|🌟|💎/g, (match) => match);
+      .replace(/📅|👤|👩|❤️|🌟|🖐|💓|🧠|🔮|🔥|💍|📜|✅|🔥|⚠|💡|✨|🌟|💎|➡️|📌|🔹|❌|💖|⚖️|💋|🔗|💞/g, match => `<span class="emoji">${match}</span>`);
     
-    // Handle tables
-    const tableRegex = /\|(.+)\|\r?\n\|(?:-+\|)+\r?\n((?:\|.+\|\r?\n)+)/g;
-    processedContent = processedContent.replace(tableRegex, (match, headerRow, bodyRows) => {
-      const headers = headerRow.split('|').map(h => h.trim()).filter(h => h);
+    // Handle tables with a better regex
+    const tableRegex = /\|(.*?)\|\r?\n\|([\-:]+\|)+\r?\n((?:\|.*?\|\r?\n?)+)/g;
+    processedContent = processedContent.replace(tableRegex, (match) => {
+      const lines = match.split('\n').filter(line => line.trim());
+      if (lines.length < 3) return match; // Not enough lines for a table
+      
+      const headerLine = lines[0];
+      const headerCells = headerLine.split('|').filter(cell => cell.trim()).map(cell => cell.trim());
+      
+      // Skip the separator line
+      
+      // Process data rows
+      const dataRows = lines.slice(2);
       
       let tableHtml = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">';
       
       // Add header row
       tableHtml += '<tr>';
-      headers.forEach(header => {
-        tableHtml += `<th>${header}</th>`;
+      headerCells.forEach(header => {
+        tableHtml += `<th style="background-color: #f2f2f2;">${header}</th>`;
       });
       tableHtml += '</tr>';
       
-      // Add body rows
-      const rows = bodyRows.trim().split('\n');
-      rows.forEach(row => {
-        const cells = row.split('|').map(cell => cell.trim()).filter(cell => cell !== '');
+      // Add data rows
+      dataRows.forEach(row => {
+        const cells = row.split('|').filter(cell => cell.trim()).map(cell => cell.trim());
         tableHtml += '<tr>';
         cells.forEach(cell => {
           tableHtml += `<td>${cell}</td>`;
@@ -164,9 +189,6 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
       tableHtml += '</table>';
       return tableHtml;
     });
-    
-    // Clean up list items
-    processedContent = processedContent.replace(/<li>.*?<\/li>/g, match => match);
     
     // Wrap adjacent list items in ul tags
     processedContent = processedContent.replace(/(<li>.*?<\/li>)+/g, '<ul style="margin-left: 20px; margin-bottom: 15px;">$&</ul>');

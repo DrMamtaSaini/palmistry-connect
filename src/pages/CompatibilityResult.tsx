@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -388,43 +389,47 @@ This is a relationship filled with **passion, excitement, and growth potential**
       // Find list items and wrap them
       .replace(/(<li.*?>.*?<\/li>)(\n<li.*?>.*?<\/li>)+/gs, '<ul class="my-3">$&</ul>');
     
-    // Attempt to parse markdown tables
-    const tablePattern = /\|(.*?)\|\n\|([-:\|\s]+)\|\n(\|.*\|\n)+/g;
-    const tableHeaderPattern = /\|(.*?)\|/g;
-    const tableRowPattern = /\|(.*?)\|\n/g;
-    
-    html = html.replace(tablePattern, (table) => {
-      let result = '<div class="overflow-x-auto my-4"><table class="min-w-full border-collapse border border-gray-300">';
+    // Process tables (improved logic)
+    const tablePattern = /\|(.*?)\|\n\|([-:\|\s]+)\|\n(\|.*\|\n?)+/g;
+    html = html.replace(tablePattern, (tableMatch) => {
+      const tableLines = tableMatch.split('\n').filter(line => line.trim() !== '');
+      
+      if (tableLines.length < 2) return tableMatch; // Not enough lines for a table
       
       // Extract header
-      const headerMatch = table.match(/\|(.*?)\|/);
-      if (headerMatch) {
-        const headers = headerMatch[1].split('|').map(h => h.trim());
-        result += '<thead><tr>';
-        headers.forEach(header => {
-          result += `<th class="border border-gray-300 px-4 py-2 bg-gray-100">${header}</th>`;
-        });
-        result += '</tr></thead>';
-      }
+      const headerLine = tableLines[0];
+      const headerCells = headerLine.split('|').filter(cell => cell.trim() !== '').map(cell => cell.trim());
       
-      // Extract rows (skip header and separator rows)
-      const rows = table.split('\n').slice(2).filter(row => row.trim() !== '');
+      // Skip separator line
       
+      // Process rows
+      const rows = tableLines.slice(2);
+      
+      let tableHtml = '<div class="overflow-x-auto my-4"><table class="min-w-full border-collapse border border-gray-300">';
+      
+      // Add header
+      tableHtml += '<thead><tr>';
+      headerCells.forEach(header => {
+        tableHtml += `<th class="border border-gray-300 px-4 py-2 bg-gray-100">${header}</th>`;
+      });
+      tableHtml += '</tr></thead>';
+      
+      // Add rows
       if (rows.length > 0) {
-        result += '<tbody>';
+        tableHtml += '<tbody>';
         rows.forEach(row => {
-          const cells = row.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim());
-          result += '<tr>';
+          const cells = row.split('|').filter(cell => cell.trim() !== '').map(cell => cell.trim());
+          tableHtml += '<tr>';
           cells.forEach(cell => {
-            result += `<td class="border border-gray-300 px-4 py-2">${cell}</td>`;
+            tableHtml += `<td class="border border-gray-300 px-4 py-2">${cell}</td>`;
           });
-          result += '</tr>';
+          tableHtml += '</tr>';
         });
-        result += '</tbody>';
+        tableHtml += '</tbody>';
       }
       
-      result += '</table></div>';
-      return result;
+      tableHtml += '</table></div>';
+      return tableHtml;
     });
     
     // Convert newlines to <br> tags, but not inside HTML elements
