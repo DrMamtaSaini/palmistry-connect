@@ -12,16 +12,6 @@ const PalmReadingResult = () => {
   
   useEffect(() => {
     const cleanup = revealAnimation();
-    
-    // For testing: Don't redirect even if accessed directly
-    // This is just for testing the pro features
-    /*
-    const hasAnalyzed = localStorage.getItem('palmAnalyzed');
-    if (!hasAnalyzed) {
-      navigate('/palm-reading');
-    }
-    */
-    
     return () => {
       cleanup();
     };
@@ -30,43 +20,104 @@ const PalmReadingResult = () => {
   const handleFullReportDownload = async () => {
     toast({
       title: "Generating Full Report",
-      description: "Your 70-page comprehensive report is being prepared for download...",
+      description: "Your comprehensive report is being prepared for download...",
     });
+    
+    const demoContent = `
+# **Palm Reading Analysis Report**
+
+📅 **Date of Analysis:** ${new Date().toLocaleDateString()}
+
+## **Personality Traits**
+
+**Strong Leadership Qualities**
+Your palm shows distinct markings indicative of natural leadership abilities and decision-making skills. The strong, straight head line that crosses your palm indicates analytical thinking and strategic planning abilities. You have a natural inclination to take charge in situations and guide others.
+
+**Creative Thinking**
+The unique pattern on your palm suggests a creative mind with excellent problem-solving capabilities. The branches extending from your head line toward your mount of Luna show imagination and creative thinking. You can visualize solutions that others might miss.
+
+**Emotional Intelligence**
+Your palm lines reveal a high degree of empathy and emotional understanding of others. The well-developed heart line with small branches indicates sensitivity to others' feelings and needs. You can navigate complex social situations with ease and build strong relationships.
+
+## **Life Path Insights**
+
+**Career Trajectory**
+The fate line on your palm indicates potential for significant career advancement in the next 2-3 years. The deep, clear line running from the base of your palm toward your middle finger suggests a focused and purposeful career path. A branch around the middle of this line indicates a positive shift or opportunity that will advance your professional life.
+
+**Relationship Patterns**
+Your heart line suggests deep, meaningful connections with a small circle of close relationships. The curved line that sweeps across the upper palm indicates a romantic and idealistic approach to relationships. You value quality over quantity in your connections and prefer deep, meaningful bonds.
+
+**Financial Outlook**
+Multiple intersecting lines indicate periods of financial stability alternating with growth opportunities. The triangle formation between your fate, head, and life lines suggests periods of financial good fortune. You have the ability to recognize and act on profitable opportunities when they present themselves.
+
+## **Comprehensive Life Analysis**
+
+**Detailed Career Trajectory**
+Your palm shows exceptional career potential with multiple branching opportunities. The intersection of your fate line with other major lines indicates:
+
+- Leadership roles in innovative fields
+- Entrepreneurial success markers
+- Creative problem-solving abilities
+- Strategic thinking capabilities
+
+The strong connection between your head line and fate line suggests you'll excel in roles that require both analytical thinking and decisive action. Your success will come from combining practical skills with innovative approaches.
+
+**Deep Relationship Analysis**
+Your heart and head lines reveal complex relationship patterns:
+
+- Deep emotional connections with select individuals
+- Strong family bonds and genetic influences
+- Professional relationship dynamics
+- Friendship circle analysis
+
+The distance between your heart and head lines indicates a good balance between emotional and rational thinking in relationships. This allows you to form strong bonds while maintaining healthy boundaries.
+
+**Financial Prosperity Indicators**
+Multiple wealth lines and markers suggest:
+
+- Investment opportunities and timing
+- Risk assessment capabilities
+- Long-term financial stability indicators
+- Wealth accumulation patterns
+
+The money triangle formed by the intersection of various minor lines on your palm indicates a natural ability to attract and grow wealth. Your financial journey will include periods of steady growth interrupted by occasional significant gains.
+
+## **Health & Wellbeing**
+
+Based on your palm's characteristics, here are some health insights and recommendations:
+
+- Your palm shows signs of good overall vitality, but may benefit from stress management practices.
+- Consider incorporating more mindfulness activities to balance your analytical tendencies.
+- Your hand structure suggests a potential need for better wrist and hand ergonomics, especially if you do computer work.
+- Regular cardiovascular exercise would complement your natural energy patterns.
+- Your palm suggests you may benefit from creative activities as a form of stress relief.
+
+## **Future Timeline Predictions**
+
+**Next 6 Months**
+A period of transition appears likely, with new opportunities in your professional life. Be open to unexpected offers or changes in your current role. The intersection of influence lines with your fate line suggests a significant meeting or connection that will impact your career trajectory.
+
+**1-2 Years**
+Significant relationship developments are indicated, either strengthening existing bonds or forming important new connections that will influence your path. A clear line of influence approaching your heart line suggests romantic developments or deepening of existing relationships.
+
+**3-5 Years**
+A major achievement or milestone is suggested in this timeframe. Your preparation and skills will converge to create a significant breakthrough. The strengthening of your fate line during this period indicates recognition or achievement in your chosen field.
+
+**5+ Years**
+Long-term prosperity is indicated, with stability in multiple areas of life. The foundations you're building now will support continued growth and fulfillment. The clarity of your life line extending into the future suggests good health and vitality to enjoy your achievements.
+`;
     
     try {
       await generatePDF({
         title: "Complete Palm Reading Analysis",
-        sections: [
-          {
-            name: "Personality Traits",
-            insights: [
-              "Strong Leadership Qualities",
-              "Creative Thinking",
-              "Emotional Intelligence"
-            ]
-          },
-          {
-            name: "Life Path Insights",
-            insights: [
-              "Career Trajectory",
-              "Relationship Patterns",
-              "Financial Outlook"
-            ]
-          },
-          {
-            name: "Comprehensive Analysis",
-            insights: [
-              "Detailed Career Trajectory",
-              "Deep Relationship Analysis",
-              "Financial Prosperity Indicators"
-            ]
-          }
-        ]
-      }, true); // true for detailed report
+        subtitle: "Comprehensive Personal Insights",
+        content: demoContent,
+        fileName: "Palm_Reading_Full_Report.pdf"
+      });
       
       toast({
         title: "Success",
-        description: "Your 70-page comprehensive report has been downloaded successfully.",
+        description: "Your comprehensive report has been downloaded successfully.",
       });
     } catch (error) {
       toast({
@@ -80,29 +131,38 @@ const PalmReadingResult = () => {
   const handleBasicReportDownload = async () => {
     toast({
       title: "Generating Basic Report",
-      description: "Your 2-page basic report is being prepared for download...",
+      description: "Your basic report is being prepared for download...",
     });
+    
+    const basicContent = `
+# **Basic Palm Reading Analysis**
+
+## **Personality Overview**
+Your palm reveals a balanced personality with strong analytical abilities and creative tendencies. The head line shows clear thinking and problem-solving capabilities.
+
+## **Life Direction Summary**
+The fate line indicates a focused career path with potential for advancement in the next 1-2 years. Your natural leadership qualities will help you progress.
+
+## **Relationship Insights**
+Your heart line shows emotional depth and capacity for meaningful connections. You value quality over quantity in relationships.
+
+## **Basic Health Indicators**
+Good overall vitality is indicated, with suggestions to incorporate more stress management practices into your routine.
+
+## **Key Recommendations**
+- Leverage your analytical abilities in professional settings
+- Take time to nurture your most important relationships
+- Balance work with creative pursuits to maintain wellbeing
+- Practice mindfulness to optimize your natural strengths
+`;
     
     try {
       await generatePDF({
         title: "Basic Palm Reading Analysis",
-        sections: [
-          {
-            name: "Personality Traits",
-            insights: [
-              "Leadership Potential",
-              "Creative Abilities"
-            ]
-          },
-          {
-            name: "Life Path Overview",
-            insights: [
-              "Career Direction",
-              "Relationship Tendencies"
-            ]
-          }
-        ]
-      }, false); // false for basic report
+        subtitle: "Essential Personal Insights",
+        content: basicContent,
+        fileName: "Palm_Reading_Basic_Report.pdf"
+      });
       
       toast({
         title: "Success",

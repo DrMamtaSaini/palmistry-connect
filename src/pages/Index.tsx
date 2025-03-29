@@ -6,12 +6,13 @@ import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import FeatureCard from '@/components/FeatureCard';
 import { revealAnimation } from '@/lib/animations';
-import { generateDemoReport } from '@/lib/pdfUtils';
-import { toast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { generatePDF, generateDemoReport } from '@/lib/pdfUtils';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Index = () => {
   console.log("Index page rendering...");
+  const { toast } = useToast();
   
   useEffect(() => {
     console.log("Index page mounted");
@@ -115,7 +116,7 @@ const Index = () => {
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="heading-lg mb-4 text-white">Preview Our Detailed Reports</h2>
             <p className="text-black text-lg font-medium">
-              Explore a sample of our comprehensive 70-page palm reading analysis report and discover 
+              Explore a sample of our comprehensive palm reading and relationship compatibility reports to discover
               the depth of insights you can gain from our premium service.
             </p>
           </div>
@@ -124,57 +125,37 @@ const Index = () => {
             <div className="glass-panel rounded-2xl p-6 lg:p-10">
               <div className="flex items-center mb-6">
                 <BookOpen className="h-6 w-6 text-[#00FF7F] mr-3" />
-                <h3 className="text-2xl font-semibold text-white">70-Page Comprehensive Analysis</h3>
+                <h3 className="text-2xl font-semibold text-white">Sample Report Preview</h3>
               </div>
               
               <div className="space-y-4 mb-8">
                 <Card className="border-[#00FF7F]/20">
                   <CardHeader>
                     <CardTitle>Deep Personality Insights</CardTitle>
-                    <CardDescription>Pages 5-15</CardDescription>
+                    <CardDescription>Discover your character traits and strengths</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p>Detailed analysis of your character traits, emotional patterns, and cognitive strengths based on palm line configurations.</p>
+                    <p>Detailed analysis of your personality based on palm lines, hand shape, and mounts.</p>
                   </CardContent>
                 </Card>
                 
                 <Card className="border-[#00FF7F]/20">
                   <CardHeader>
-                    <CardTitle>Life Path & Career Trajectory</CardTitle>
-                    <CardDescription>Pages 16-30</CardDescription>
+                    <CardTitle>Relationship Compatibility</CardTitle>
+                    <CardDescription>Palm and Vedic astrology compatibility</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p>Comprehensive breakdown of your professional path, key milestones, and potential opportunities identified through fate line analysis.</p>
+                    <p>Comprehensive breakdown of relationship dynamics including Guna Milan score and element compatibility.</p>
                   </CardContent>
                 </Card>
                 
                 <Card className="border-[#00FF7F]/20">
                   <CardHeader>
-                    <CardTitle>Relationship Dynamics</CardTitle>
-                    <CardDescription>Pages 31-45</CardDescription>
+                    <CardTitle>Life Path Predictions</CardTitle>
+                    <CardDescription>Future trends and opportunities</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p>In-depth exploration of your relationship patterns, emotional connections, and compatibility indicators.</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-[#00FF7F]/20">
-                  <CardHeader>
-                    <CardTitle>Health & Wellbeing Forecast</CardTitle>
-                    <CardDescription>Pages 46-60</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Personalized wellness insights and potential health considerations based on your palm's unique indicators.</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-[#00FF7F]/20">
-                  <CardHeader>
-                    <CardTitle>Future Timeline Predictions</CardTitle>
-                    <CardDescription>Pages 61-70</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Detailed timeline analysis with key turning points and potential future scenarios based on advanced predictive algorithms.</p>
+                    <p>Timeline analysis with key milestones and potential future scenarios based on your unique palm features.</p>
                   </CardContent>
                 </Card>
               </div>
