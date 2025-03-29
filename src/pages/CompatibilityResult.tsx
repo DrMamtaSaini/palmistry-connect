@@ -250,7 +250,8 @@ This is a relationship filled with **passion, excitement, and growth potential**
         // Start new section
         currentSection = line.replace(/^#+\s/, '').replace(/\*/g, '').trim();
         sectionContent = [];
-      } else if (line.trim() !== '' && line !== '---') {
+      } else if (currentSection) {
+        // Add line to current section
         sectionContent.push(line);
       }
     }
@@ -281,12 +282,10 @@ This is a relationship filled with **passion, excitement, and growth potential**
         mappedSections['Venus Mount Analysis'] = value;
       } else if (key.includes('Marriage Line')) {
         mappedSections['Marriage Line Assessment'] = value;
-      } else if (key.includes('Strengths')) {
-        mappedSections['Relationship Strengths'] = value;
-      } else if (key.includes('Challenges')) {
-        mappedSections['Relationship Challenges'] = value;
       } else if (key.includes('Final Compatibility Summary')) {
         mappedSections['Overall Compatibility'] = value;
+      } else if (key.includes('Strengths') || key.includes('Challenges')) {
+        mappedSections['Relationship Strengths'] = value;
       } else if (key.includes('Personalized')) {
         mappedSections['Personalized Advice'] = value;
       } else {
@@ -359,20 +358,90 @@ This is a relationship filled with **passion, excitement, and growth potential**
     return "bg-red-500"; // 0-7 Very poor match
   };
   
-  // Function to convert markdown to HTML (simple version)
+  // Function to convert markdown to HTML (enhanced version)
   const markdownToHtml = (markdown: string) => {
     if (!markdown) return '';
     
-    return markdown
+    let html = markdown
+      // Bold text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic text
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/- (.*?)$/gm, '• $1')
-      .replace(/✔/g, '✅')
+      // Headers
+      .replace(/^### (.*?)$/gm, '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>')
+      .replace(/^## (.*?)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
+      .replace(/^# (.*?)$/gm, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
+      // Horizontal rule
+      .replace(/^---$/gm, '<hr class="my-6 border-t border-gray-300" />')
+      // Lists
+      .replace(/^- (.*?)$/gm, '<li class="ml-6 list-disc">$1</li>')
+      .replace(/^✅ (.*?)$/gm, '<li class="ml-6 flex items-start"><span class="mr-2 text-green-500">✅</span>$1</li>')
+      // Replace emoji
       .replace(/➡️/g, '→')
       .replace(/⚠️/g, '⚠')
       .replace(/📌/g, '📍')
       .replace(/💡/g, '💡')
-      .split('\n').join('<br>');
+      .replace(/🔹/g, '<span class="ml-4 inline-block">•</span>')
+      .replace(/❌/g, '<span class="text-red-500">✖</span>')
+      // Blockquotes
+      .replace(/^> (.*?)$/gm, '<blockquote class="border-l-4 border-gray-300 pl-4 italic my-4">$1</blockquote>')
+      // Find list items and wrap them
+      .replace(/(<li.*?>.*?<\/li>)(\n<li.*?>.*?<\/li>)+/gs, '<ul class="my-3">$&</ul>');
+    
+    // Attempt to parse markdown tables
+    const tablePattern = /\|(.*?)\|\n\|([-:\|\s]+)\|\n(\|.*\|\n)+/g;
+    const tableHeaderPattern = /\|(.*?)\|/g;
+    const tableRowPattern = /\|(.*?)\|\n/g;
+    
+    html = html.replace(tablePattern, (table) => {
+      let result = '<div class="overflow-x-auto my-4"><table class="min-w-full border-collapse border border-gray-300">';
+      
+      // Extract header
+      const headerMatch = table.match(/\|(.*?)\|/);
+      if (headerMatch) {
+        const headers = headerMatch[1].split('|').map(h => h.trim());
+        result += '<thead><tr>';
+        headers.forEach(header => {
+          result += `<th class="border border-gray-300 px-4 py-2 bg-gray-100">${header}</th>`;
+        });
+        result += '</tr></thead>';
+      }
+      
+      // Extract rows (skip header and separator rows)
+      const rows = table.split('\n').slice(2).filter(row => row.trim() !== '');
+      
+      if (rows.length > 0) {
+        result += '<tbody>';
+        rows.forEach(row => {
+          const cells = row.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim());
+          result += '<tr>';
+          cells.forEach(cell => {
+            result += `<td class="border border-gray-300 px-4 py-2">${cell}</td>`;
+          });
+          result += '</tr>';
+        });
+        result += '</tbody>';
+      }
+      
+      result += '</table></div>';
+      return result;
+    });
+    
+    // Convert newlines to <br> tags, but not inside HTML elements
+    html = html.replace(/\n(?!<)/g, '<br>');
+    
+    return html;
+  };
+  
+  // Render the full report as HTML
+  const renderFullReport = () => {
+    if (!result) return null;
+    
+    return (
+      <div className="prose prose-lg max-w-none mx-auto">
+        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(result) }} />
+      </div>
+    );
   };
   
   return (
@@ -410,7 +479,10 @@ This is a relationship filled with **passion, excitement, and growth potential**
                       <span className="text-sm">High</span>
                     </div>
                     <Progress value={overallScore} className="h-3" style={{ backgroundColor: "var(--muted)" }}>
-                      <div className="h-full" style={{ width: `${overallScore}%`, backgroundColor: getScoreColor(overallScore) }}></div>
+                      <div 
+                        className={`h-full transition-all duration-1000 ${getScoreColor(overallScore)}`} 
+                        style={{ width: `${overallScore}%` }}
+                      ></div>
                     </Progress>
                   </div>
                 </div>
@@ -434,11 +506,8 @@ This is a relationship filled with **passion, excitement, and growth potential**
                       style={{ backgroundColor: "var(--muted)" }}
                     >
                       <div 
-                        className="h-full" 
-                        style={{ 
-                          width: `${(gunaMilanScore / 36) * 100}%`,
-                          backgroundColor: getGunaMilanColor(gunaMilanScore)
-                        }} 
+                        className={`h-full transition-all duration-1000 ${getGunaMilanColor(gunaMilanScore)}`}
+                        style={{ width: `${(gunaMilanScore / 36) * 100}%` }}
                       ></div>
                     </Progress>
                   </div>
@@ -448,172 +517,236 @@ This is a relationship filled with **passion, excitement, and growth potential**
           </div>
           
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-8 mb-12 reveal">
-            {Object.keys(sections).length > 0 ? (
-              <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-6">
-                  <TabsTrigger value="overview">
-                    <Star className="h-4 w-4 mr-1" /> Overview
-                  </TabsTrigger>
-                  <TabsTrigger value="gunamilan">
-                    <Calendar className="h-4 w-4 mr-1" /> Guna Milan
-                  </TabsTrigger>
-                  <TabsTrigger value="emotional">
-                    <Heart className="h-4 w-4 mr-1" /> Emotional
-                  </TabsTrigger>
-                  <TabsTrigger value="intellectual">
-                    <Brain className="h-4 w-4 mr-1" /> Intellectual
-                  </TabsTrigger>
-                  <TabsTrigger value="life-path">
-                    <MapPin className="h-4 w-4 mr-1" /> Life Path
-                  </TabsTrigger>
-                  <TabsTrigger value="advice">
-                    <Sparkles className="h-4 w-4 mr-1" /> Advice
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="overview" className="space-y-6">
-                  <div className="prose prose-lg max-w-none">
-                    {(sections['Overview'] || sections['Partner Compatibility Report']) && (
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <Star className="h-5 w-5 text-yellow-500" />
-                          Overall Compatibility
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Overview'] || sections['Partner Compatibility Report']) }} />
-                      </div>
-                    )}
-                    
-                    {sections['Hand Shape & Element Matching'] && (
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-2">Hand Shape & Element Matching</h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Hand Shape & Element Matching']) }} />
-                      </div>
-                    )}
-                    
-                    {sections['Relationship Strengths'] && (
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <Handshake className="h-5 w-5 text-green-500" />
-                          Relationship Strengths
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Relationship Strengths']) }} />
-                      </div>
-                    )}
-                    
-                    {sections['Relationship Challenges'] && (
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">Relationship Challenges</h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Relationship Challenges']) }} />
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="gunamilan" className="space-y-6">
-                  <div className="prose prose-lg max-w-none">
-                    {sections['Guna Milan Analysis'] ? (
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <Calendar className="h-5 w-5 text-blue-500" />
-                          Guna Milan Analysis
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Guna Milan Analysis']) }} />
-                      </div>
-                    ) : (
-                      <p className="text-center text-muted-foreground">No Guna Milan analysis available in this report.</p>
-                    )}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="emotional" className="space-y-6">
-                  <div className="prose prose-lg max-w-none">
-                    {sections['Heart Line Analysis'] && (
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <Heart className="h-5 w-5 text-red-500" />
-                          Heart Line Analysis
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Heart Line Analysis']) }} />
-                      </div>
-                    )}
-                    
-                    {sections['Venus Mount Analysis'] && (
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <Diamond className="h-5 w-5 text-pink-500" />
-                          Venus Mount Analysis
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Venus Mount Analysis']) }} />
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="intellectual" className="space-y-6">
-                  <div className="prose prose-lg max-w-none">
-                    {sections['Head Line Analysis'] && (
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <Brain className="h-5 w-5 text-purple-500" />
-                          Head Line Analysis
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Head Line Analysis']) }} />
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="life-path" className="space-y-6">
-                  <div className="prose prose-lg max-w-none">
-                    {sections['Fate Line Comparison'] || sections['Fate Line Analysis'] && (
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-blue-500" />
-                          Fate Line Analysis
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Fate Line Comparison'] || sections['Fate Line Analysis']) }} />
-                      </div>
-                    )}
-                    
-                    {sections['Marriage Line Assessment'] || sections['Marriage Line Analysis'] && (
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">Marriage Line Assessment</h3>
-                        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Marriage Line Assessment'] || sections['Marriage Line Analysis']) }} />
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="advice" className="space-y-6">
-                  <div className="prose prose-lg max-w-none">
-                    {sections['Personalized Advice'] || sections['Personalized Recommendations'] ? (
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                          <Sparkles className="h-5 w-5 text-amber-500" />
-                          Personalized Advice
-                        </h3>
-                        <div dangerouslySetInnerHTML={{ 
-                          __html: markdownToHtml(sections['Personalized Advice'] || 
-                          sections['Personalized Recommendations'] || 
-                          sections['Personalized Advice for Improving Compatibility']) 
-                        }} />
-                      </div>
-                    ) : (
-                      <p className="text-center text-muted-foreground">No personalized advice available in this report.</p>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            ) : result ? (
-              <div className="prose prose-lg max-w-none">
-                <pre className="whitespace-pre-wrap">{result}</pre>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Loader2 className="animate-spin h-12 w-12 mx-auto mb-4 text-primary" />
-                <p className="text-muted-foreground">Loading compatibility analysis...</p>
-              </div>
-            )}
+            <Tabs defaultValue="full-report" className="w-full">
+              <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-1 mb-6">
+                <TabsTrigger value="full-report">
+                  <Star className="h-4 w-4 mr-1" /> Full Report
+                </TabsTrigger>
+                <TabsTrigger value="sections">
+                  <Calendar className="h-4 w-4 mr-1" /> By Sections
+                </TabsTrigger>
+                <TabsTrigger value="summary">
+                  <Heart className="h-4 w-4 mr-1" /> Summary
+                </TabsTrigger>
+                <TabsTrigger value="advice">
+                  <Sparkles className="h-4 w-4 mr-1" /> Advice
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="full-report" className="space-y-6">
+                {renderFullReport()}
+              </TabsContent>
+              
+              <TabsContent value="sections" className="space-y-6">
+                <div className="prose prose-lg max-w-none">
+                  {Object.keys(sections).length > 0 ? (
+                    <Tabs defaultValue="overview" className="w-full">
+                      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-6">
+                        <TabsTrigger value="overview">
+                          <Star className="h-4 w-4 mr-1" /> Overview
+                        </TabsTrigger>
+                        <TabsTrigger value="gunamilan">
+                          <Calendar className="h-4 w-4 mr-1" /> Guna Milan
+                        </TabsTrigger>
+                        <TabsTrigger value="emotional">
+                          <Heart className="h-4 w-4 mr-1" /> Emotional
+                        </TabsTrigger>
+                        <TabsTrigger value="intellectual">
+                          <Brain className="h-4 w-4 mr-1" /> Intellectual
+                        </TabsTrigger>
+                        <TabsTrigger value="life-path">
+                          <MapPin className="h-4 w-4 mr-1" /> Life Path
+                        </TabsTrigger>
+                        <TabsTrigger value="advice">
+                          <Sparkles className="h-4 w-4 mr-1" /> Advice
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="overview" className="space-y-6">
+                        <div className="prose prose-lg max-w-none">
+                          {(sections['Overview'] || sections['Partner Compatibility Report']) && (
+                            <div className="mb-6">
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <Star className="h-5 w-5 text-yellow-500" />
+                                Overall Compatibility
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Overview'] || sections['Partner Compatibility Report']) }} />
+                            </div>
+                          )}
+                          
+                          {sections['Hand Shape & Element Matching'] && (
+                            <div className="mb-6">
+                              <h3 className="text-xl font-semibold mb-2">Hand Shape & Element Matching</h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Hand Shape & Element Matching']) }} />
+                            </div>
+                          )}
+                          
+                          {sections['Relationship Strengths'] && (
+                            <div className="mb-6">
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <Handshake className="h-5 w-5 text-green-500" />
+                                Relationship Strengths
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Relationship Strengths']) }} />
+                            </div>
+                          )}
+                          
+                          {sections['Relationship Challenges'] && (
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2">Relationship Challenges</h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Relationship Challenges']) }} />
+                            </div>
+                          )}
+                        </div>
+                      </TabsContent>
+                      
+                      {/* Other tabs content */}
+                      <TabsContent value="gunamilan" className="space-y-6">
+                        <div className="prose prose-lg max-w-none">
+                          {sections['Guna Milan Analysis'] ? (
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-blue-500" />
+                                Guna Milan Analysis
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Guna Milan Analysis']) }} />
+                            </div>
+                          ) : (
+                            <p className="text-center text-muted-foreground">No Guna Milan analysis available in this report.</p>
+                          )}
+                        </div>
+                      </TabsContent>
+                      
+                      {/* Other tab contents */}
+                      <TabsContent value="emotional" className="space-y-6">
+                        <div className="prose prose-lg max-w-none">
+                          {sections['Heart Line Analysis'] && (
+                            <div className="mb-6">
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <Heart className="h-5 w-5 text-red-500" />
+                                Heart Line Analysis
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Heart Line Analysis']) }} />
+                            </div>
+                          )}
+                          
+                          {sections['Venus Mount Analysis'] && (
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <Diamond className="h-5 w-5 text-pink-500" />
+                                Venus Mount Analysis
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Venus Mount Analysis']) }} />
+                            </div>
+                          )}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="intellectual" className="space-y-6">
+                        <div className="prose prose-lg max-w-none">
+                          {sections['Head Line Analysis'] && (
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <Brain className="h-5 w-5 text-purple-500" />
+                                Head Line Analysis
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Head Line Analysis']) }} />
+                            </div>
+                          )}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="life-path" className="space-y-6">
+                        <div className="prose prose-lg max-w-none">
+                          {(sections['Fate Line Comparison'] || sections['Fate Line Analysis']) && (
+                            <div className="mb-6">
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <MapPin className="h-5 w-5 text-blue-500" />
+                                Fate Line Analysis
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Fate Line Comparison'] || sections['Fate Line Analysis']) }} />
+                            </div>
+                          )}
+                          
+                          {(sections['Marriage Line Assessment'] || sections['Marriage Line Analysis']) && (
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2">Marriage Line Assessment</h3>
+                              <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Marriage Line Assessment'] || sections['Marriage Line Analysis']) }} />
+                            </div>
+                          )}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="advice" className="space-y-6">
+                        <div className="prose prose-lg max-w-none">
+                          {sections['Personalized Advice'] || sections['Personalized Recommendations'] ? (
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                                <Sparkles className="h-5 w-5 text-amber-500" />
+                                Personalized Advice
+                              </h3>
+                              <div dangerouslySetInnerHTML={{ 
+                                __html: markdownToHtml(sections['Personalized Advice'] || 
+                                sections['Personalized Recommendations'] || 
+                                sections['Personalized Advice for Improving Compatibility']) 
+                              }} />
+                            </div>
+                          ) : (
+                            <p className="text-center text-muted-foreground">No personalized advice available in this report.</p>
+                          )}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">No section data available.</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="summary" className="space-y-6">
+                <div className="prose prose-lg max-w-none">
+                  {sections['Overall Compatibility'] ? (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <Star className="h-5 w-5 text-yellow-500" />
+                        Compatibility Summary
+                      </h3>
+                      <div dangerouslySetInnerHTML={{ __html: markdownToHtml(sections['Overall Compatibility']) }} />
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">Summary not available in this report format.</p>
+                      <p className="mt-2">Please view the full report for complete details.</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="advice" className="space-y-6">
+                <div className="prose prose-lg max-w-none">
+                  {sections['Personalized Advice'] || sections['Personalized Recommendations'] ? (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-amber-500" />
+                        Personalized Recommendations
+                      </h3>
+                      <div dangerouslySetInnerHTML={{ 
+                        __html: markdownToHtml(sections['Personalized Advice'] || 
+                        sections['Personalized Recommendations'] || 
+                        sections['Personalized Advice for Improving Compatibility']) 
+                      }} />
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">Personalized advice not available.</p>
+                      <p className="mt-2">Please view the full report for all recommendations.</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
           
           <div className="flex justify-center gap-4 flex-wrap reveal">
