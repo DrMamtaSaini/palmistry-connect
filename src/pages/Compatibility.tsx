@@ -144,19 +144,26 @@ const Compatibility = () => {
       sessionStorage.setItem('yourBirthPlace', values.yourDetails.birthPlace || '');
       sessionStorage.setItem('partnerBirthPlace', values.partnerDetails.birthPlace || '');
       
-      // Analyze compatibility using Gemini
-      const result = await gemini.checkCompatibility(
-        yourPalmBase64, 
-        partnerPalmBase64,
-        values.yourDetails.name,
-        values.partnerDetails.name,
-        values.yourDetails.birthDate,
-        values.partnerDetails.birthDate,
-        values.yourDetails.birthTime,
-        values.partnerDetails.birthTime,
-        values.yourDetails.birthPlace,
-        values.partnerDetails.birthPlace
-      );
+      // Create a compatibility data object to pass to Gemini
+      const compatibilityData = {
+        yourDetails: {
+          name: values.yourDetails.name,
+          birthDate: values.yourDetails.birthDate,
+          birthTime: values.yourDetails.birthTime || '',
+          birthPlace: values.yourDetails.birthPlace || '',
+          palmImage: yourPalmBase64
+        },
+        partnerDetails: {
+          name: values.partnerDetails.name,
+          birthDate: values.partnerDetails.birthDate,
+          birthTime: values.partnerDetails.birthTime || '',
+          birthPlace: values.partnerDetails.birthPlace || '',
+          palmImage: partnerPalmBase64
+        }
+      };
+      
+      // Analyze compatibility using Gemini with the data object
+      const result = await gemini.checkCompatibility(compatibilityData);
       
       // Store result and navigate to results page
       sessionStorage.setItem('compatibilityResult', result);
