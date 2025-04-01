@@ -1,10 +1,26 @@
-
 // This is a utility file for Gemini AI integration
 // The actual API key should be provided by the user and stored securely
 
 interface GeminiConfig {
   apiKey: string;
   modelName: string;
+}
+
+interface CompatibilityData {
+  yourDetails: {
+    name: string;
+    birthDate: string;
+    birthTime?: string;
+    birthPlace?: string;
+    palmImage: string;
+  };
+  partnerDetails: {
+    name: string;
+    birthDate: string;
+    birthTime?: string;
+    birthPlace?: string;
+    palmImage: string;
+  };
 }
 
 export class GeminiAI {
@@ -66,10 +82,18 @@ export class GeminiAI {
     }
   }
 
-  async checkCompatibility(palm1Base64: string, palm2Base64: string, nameA?: string, nameB?: string, birthdateA?: string, birthdateB?: string): Promise<string> {
+  async checkCompatibility(
+    dataOrPalm1: string | CompatibilityData,
+    palm2Base64?: string,
+    nameA?: string,
+    nameB?: string,
+    birthdateA?: string,
+    birthdateB?: string
+  ): Promise<string> {
     try {
       const endpoint = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
       
+      let palm1Base64: string;
       let prompt = "Analyze these two palm images and provide detailed compatibility insights between these people. Include the following sections:\n";
       prompt += "1. Overall Compatibility (with percentage)\n";
       prompt += "2. Guna Milan Analysis (Vedic Compatibility Score out of 36)\n";
@@ -85,61 +109,128 @@ export class GeminiAI {
       prompt += "10. Relationship Challenges\n";
       prompt += "11. Personalized Advice for Improving Compatibility\n\n";
       
-      if (nameA && nameB) {
-        prompt += `Personalize the report for ${nameA} and ${nameB}. `;
-      }
-      
-      if (birthdateA && birthdateB) {
-        prompt += `Consider their birthdates (${nameA}: ${birthdateA}, ${nameB}: ${birthdateB}) for the Guna Milan analysis. `;
-      }
-      
-      prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles and Vedic astrology. Provide actionable recommendations based on the analysis. If birthdates are provided, use them for more accurate Guna Milan calculations.";
-      
-      const requestBody = {
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: palm1Base64.replace(/^data:image\/\w+;base64,/, "")
-                }
-              },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: palm2Base64.replace(/^data:image\/\w+;base64,/, "")
-                }
-              }
-            ]
-          }
-        ],
-        generation_config: {
-          temperature: 0.4,
-          top_p: 0.95,
-          top_k: 40,
-          max_output_tokens: 4096, // Increased token limit for more detailed analysis
+      if (typeof dataOrPalm1 === 'object') {
+        const data = dataOrPalm1;
+        palm1Base64 = data.yourDetails.palmImage;
+        
+        prompt += `Personalize the report for ${data.yourDetails.name} and ${data.partnerDetails.name}. `;
+        
+        prompt += `Consider their birthdates (${data.yourDetails.name}: ${data.yourDetails.birthDate}, ${data.partnerDetails.name}: ${data.partnerDetails.birthDate}) `;
+        
+        if (data.yourDetails.birthTime && data.partnerDetails.birthTime) {
+          prompt += `and birth times (${data.yourDetails.name}: ${data.yourDetails.birthTime}, ${data.partnerDetails.name}: ${data.partnerDetails.birthTime}) `;
         }
-      };
+        
+        if (data.yourDetails.birthPlace && data.partnerDetails.birthPlace) {
+          prompt += `and birth places (${data.yourDetails.name}: ${data.yourDetails.birthPlace}, ${data.partnerDetails.name}: ${data.partnerDetails.birthPlace}) `;
+        }
+        
+        prompt += "for the Guna Milan analysis. ";
+        
+        const requestBody = {
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                },
+                {
+                  inline_data: {
+                    mime_type: "image/jpeg",
+                    data: palm1Base64.replace(/^data:image\/\w+;base64,/, "")
+                  }
+                },
+                {
+                  inline_data: {
+                    mime_type: "image/jpeg",
+                    data: data.partnerDetails.palmImage.replace(/^data:image\/\w+;base64,/, "")
+                  }
+                }
+              ]
+            }
+          ],
+          generation_config: {
+            temperature: 0.4,
+            top_p: 0.95,
+            top_k: 40,
+            max_output_tokens: 4096, // Increased token limit for more detailed analysis
+          }
+        };
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
-      });
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const responseData = await response.json();
+        return responseData.candidates[0].content.parts[0].text;
+      } else {
+        palm1Base64 = dataOrPalm1;
+        
+        if (nameA && nameB) {
+          prompt += `Personalize the report for ${nameA} and ${nameB}. `;
+        }
+        
+        if (birthdateA && birthdateB) {
+          prompt += `Consider their birthdates (${nameA}: ${birthdateA}, ${nameB}: ${birthdateB}) for the Guna Milan analysis. `;
+        }
+        
+        prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles and Vedic astrology. Provide actionable recommendations based on the analysis. If birthdates are provided, use them for more accurate Guna Milan calculations.";
+        
+        const requestBody = {
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                },
+                {
+                  inline_data: {
+                    mime_type: "image/jpeg",
+                    data: palm1Base64.replace(/^data:image\/\w+;base64,/, "")
+                  }
+                },
+                {
+                  inline_data: {
+                    mime_type: "image/jpeg",
+                    data: palm2Base64!.replace(/^data:image\/\w+;base64,/, "")
+                  }
+                }
+              ]
+            }
+          ],
+          generation_config: {
+            temperature: 0.4,
+            top_p: 0.95,
+            top_k: 40,
+            max_output_tokens: 4096, // Increased token limit for more detailed analysis
+          }
+        };
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const responseData = await response.json();
+        return responseData.candidates[0].content.parts[0].text;
       }
-
-      const data = await response.json();
-      return data.candidates[0].content.parts[0].text;
     } catch (error) {
       console.error("Error analyzing compatibility with Gemini:", error);
       throw error;
