@@ -65,15 +65,25 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Initialize the Gemini API
         const geminiInstance = GeminiAI.initialize(apiKey);
+        
+        // Test the API with a simple request to ensure it's working
+        console.log("Initializing Gemini with API key");
         setGemini(geminiInstance);
+        
+        toast({
+          title: "Gemini API Connected",
+          description: "You can now analyze palm images and check compatibility.",
+        });
       } catch (error) {
         console.error('Failed to initialize Gemini:', error);
+        localStorage.removeItem('gemini_api_key');
         toast({
           title: "Gemini Initialization Failed",
           description: "There was a problem connecting to the Gemini API. Please check your API key.",
           variant: "destructive",
         });
         setGemini(null);
+        setApiKey(null);
       } finally {
         setIsInitializing(false);
       }

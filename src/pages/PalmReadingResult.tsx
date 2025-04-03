@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, BookOpen, Loader2 } from 'lucide-react';
@@ -13,6 +14,7 @@ const PalmReadingResult = () => {
   const [palmAnalysis, setPalmAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasAttemptedAnalysis, setHasAttemptedAnalysis] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { gemini, isLoading: isGeminiLoading } = useGemini();
   
   const analyzePalm = useCallback(async () => {
@@ -20,6 +22,7 @@ const PalmReadingResult = () => {
     
     if (!storedImage || !gemini) {
       console.error('Missing image or Gemini not initialized');
+      setError('Missing image or Gemini not initialized');
       return false;
     }
     
@@ -33,6 +36,7 @@ const PalmReadingResult = () => {
       return true;
     } catch (error) {
       console.error('Error analyzing palm:', error);
+      setError('Error analyzing palm. Please try again.');
       toast({
         title: "Analysis Error",
         description: "There was an error analyzing your palm image. Please try again.",
@@ -59,19 +63,7 @@ const PalmReadingResult = () => {
         setHasAttemptedAnalysis(true);
       } else if (storedImage && gemini && !isGeminiLoading && !hasAttemptedAnalysis) {
         console.log('No stored reading but we have image and gemini, analyzing');
-        const success = await analyzePalm();
-        if (!success && !hasAttemptedAnalysis) {
-          // If analysis failed and we haven't shown a message yet
-          toast({
-            title: "Analysis Failed",
-            description: "Failed to analyze your palm. Please try uploading again.",
-            variant: "destructive",
-          });
-          // Don't redirect immediately to give the user a chance to see the error
-          setTimeout(() => {
-            navigate('/palm-reading');
-          }, 3000);
-        }
+        await analyzePalm();
       } else if (!storedImage) {
         // If no image, redirect to upload page
         console.log('No palm image found, redirecting to upload page');
@@ -234,6 +226,7 @@ const PalmReadingResult = () => {
                 <button 
                   onClick={handleFullReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  disabled={!palmAnalysis}
                 >
                   <Download className="h-4 w-4" />
                   <span>Download Full Report</span>
@@ -241,6 +234,7 @@ const PalmReadingResult = () => {
                 <button 
                   onClick={handleBasicReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
+                  disabled={!palmAnalysis}
                 >
                   <Download className="h-4 w-4" />
                   <span>Download Basic Report</span>
@@ -255,6 +249,13 @@ const PalmReadingResult = () => {
             <div className="prose prose-lg max-w-none text-left">
               {palmAnalysis ? (
                 formatAnalysisContent(palmAnalysis)
+              ) : error ? (
+                <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
+                  <p className="text-red-600 font-medium mb-2">Error: {error}</p>
+                  <p className="text-muted-foreground">
+                    Unable to generate palm analysis. Please try uploading a clearer image.
+                  </p>
+                </div>
               ) : (
                 <p className="text-center text-muted-foreground italic">
                   {hasAttemptedAnalysis 
