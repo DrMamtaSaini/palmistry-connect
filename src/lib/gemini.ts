@@ -38,12 +38,61 @@ export class GeminiAI {
     try {
       const endpoint = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
       
+      const promptText = `
+Analyze this palm image in detail and provide a comprehensive reading based on palmistry principles. Focus on:
+
+1. Major Lines Analysis
+   - Heart Line: Emotional nature, relationships, love life
+   - Head Line: Intellectual capabilities, communication style, decision-making
+   - Life Line: Vitality, health, major life changes (NOT lifespan prediction)
+   - Fate Line: Career path, life direction, success indicators
+   - Sun Line: Fame, recognition, talents
+   - Marriage Lines: Romantic relationships, commitments
+
+2. Mounts Analysis
+   - Venus Mount (thumb base): Love, passion, vitality
+   - Jupiter Mount (index finger): Ambition, leadership, confidence
+   - Saturn Mount (middle finger): Responsibility, wisdom, fate
+   - Apollo/Sun Mount (ring finger): Creativity, success, recognition
+   - Mercury Mount (little finger): Communication, business acumen
+   - Moon Mount (opposite thumb): Imagination, intuition, creativity
+   - Mars Mounts: Energy, courage, determination
+
+3. Fingers Analysis
+   - Length, shape, flexibility
+   - Special markings or features
+
+4. Overall Hand Analysis
+   - Shape (Earth, Air, Fire, Water)
+   - Size and proportions
+   - Skin texture and color
+   - Flexibility
+
+5. Special Markings
+   - Star, cross, triangle, square, island, trident markings and their meanings
+
+6. Personal Characteristics
+   - Strengths and talents
+   - Potential challenges
+   - Relationship tendencies
+   - Career aptitudes
+
+7. Timeline Predictions
+   - Potential significant events or changes
+   - Past influences still affecting present
+   - Future opportunities and challenges
+
+Format the response as a professional palm reading report with clear section headings. Focus on providing detailed, specific, and personalized insights rather than vague or general statements. Mention specific features visible in the image.
+
+IMPORTANT: If certain lines or features are not visible in this image, please make your best assessment based on what IS visible, rather than stating you cannot see them.
+`;
+      
       const requestBody = {
         contents: [
           {
             parts: [
               {
-                text: "Analyze this palm image and provide insights about the person's character, career potential, relationships, and future prospects based on palmistry principles. Focus on the major lines (heart, head, life, fate) and any special markings."
+                text: promptText
               },
               {
                 inline_data: {
@@ -55,10 +104,10 @@ export class GeminiAI {
           }
         ],
         generation_config: {
-          temperature: 0.4,
+          temperature: 0.7,
           top_p: 0.95,
           top_k: 40,
-          max_output_tokens: 1024,
+          max_output_tokens: 4096,
         }
       };
 
@@ -109,6 +158,15 @@ export class GeminiAI {
       prompt += "9. Relationship Strengths\n";
       prompt += "10. Relationship Challenges\n";
       prompt += "11. Personalized Advice for Improving Compatibility\n\n";
+      prompt += "IMPORTANT: Each palm needs to be analyzed thoroughly. If some lines are not clearly visible, use the information that IS visible to make your best assessment.\n\n";
+      prompt += "For the Guna Milan analysis, you MUST use the provided birth details. This is essential for an accurate Vedic compatibility assessment.\n\n";
+      prompt += "For palm analysis, look carefully for:\n";
+      prompt += "- The shape and length of heart lines to determine emotional compatibility\n";
+      prompt += "- Head line patterns to assess mental and communication compatibility\n";
+      prompt += "- Life and fate lines to evaluate life path alignment\n";
+      prompt += "- Marriage lines for commitment potential\n";
+      prompt += "- Venus mount development for romantic compatibility\n";
+      prompt += "Format the report in a detailed, professional manner with clear sections and specific insights for each area.\n\n";
       
       if (typeof dataOrPalm1 === 'object') {
         const data = dataOrPalm1;
@@ -145,6 +203,7 @@ export class GeminiAI {
         prompt += "4. Compare the Venus mounts (base of thumb) between partners\n";
         prompt += "5. Provide a complete Guna Milan analysis using the birth details\n";
         prompt += "6. Ensure you produce a detailed report even if some lines are not immediately obvious\n";
+        prompt += "7. The birth details provided MUST be used for the Guna Milan analysis - this is absolutely essential\n";
         
         const requestBody = {
           contents: [
@@ -169,7 +228,7 @@ export class GeminiAI {
             }
           ],
           generation_config: {
-            temperature: 0.4,
+            temperature: 0.7,
             top_p: 0.95,
             top_k: 40,
             max_output_tokens: 4096, // Increased token limit for more detailed analysis
@@ -202,6 +261,7 @@ export class GeminiAI {
           // Emphasize that we have birth details and they should be used
           prompt += `IMPORTANT: Use the provided birth details for accurate Guna Milan analysis: `;
           prompt += `${nameA}'s birthdate: ${birthdateA}, ${nameB}'s birthdate: ${birthdateB}. `;
+          prompt += `These birth details MUST be used for the Guna Milan analysis - this is absolutely essential. `;
         }
         
         prompt += "\n\nImportant guidelines for palm analysis:\n";
@@ -211,6 +271,7 @@ export class GeminiAI {
         prompt += "4. Compare the Venus mounts (base of thumb) between partners\n";
         prompt += "5. Provide a complete Guna Milan analysis using the birth details\n";
         prompt += "6. Ensure you produce a detailed report even if some lines are not immediately obvious\n";
+        prompt += "7. The birth details provided MUST be used for the Guna Milan analysis\n";
         
         prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles and Vedic astrology. Provide actionable recommendations based on the analysis. If birthdates are provided, use them for more accurate Guna Milan calculations.";
         
@@ -237,7 +298,7 @@ export class GeminiAI {
             }
           ],
           generation_config: {
-            temperature: 0.4,
+            temperature: 0.7,
             top_p: 0.95,
             top_k: 40,
             max_output_tokens: 4096, // Increased token limit for more detailed analysis

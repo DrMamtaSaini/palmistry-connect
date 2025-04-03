@@ -8,13 +8,15 @@ interface GeminiContextType {
   setApiKey: (key: string) => void;
   gemini: GeminiAI | null;
   isConfigured: boolean;
+  isLoading: boolean;
 }
 
 const GeminiContext = createContext<GeminiContextType>({
   apiKey: null,
   setApiKey: () => {},
   gemini: null,
-  isConfigured: false
+  isConfigured: false,
+  isLoading: false
 });
 
 export const useGemini = () => useContext(GeminiContext);
@@ -22,6 +24,7 @@ export const useGemini = () => useContext(GeminiContext);
 export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
   const [apiKey, setApiKey] = React.useState<string | null>(null);
   const [gemini, setGemini] = React.useState<GeminiAI | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
   
   React.useEffect(() => {
     // Try to load the API key from localStorage
@@ -29,6 +32,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
     if (savedApiKey) {
       setApiKey(savedApiKey);
     }
+    setIsLoading(false);
   }, []);
   
   React.useEffect(() => {
@@ -53,7 +57,8 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
     apiKey,
     setApiKey,
     gemini,
-    isConfigured: !!gemini
+    isConfigured: !!gemini,
+    isLoading
   };
   
   return (
