@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, BookOpen, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
@@ -12,52 +11,86 @@ import { useGemini } from '@/contexts/GeminiContext';
 const PalmReadingResult = () => {
   const navigate = useNavigate();
   const [palmAnalysis, setPalmAnalysis] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { gemini } = useGemini();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [hasAttemptedAnalysis, setHasAttemptedAnalysis] = useState(false);
+  const { gemini, isLoading: isGeminiLoading } = useGemini();
+  
+  const analyzePalm = useCallback(async () => {
+    const storedImage = sessionStorage.getItem('palmImage');
+    
+    if (!storedImage || !gemini) {
+      console.error('Missing image or Gemini not initialized');
+      return false;
+    }
+    
+    setIsAnalyzing(true);
+    try {
+      console.log('Starting palm analysis...');
+      const result = await gemini.analyzePalm(storedImage);
+      console.log('Analysis complete, setting result');
+      setPalmAnalysis(result);
+      sessionStorage.setItem('palmReadingResult', result);
+      return true;
+    } catch (error) {
+      console.error('Error analyzing palm:', error);
+      toast({
+        title: "Analysis Error",
+        description: "There was an error analyzing your palm image. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsAnalyzing(false);
+      setHasAttemptedAnalysis(true);
+    }
+  }, [gemini]);
   
   useEffect(() => {
     const cleanup = revealAnimation();
     
-    // Get stored palm reading from sessionStorage
-    const storedReading = sessionStorage.getItem('palmReadingResult');
-    const storedImage = sessionStorage.getItem('palmImage');
-    
-    if (storedReading) {
-      setPalmAnalysis(storedReading);
-      setIsLoading(false);
-    } else if (storedImage && gemini) {
-      // If no stored reading but we have the image and gemini is available, analyze it
-      const analyzePalm = async () => {
-        try {
-          const result = await gemini.analyzePalm(storedImage);
-          setPalmAnalysis(result);
-          sessionStorage.setItem('palmReadingResult', result);
-        } catch (error) {
-          console.error('Error analyzing palm:', error);
+    const loadData = async () => {
+      // Get stored palm reading from sessionStorage
+      const storedReading = sessionStorage.getItem('palmReadingResult');
+      const storedImage = sessionStorage.getItem('palmImage');
+      
+      if (storedReading) {
+        console.log('Found stored reading, using it');
+        setPalmAnalysis(storedReading);
+        setHasAttemptedAnalysis(true);
+      } else if (storedImage && gemini && !isGeminiLoading && !hasAttemptedAnalysis) {
+        console.log('No stored reading but we have image and gemini, analyzing');
+        const success = await analyzePalm();
+        if (!success && !hasAttemptedAnalysis) {
+          // If analysis failed and we haven't shown a message yet
           toast({
-            title: "Analysis Error",
-            description: "There was an error analyzing your palm image. Please try again.",
+            title: "Analysis Failed",
+            description: "Failed to analyze your palm. Please try uploading again.",
             variant: "destructive",
           });
-        } finally {
-          setIsLoading(false);
+          // Don't redirect immediately to give the user a chance to see the error
+          setTimeout(() => {
+            navigate('/palm-reading');
+          }, 3000);
         }
-      };
-      
-      analyzePalm();
-    } else {
-      // If neither stored reading nor image, redirect to upload page
-      toast({
-        title: "No Palm Image",
-        description: "Please upload a palm image for analysis first.",
-      });
-      navigate('/palm-reading');
+      } else if (!storedImage) {
+        // If no image, redirect to upload page
+        console.log('No palm image found, redirecting to upload page');
+        toast({
+          title: "No Palm Image",
+          description: "Please upload a palm image for analysis first.",
+        });
+        navigate('/palm-reading');
+      }
+    };
+    
+    if (!isGeminiLoading) {
+      loadData();
     }
     
     return () => {
       cleanup();
     };
-  }, [navigate, gemini]);
+  }, [navigate, gemini, isGeminiLoading, analyzePalm, hasAttemptedAnalysis]);
 
   const formatAnalysisContent = (content: string) => {
     // Convert markdown-style sections into formatted HTML
@@ -153,6 +186,8 @@ const PalmReadingResult = () => {
     }
   };
   
+  const isLoading = isGeminiLoading || isAnalyzing;
+  
   if (isLoading) {
     return (
       <div className="min-h-screen">
@@ -193,9 +228,9 @@ const PalmReadingResult = () => {
           </div>
           
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
               <h2 className="heading-md">Complete Analysis</h2>
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <button 
                   onClick={handleFullReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -222,7 +257,9 @@ const PalmReadingResult = () => {
                 formatAnalysisContent(palmAnalysis)
               ) : (
                 <p className="text-center text-muted-foreground italic">
-                  No palm analysis available. Please upload a palm image for analysis.
+                  {hasAttemptedAnalysis 
+                    ? "Analysis could not be generated. Please try uploading a clearer image of your palm." 
+                    : "No palm analysis available. Please upload a palm image for analysis."}
                 </p>
               )}
             </div>

@@ -25,26 +25,45 @@ const GeminiContext = createContext<GeminiContextType>({
 export const useGemini = () => useContext(GeminiContext);
 
 export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
-  const [apiKey, setApiKey] = React.useState<string | null>(null);
-  const [gemini, setGemini] = React.useState<GeminiAI | null>(null);
-  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [gemini, setGemini] = useState<GeminiAI | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isInitializing, setIsInitializing] = useState<boolean>(false);
   
-  React.useEffect(() => {
-    // Try to load the API key from localStorage
-    const savedApiKey = localStorage.getItem('gemini_api_key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-    }
-    setIsLoading(false);
+  // Load API key from localStorage on first render
+  useEffect(() => {
+    const loadApiKey = async () => {
+      setIsLoading(true);
+      try {
+        const savedApiKey = localStorage.getItem('gemini_api_key');
+        if (savedApiKey) {
+          setApiKey(savedApiKey);
+        }
+      } catch (error) {
+        console.error('Error loading API key:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadApiKey();
   }, []);
   
-  React.useEffect(() => {
-    if (apiKey) {
-      // Save the API key to localStorage
-      localStorage.setItem('gemini_api_key', apiKey);
+  // Initialize Gemini when API key changes
+  useEffect(() => {
+    if (!apiKey) {
+      setGemini(null);
+      return;
+    }
+    
+    const initializeGemini = async () => {
+      setIsInitializing(true);
       
-      // Initialize the Gemini API
       try {
+        // Save the API key to localStorage
+        localStorage.setItem('gemini_api_key', apiKey);
+        
+        // Initialize the Gemini API
         const geminiInstance = GeminiAI.initialize(apiKey);
         setGemini(geminiInstance);
       } catch (error) {
@@ -55,10 +74,12 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
         setGemini(null);
+      } finally {
+        setIsInitializing(false);
       }
-    } else {
-      setGemini(null);
-    }
+    };
+    
+    initializeGemini();
   }, [apiKey]);
   
   const clearApiKey = () => {
@@ -79,7 +100,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
     setApiKey,
     gemini,
     isConfigured: !!gemini,
-    isLoading,
+    isLoading: isLoading || isInitializing,
     clearApiKey
   };
   
