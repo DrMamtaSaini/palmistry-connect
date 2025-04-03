@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 import GeminiAI from '@/lib/gemini';
+import { toast } from '@/hooks/use-toast';
 
 interface GeminiContextType {
   apiKey: string | null;
@@ -9,6 +10,7 @@ interface GeminiContextType {
   gemini: GeminiAI | null;
   isConfigured: boolean;
   isLoading: boolean;
+  clearApiKey: () => void;
 }
 
 const GeminiContext = createContext<GeminiContextType>({
@@ -16,7 +18,8 @@ const GeminiContext = createContext<GeminiContextType>({
   setApiKey: () => {},
   gemini: null,
   isConfigured: false,
-  isLoading: false
+  isLoading: false,
+  clearApiKey: () => {}
 });
 
 export const useGemini = () => useContext(GeminiContext);
@@ -46,6 +49,11 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
         setGemini(geminiInstance);
       } catch (error) {
         console.error('Failed to initialize Gemini:', error);
+        toast({
+          title: "Gemini Initialization Failed",
+          description: "There was a problem connecting to the Gemini API. Please check your API key.",
+          variant: "destructive",
+        });
         setGemini(null);
       }
     } else {
@@ -53,12 +61,26 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [apiKey]);
   
+  const clearApiKey = () => {
+    localStorage.removeItem('gemini_api_key');
+    sessionStorage.removeItem('palmReadingResult');
+    sessionStorage.removeItem('palmImage');
+    sessionStorage.removeItem('compatibilityResult');
+    setApiKey(null);
+    setGemini(null);
+    toast({
+      title: "API Key Removed",
+      description: "Your Gemini API key has been removed and all stored results cleared.",
+    });
+  };
+  
   const contextValue = {
     apiKey,
     setApiKey,
     gemini,
     isConfigured: !!gemini,
-    isLoading
+    isLoading,
+    clearApiKey
   };
   
   return (
