@@ -1,3 +1,4 @@
+
 // This is a utility file for Gemini AI integration
 // The actual API key should be provided by the user and stored securely
 
@@ -115,17 +116,35 @@ export class GeminiAI {
         
         prompt += `Personalize the report for ${data.yourDetails.name} and ${data.partnerDetails.name}. `;
         
-        prompt += `Consider their birthdates (${data.yourDetails.name}: ${data.yourDetails.birthDate}, ${data.partnerDetails.name}: ${data.partnerDetails.birthDate}) `;
+        // Emphasize that we have birth details and they should be used
+        prompt += `IMPORTANT: Use the provided birth details for accurate Guna Milan analysis: `;
+        prompt += `${data.yourDetails.name}'s birthdate: ${data.yourDetails.birthDate}, `;
         
-        if (data.yourDetails.birthTime && data.partnerDetails.birthTime) {
-          prompt += `and birth times (${data.yourDetails.name}: ${data.yourDetails.birthTime}, ${data.partnerDetails.name}: ${data.partnerDetails.birthTime}) `;
+        if (data.yourDetails.birthTime) {
+          prompt += `birth time: ${data.yourDetails.birthTime}, `;
         }
         
-        if (data.yourDetails.birthPlace && data.partnerDetails.birthPlace) {
-          prompt += `and birth places (${data.yourDetails.name}: ${data.yourDetails.birthPlace}, ${data.partnerDetails.name}: ${data.partnerDetails.birthPlace}) `;
+        if (data.yourDetails.birthPlace) {
+          prompt += `birth place: ${data.yourDetails.birthPlace}. `;
         }
         
-        prompt += "for the Guna Milan analysis. ";
+        prompt += `${data.partnerDetails.name}'s birthdate: ${data.partnerDetails.birthDate}, `;
+        
+        if (data.partnerDetails.birthTime) {
+          prompt += `birth time: ${data.partnerDetails.birthTime}, `;
+        }
+        
+        if (data.partnerDetails.birthPlace) {
+          prompt += `birth place: ${data.partnerDetails.birthPlace}. `;
+        }
+        
+        prompt += "\n\nImportant guidelines for palm analysis:\n";
+        prompt += "1. Identify and analyze all major lines even if they appear faint\n";
+        prompt += "2. Look for head line, heart line, life line, fate line, and marriage lines\n";
+        prompt += "3. Analyze finger length ratios and palm shape for elemental analysis\n";
+        prompt += "4. Compare the Venus mounts (base of thumb) between partners\n";
+        prompt += "5. Provide a complete Guna Milan analysis using the birth details\n";
+        prompt += "6. Ensure you produce a detailed report even if some lines are not immediately obvious\n";
         
         const requestBody = {
           contents: [
@@ -180,8 +199,18 @@ export class GeminiAI {
         }
         
         if (birthdateA && birthdateB) {
-          prompt += `Consider their birthdates (${nameA}: ${birthdateA}, ${nameB}: ${birthdateB}) for the Guna Milan analysis. `;
+          // Emphasize that we have birth details and they should be used
+          prompt += `IMPORTANT: Use the provided birth details for accurate Guna Milan analysis: `;
+          prompt += `${nameA}'s birthdate: ${birthdateA}, ${nameB}'s birthdate: ${birthdateB}. `;
         }
+        
+        prompt += "\n\nImportant guidelines for palm analysis:\n";
+        prompt += "1. Identify and analyze all major lines even if they appear faint\n";
+        prompt += "2. Look for head line, heart line, life line, fate line, and marriage lines\n";
+        prompt += "3. Analyze finger length ratios and palm shape for elemental analysis\n";
+        prompt += "4. Compare the Venus mounts (base of thumb) between partners\n";
+        prompt += "5. Provide a complete Guna Milan analysis using the birth details\n";
+        prompt += "6. Ensure you produce a detailed report even if some lines are not immediately obvious\n";
         
         prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles and Vedic astrology. Provide actionable recommendations based on the analysis. If birthdates are provided, use them for more accurate Guna Milan calculations.";
         

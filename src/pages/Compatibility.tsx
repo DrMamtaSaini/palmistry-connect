@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Users, Upload, AlertCircle, Camera } from 'lucide-react';
@@ -64,14 +63,11 @@ const Compatibility = () => {
   }, []);
   
   useEffect(() => {
-    // Calculate completion progress
     let progress = 0;
     
-    // Required fields: 2 names, 2 birthdates, 2 images
     const requiredFields = 6;
     let completedFields = 0;
     
-    // Check required fields
     if (form.getValues('yourDetails.name')) completedFields++;
     if (form.getValues('yourDetails.birthDate')) completedFields++;
     if (form.getValues('partnerDetails.name')) completedFields++;
@@ -79,7 +75,6 @@ const Compatibility = () => {
     if (yourPalmImage) completedFields++;
     if (partnerPalmImage) completedFields++;
     
-    // Optional fields: 2 birthTimes, 2 birthPlaces (these add a small bonus)
     const optionalFields = 4;
     let optionalCompleted = 0;
     
@@ -88,10 +83,7 @@ const Compatibility = () => {
     if (form.getValues('partnerDetails.birthTime')) optionalCompleted++;
     if (form.getValues('partnerDetails.birthPlace')) optionalCompleted++;
     
-    // Calculate base progress from required fields
     progress = (completedFields / requiredFields) * 85;
-    
-    // Add bonus from optional fields
     progress += (optionalCompleted / optionalFields) * 15;
     
     setCompletionProgress(Math.round(progress));
@@ -130,11 +122,9 @@ const Compatibility = () => {
     setError(null);
     
     try {
-      // Convert images to base64
       const yourPalmBase64 = await fileToBase64(yourPalmImage);
       const partnerPalmBase64 = await fileToBase64(partnerPalmImage);
       
-      // Store birth details in sessionStorage for the results page
       sessionStorage.setItem('yourName', values.yourDetails.name);
       sessionStorage.setItem('partnerName', values.partnerDetails.name);
       sessionStorage.setItem('yourBirthdate', values.yourDetails.birthDate);
@@ -144,7 +134,6 @@ const Compatibility = () => {
       sessionStorage.setItem('yourBirthPlace', values.yourDetails.birthPlace || '');
       sessionStorage.setItem('partnerBirthPlace', values.partnerDetails.birthPlace || '');
       
-      // Create a compatibility data object to pass to Gemini
       const compatibilityData = {
         yourDetails: {
           name: values.yourDetails.name,
@@ -162,10 +151,8 @@ const Compatibility = () => {
         }
       };
       
-      // Analyze compatibility using Gemini with the data object
       const result = await gemini.checkCompatibility(compatibilityData);
       
-      // Store result and navigate to results page
       sessionStorage.setItem('compatibilityResult', result);
       
       toast({
@@ -173,7 +160,6 @@ const Compatibility = () => {
         description: "Compatibility analysis completed successfully!",
       });
       
-      // Navigate to results page
       navigate('/compatibility-result');
     } catch (error) {
       console.error('Error during compatibility analysis:', error);
@@ -188,7 +174,6 @@ const Compatibility = () => {
     }
   };
   
-  // Helper function to convert File to base64
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -246,7 +231,6 @@ const Compatibility = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
-                  {/* Your Information */}
                   <div className="space-y-6">
                     <h3 className="text-xl font-semibold mb-4 text-center">Your Information</h3>
                     
@@ -322,15 +306,16 @@ const Compatibility = () => {
                         <p className="font-semibold text-primary">For best results:</p>
                         <ul className="list-disc pl-5 space-y-1 mt-1">
                           <li>Use high-resolution images in good lighting</li>
+                          <li>Take 3 palm images if possible (front, slight angle left, slight angle right)</li>
+                          <li>Ensure your palm is fully extended and flat</li>
                           <li>Capture your dominant hand (usually right)</li>
-                          <li>Ensure all lines and mounts are clearly visible</li>
-                          <li>Keep your palm flat and fully extended</li>
+                          <li>Make sure all lines (heart, head, life, fate) are clearly visible</li>
+                          <li>Avoid shadows across your palm</li>
                         </ul>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Partner's Information */}
                   <div className="space-y-6">
                     <h3 className="text-xl font-semibold mb-4 text-center">Partner's Information</h3>
                     
@@ -406,9 +391,11 @@ const Compatibility = () => {
                         <p className="font-semibold text-primary">For best results:</p>
                         <ul className="list-disc pl-5 space-y-1 mt-1">
                           <li>Use high-resolution images in good lighting</li>
+                          <li>Take 3 palm images if possible (front, slight angle left, slight angle right)</li>
+                          <li>Ensure the palm is fully extended and flat</li>
                           <li>Capture the dominant hand (usually right)</li>
-                          <li>Ensure all lines and mounts are clearly visible</li>
-                          <li>Keep the palm flat and fully extended</li>
+                          <li>Make sure all lines (heart, head, life, fate) are clearly visible</li>
+                          <li>Avoid shadows across the palm</li>
                         </ul>
                       </div>
                     </div>
