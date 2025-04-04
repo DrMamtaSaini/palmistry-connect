@@ -40,7 +40,7 @@ const PalmReadingResult = () => {
       
       // Make sure the image data is in the correct format for the API
       const result = await gemini.analyzePalm(storedImage);
-      console.log('Received analysis result:', result ? 'Success' : 'Empty result');
+      console.log('Analysis result received:', result ? 'Success' : 'Empty result');
       
       if (!result || typeof result !== 'string' || result.trim() === '') {
         throw new Error('Empty or invalid result from Gemini API');
@@ -49,13 +49,16 @@ const PalmReadingResult = () => {
       console.log('Analysis complete, setting result');
       setPalmAnalysis(result);
       sessionStorage.setItem('palmReadingResult', result);
+      
+      // Ensure we clear any previous errors
+      setError(null);
       return true;
     } catch (error) {
       console.error('Error analyzing palm:', error);
       setError(`Error analyzing palm: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast({
         title: "Analysis Error",
-        description: "There was an error analyzing your palm image. Please try again.",
+        description: "There was an error analyzing your palm image. Please try again with a clearer image.",
         variant: "destructive",
       });
       return false;
@@ -70,17 +73,25 @@ const PalmReadingResult = () => {
     
     const loadData = async () => {
       try {
+        // Clear any previous errors when loading data
+        setError(null);
+        
         // Get stored palm reading from sessionStorage
         const storedReading = sessionStorage.getItem('palmReadingResult');
         const storedImage = sessionStorage.getItem('palmImage');
         
-        if (storedReading) {
+        if (storedReading && storedReading.length > 100) {
+          // Only use stored reading if it looks like a real analysis (not dummy data)
           console.log('Found stored reading, using it');
           setPalmAnalysis(storedReading);
           setHasAttemptedAnalysis(true);
         } else if (storedImage && gemini && !isGeminiLoading) {
-          console.log('No stored reading but we have image and gemini, analyzing now...');
-          setError(null); // Clear any previous errors
+          console.log('No valid stored reading but we have image and gemini, analyzing now...');
+          // Clear any previously stored reading if it exists but is not valid
+          if (storedReading) {
+            console.log('Clearing invalid stored reading');
+            sessionStorage.removeItem('palmReadingResult');
+          }
           await analyzePalm();
         } else if (!storedImage) {
           // If no image, redirect to upload page
@@ -204,6 +215,7 @@ const PalmReadingResult = () => {
     // Clear previous results and errors
     setPalmAnalysis(null);
     setError(null);
+    sessionStorage.removeItem('palmReadingResult');
     
     // Try analysis again
     await analyzePalm();

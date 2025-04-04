@@ -78,12 +78,16 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Initialize the Gemini API with the specific model for palm reading
         console.log('Initializing Gemini with API key');
+        console.log('Initializing Gemini with model: gemini-1.5-flash');
         const geminiInstance = GeminiAI.initialize(apiKey, "gemini-1.5-flash");
         
         // Verify that the geminiInstance has the required methods
         if (!geminiInstance.analyzePalm || typeof geminiInstance.analyzePalm !== 'function') {
           throw new Error('Gemini instance is missing required methods');
         }
+        
+        // Test if the Gemini instance is working properly
+        // Note: We won't do a full API call here to avoid unnecessary usage
         
         setGemini(geminiInstance);
         

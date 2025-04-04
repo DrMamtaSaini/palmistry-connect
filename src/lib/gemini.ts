@@ -1,398 +1,226 @@
 
-// This is a utility file for Gemini AI integration
-// The actual API key should be provided by the user and stored securely
-
-interface GeminiConfig {
-  apiKey: string;
-  modelName: string;
-}
-
-interface CompatibilityData {
-  yourDetails: {
-    name: string;
-    birthDate: string;
-    birthTime?: string;
-    birthPlace?: string;
-    palmImage: string;
-  };
-  partnerDetails: {
-    name: string;
-    birthDate: string;
-    birthTime?: string;
-    birthPlace?: string;
-    palmImage: string;
-  };
-}
-
-export class GeminiAI {
+/**
+ * GeminiAI - A class for interacting with the Gemini API for AI-powered palm reading
+ */
+class GeminiAI {
   private apiKey: string;
   private modelName: string;
-  private baseUrl: string = "https://generativelanguage.googleapis.com/v1beta";
 
-  constructor(config: GeminiConfig) {
-    this.apiKey = config.apiKey;
-    this.modelName = config.modelName || "gemini-1.5-flash";
+  /**
+   * Private constructor - use the static initialize method to create instances
+   */
+  private constructor(apiKey: string, modelName: string = "gemini-1.5-flash") {
+    this.apiKey = apiKey;
+    this.modelName = modelName;
+    console.log('Initializing Gemini with model:', modelName);
   }
 
-  async analyzePalm(imageBase64: string): Promise<string> {
+  /**
+   * Creates a new instance of the GeminiAI class
+   */
+  static initialize(apiKey: string, modelName: string = "gemini-1.5-flash"): GeminiAI {
+    return new GeminiAI(apiKey, modelName);
+  }
+
+  /**
+   * Helper function to format an image into the format expected by the Gemini API
+   */
+  private formatImageForGemini(imageData: string): any {
+    // Make sure the image data is correctly formatted
+    // It should be a data URL starting with data:image/...
+    if (!imageData.startsWith('data:image/')) {
+      throw new Error('Invalid image format. Expected a data URL.');
+    }
+
+    // Format the image for the Gemini API
+    const base64Image = imageData.split(',')[1];
+    
+    return {
+      inlineData: {
+        data: base64Image,
+        mimeType: imageData.split(';')[0].split(':')[1],
+      },
+    };
+  }
+
+  /**
+   * Analyze a palm image using the Gemini API
+   */
+  async analyzePalm(imageData: string): Promise<string> {
     try {
-      console.log('Starting palm analysis with Gemini API');
-      const endpoint = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+      console.log('Analyzing palm with Gemini API...');
       
-      // Ensure image is properly formatted for the API
-      let formattedImage = imageBase64;
-      if (!imageBase64.startsWith('data:image')) {
-        console.log('Image is not properly formatted, adding data URI prefix');
-        formattedImage = `data:image/jpeg;base64,${imageBase64}`;
-      }
+      // Format the image for the Gemini API
+      const formattedImage = this.formatImageForGemini(imageData);
       
-      const promptText = `
-Analyze this palm image in detail and provide a comprehensive reading based on palmistry principles. Focus on:
-
-1. Major Lines Analysis
-   - Heart Line: Emotional nature, relationships, love life
-   - Head Line: Intellectual capabilities, communication style, decision-making
-   - Life Line: Vitality, health, major life changes (NOT lifespan prediction)
-   - Fate Line: Career path, life direction, success indicators
-   - Sun Line: Fame, recognition, talents
-   - Marriage Lines: Romantic relationships, commitments
-
-2. Mounts Analysis
-   - Venus Mount (thumb base): Love, passion, vitality
-   - Jupiter Mount (index finger): Ambition, leadership, confidence
-   - Saturn Mount (middle finger): Responsibility, wisdom, fate
-   - Apollo/Sun Mount (ring finger): Creativity, success, recognition
-   - Mercury Mount (little finger): Communication, business acumen
-   - Moon Mount (opposite thumb): Imagination, intuition, creativity
-   - Mars Mounts: Energy, courage, determination
-
-3. Fingers Analysis
-   - Length, shape, flexibility
-   - Special markings or features
-
-4. Overall Hand Analysis
-   - Shape (Earth, Air, Fire, Water)
-   - Size and proportions
-   - Skin texture and color
-   - Flexibility
-
-5. Special Markings
-   - Star, cross, triangle, square, island, trident markings and their meanings
-
-6. Personal Characteristics
-   - Strengths and talents
-   - Potential challenges
-   - Relationship tendencies
-   - Career aptitudes
-
-7. Timeline Predictions
-   - Potential significant events or changes
-   - Past influences still affecting present
-   - Future opportunities and challenges
-
-Format the response as a detailed professional palm reading report with clear section headings. Focus on providing detailed, specific, and personalized insights rather than vague or general statements. Mention specific features visible in the image.
-
-IMPORTANT: If certain lines or features are not visible in this image, please make your best assessment based on what IS visible, rather than stating you cannot see them.
-
-Return a proper and complete palmistry report in a clear format with sections. The report should be comprehensive and at least 10-15 paragraphs long.
-`;
+      // Create the API request URL
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
       
-      // Make sure the image is properly formatted for the API
-      const imageData = formattedImage.replace(/^data:image\/\w+;base64,/, "");
-      
-      const requestBody = {
+      // Create the API request body for palm reading
+      const body = {
         contents: [
           {
             parts: [
               {
-                text: promptText
+                text: "You are a professional palm reader with extensive knowledge of palmistry. Analyze this palm image and provide a detailed palm reading report that includes:\n" +
+                      "1. Analysis of the major lines (heart, head, life, fate)\n" +
+                      "2. Personality traits based on palm shape and finger length\n" +
+                      "3. Career and financial indications\n" +
+                      "4. Relationship/love life insights\n" +
+                      "5. Health indications from the palm\n" +
+                      "6. Key strengths and potential challenges\n\n" +
+                      "Format the report professionally with section headings and maintain a thoughtful, insightful tone. DO NOT mention that you're an AI - stay in character as an experienced palm reader. Provide specific details based on what you can observe in the image."
               },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: imageData
-                }
-              }
+              formattedImage
             ]
           }
         ],
-        generation_config: {
+        generationConfig: {
           temperature: 0.7,
-          top_p: 0.95,
-          top_k: 40,
-          max_output_tokens: 4096,
+          maxOutputTokens: 4000,
         }
       };
 
+      // Make the API request
       console.log('Sending request to Gemini API...');
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      // Parse the response
+      const result = await response.json();
+      console.log('Received response from Gemini API');
       
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-          let errorMessage = `API returned status ${response.status}`;
-          try {
-            const errorText = await response.text();
-            console.error('Response not OK:', response.status, errorText);
-            const errorData = JSON.parse(errorText);
-            errorMessage = errorData.error?.message || errorMessage;
-          } catch (e) {
-            console.error('Failed to parse error response', e);
-          }
-          throw new Error(`Gemini API Error: ${errorMessage}`);
-        }
-
-        const data = await response.json();
-        console.log('Received response from Gemini API:', data ? 'Data received' : 'No data');
-        
-        if (!data) {
-          throw new Error('Empty response from Gemini API');
-        }
-        
-        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-          console.error('Unexpected API response format - no candidates:', data);
-          throw new Error('Invalid response format from Gemini API: No candidates found');
-        }
-        
-        if (!data.candidates[0].content.parts || !data.candidates[0].content.parts[0] || !data.candidates[0].content.parts[0].text) {
-          console.error('Unexpected API response format - no text in parts:', data.candidates[0]);
-          throw new Error('Invalid response format from Gemini API: No text content found');
-        }
-        
-        const resultText = data.candidates[0].content.parts[0].text;
-        console.log('Successfully extracted text result from API response');
-        
-        // Validate that we got a real analysis (not just an error message or empty response)
-        if (resultText.length < 500) {
-          console.error('Response text suspiciously short:', resultText);
-          throw new Error('The generated palm reading is too short to be valid. Please try with a clearer palm image.');
-        }
-        
-        return resultText;
-      } catch (fetchError) {
-        console.error('Fetch error during Gemini API call:', fetchError);
-        throw fetchError;
+      // Check if the response contains an error
+      if (result.error) {
+        console.error('Error from Gemini API:', result.error);
+        throw new Error(result.error.message || 'Unknown error from Gemini API');
       }
+      
+      // Validate the response structure
+      if (!result.candidates || 
+          !result.candidates[0] || 
+          !result.candidates[0].content || 
+          !result.candidates[0].content.parts || 
+          !result.candidates[0].content.parts[0] || 
+          !result.candidates[0].content.parts[0].text) {
+        console.error('Invalid response structure from Gemini API:', result);
+        throw new Error('The response from Gemini API was not in the expected format');
+      }
+      
+      // Get the text content from the response
+      const analysisText = result.candidates[0].content.parts[0].text;
+      
+      if (!analysisText || analysisText.trim() === '') {
+        throw new Error('Empty response from Gemini API');
+      }
+      
+      console.log('Successfully extracted palm reading from Gemini response');
+      return analysisText;
     } catch (error) {
-      console.error("Error analyzing palm with Gemini:", error);
+      console.error('Error in analyzePalm:', error);
       throw error;
     }
   }
 
-  async checkCompatibility(
-    dataOrPalm1: string | CompatibilityData,
-    palm2Base64?: string,
-    nameA?: string,
-    nameB?: string,
-    birthdateA?: string,
-    birthdateB?: string
-  ): Promise<string> {
+  /**
+   * Analyze compatibility between two people based on palm readings
+   */
+  async analyzeCompatibility(person1Image: string, person2Image: string, person1Name: string, person2Name: string): Promise<string> {
     try {
-      const endpoint = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+      console.log('Analyzing compatibility with Gemini API...');
       
-      let palm1Base64: string;
-      let prompt = "Analyze these two palm images and provide detailed compatibility insights between these people. Include the following sections:\n";
-      prompt += "1. Overall Compatibility (with percentage)\n";
-      prompt += "2. Guna Milan Analysis (Vedic Compatibility Score out of 36)\n";
-      prompt += "   - Include analysis of all eight Guna Milan factors: Varna, Vashya, Tara, Yoni, Maitri, Gana, Bhakoot, and Nadi\n";
-      prompt += "   - Provide individual scores for each factor and total score\n";
-      prompt += "3. Hand Shape & Element Matching (Fire, Water, Earth, Air)\n";
-      prompt += "4. Heart Line Analysis (Love & Emotional Compatibility)\n";
-      prompt += "5. Head Line Analysis (Communication & Understanding)\n";
-      prompt += "6. Fate Line Comparison (Life Goals & Stability)\n";
-      prompt += "7. Venus Mount Analysis (Romantic & Physical Attraction)\n";
-      prompt += "8. Marriage Line Assessment (Commitment & Long-Term Potential)\n";
-      prompt += "9. Relationship Strengths\n";
-      prompt += "10. Relationship Challenges\n";
-      prompt += "11. Personalized Advice for Improving Compatibility\n\n";
-      prompt += "IMPORTANT: Each palm needs to be analyzed thoroughly. If some lines are not clearly visible, use the information that IS visible to make your best assessment.\n\n";
-      prompt += "For the Guna Milan analysis, you MUST use the provided birth details. This is essential for an accurate Vedic compatibility assessment.\n\n";
-      prompt += "For palm analysis, look carefully for:\n";
-      prompt += "- The shape and length of heart lines to determine emotional compatibility\n";
-      prompt += "- Head line patterns to assess mental and communication compatibility\n";
-      prompt += "- Life and fate lines to evaluate life path alignment\n";
-      prompt += "- Marriage lines for commitment potential\n";
-      prompt += "- Venus mount development for romantic compatibility\n";
-      prompt += "Format the report in a detailed, professional manner with clear sections and specific insights for each area.\n\n";
+      // Format the images for the Gemini API
+      const formattedImage1 = this.formatImageForGemini(person1Image);
+      const formattedImage2 = this.formatImageForGemini(person2Image);
       
-      if (typeof dataOrPalm1 === 'object') {
-        const data = dataOrPalm1;
-        palm1Base64 = data.yourDetails.palmImage;
-        
-        prompt += `Personalize the report for ${data.yourDetails.name} and ${data.partnerDetails.name}. `;
-        
-        // Emphasize that we have birth details and they should be used
-        prompt += `IMPORTANT: Use the provided birth details for accurate Guna Milan analysis: `;
-        prompt += `${data.yourDetails.name}'s birthdate: ${data.yourDetails.birthDate}, `;
-        
-        if (data.yourDetails.birthTime) {
-          prompt += `birth time: ${data.yourDetails.birthTime}, `;
-        }
-        
-        if (data.yourDetails.birthPlace) {
-          prompt += `birth place: ${data.yourDetails.birthPlace}. `;
-        }
-        
-        prompt += `${data.partnerDetails.name}'s birthdate: ${data.partnerDetails.birthDate}, `;
-        
-        if (data.partnerDetails.birthTime) {
-          prompt += `birth time: ${data.partnerDetails.birthTime}, `;
-        }
-        
-        if (data.partnerDetails.birthPlace) {
-          prompt += `birth place: ${data.partnerDetails.birthPlace}. `;
-        }
-        
-        prompt += "\n\nImportant guidelines for palm analysis:\n";
-        prompt += "1. Identify and analyze all major lines even if they appear faint\n";
-        prompt += "2. Look for head line, heart line, life line, fate line, and marriage lines\n";
-        prompt += "3. Analyze finger length ratios and palm shape for elemental analysis\n";
-        prompt += "4. Compare the Venus mounts (base of thumb) between partners\n";
-        prompt += "5. Provide a complete Guna Milan analysis using the birth details\n";
-        prompt += "6. Ensure you produce a detailed report even if some lines are not immediately obvious\n";
-        prompt += "7. The birth details provided MUST be used for the Guna Milan analysis - this is absolutely essential\n";
-        
-        const requestBody = {
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                },
-                {
-                  inline_data: {
-                    mime_type: "image/jpeg",
-                    data: palm1Base64.replace(/^data:image\/\w+;base64,/, "")
-                  }
-                },
-                {
-                  inline_data: {
-                    mime_type: "image/jpeg",
-                    data: data.partnerDetails.palmImage.replace(/^data:image\/\w+;base64,/, "")
-                  }
-                }
-              ]
-            }
-          ],
-          generation_config: {
-            temperature: 0.7,
-            top_p: 0.95,
-            top_k: 40,
-            max_output_tokens: 4096, // Increased token limit for more detailed analysis
+      // Create the API request URL
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+      
+      // Create the API request body for compatibility analysis
+      const body = {
+        contents: [
+          {
+            parts: [
+              {
+                text: `You are a professional palm reader with extensive knowledge of palmistry and relationship compatibility analysis.
+                I'll show you two palm images. The first palm belongs to ${person1Name} and the second palm belongs to ${person2Name}.
+                
+                Analyze these palm images and provide a detailed compatibility report that includes:
+                1. Overall compatibility score as a percentage
+                2. Emotional compatibility based on the heart lines
+                3. Intellectual compatibility based on the head lines
+                4. Communication style compatibility
+                5. Life path alignment based on fate lines
+                6. Strengths of the relationship
+                7. Potential challenges and how to overcome them
+                8. Compatibility in terms of career and finance
+                9. Long-term relationship prospects
+                
+                Format this as a detailed report with clear sections and insights. Make it comprehensive and professional.
+                DO NOT mention that you're an AI - stay in character as an experienced palm reader and compatibility expert. 
+                Provide specific details based on what you can observe in the images.`
+              },
+              formattedImage1,
+              {
+                text: `This is the palm of ${person2Name}:`
+              },
+              formattedImage2
+            ]
           }
-        };
-
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4000,
         }
+      };
 
-        const responseData = await response.json();
-        return responseData.candidates[0].content.parts[0].text;
-      } else {
-        palm1Base64 = dataOrPalm1;
-        
-        if (nameA && nameB) {
-          prompt += `Personalize the report for ${nameA} and ${nameB}. `;
-        }
-        
-        if (birthdateA && birthdateB) {
-          // Emphasize that we have birth details and they should be used
-          prompt += `IMPORTANT: Use the provided birth details for accurate Guna Milan analysis: `;
-          prompt += `${nameA}'s birthdate: ${birthdateA}, ${nameB}'s birthdate: ${birthdateB}. `;
-          prompt += `These birth details MUST be used for the Guna Milan analysis - this is absolutely essential. `;
-        }
-        
-        prompt += "\n\nImportant guidelines for palm analysis:\n";
-        prompt += "1. Identify and analyze all major lines even if they appear faint\n";
-        prompt += "2. Look for head line, heart line, life line, fate line, and marriage lines\n";
-        prompt += "3. Analyze finger length ratios and palm shape for elemental analysis\n";
-        prompt += "4. Compare the Venus mounts (base of thumb) between partners\n";
-        prompt += "5. Provide a complete Guna Milan analysis using the birth details\n";
-        prompt += "6. Ensure you produce a detailed report even if some lines are not immediately obvious\n";
-        prompt += "7. The birth details provided MUST be used for the Guna Milan analysis\n";
-        
-        prompt += "Format the response with clear section headers and be specific with insights based on palmistry principles and Vedic astrology. Provide actionable recommendations based on the analysis. If birthdates are provided, use them for more accurate Guna Milan calculations.";
-        
-        const requestBody = {
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                },
-                {
-                  inline_data: {
-                    mime_type: "image/jpeg",
-                    data: palm1Base64.replace(/^data:image\/\w+;base64,/, "")
-                  }
-                },
-                {
-                  inline_data: {
-                    mime_type: "image/jpeg",
-                    data: palm2Base64!.replace(/^data:image\/\w+;base64,/, "")
-                  }
-                }
-              ]
-            }
-          ],
-          generation_config: {
-            temperature: 0.7,
-            top_p: 0.95,
-            top_k: 40,
-            max_output_tokens: 4096, // Increased token limit for more detailed analysis
-          }
-        };
+      // Make the API request
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
-        }
-
-        const responseData = await response.json();
-        return responseData.candidates[0].content.parts[0].text;
+      // Parse the response
+      const result = await response.json();
+      
+      // Check if the response contains an error
+      if (result.error) {
+        console.error('Error from Gemini API:', result.error);
+        throw new Error(result.error.message || 'Unknown error from Gemini API');
       }
+      
+      // Validate the response structure
+      if (!result.candidates || 
+          !result.candidates[0] || 
+          !result.candidates[0].content || 
+          !result.candidates[0].content.parts || 
+          !result.candidates[0].content.parts[0] || 
+          !result.candidates[0].content.parts[0].text) {
+        console.error('Invalid response structure from Gemini API:', result);
+        throw new Error('The response from Gemini API was not in the expected format');
+      }
+      
+      // Get the text content from the response
+      const analysisText = result.candidates[0].content.parts[0].text;
+      
+      if (!analysisText || analysisText.trim() === '') {
+        throw new Error('Empty response from Gemini API');
+      }
+      
+      console.log('Successfully extracted compatibility analysis from Gemini response');
+      return analysisText;
     } catch (error) {
-      console.error("Error analyzing compatibility with Gemini:", error);
+      console.error('Error in analyzeCompatibility:', error);
       throw error;
     }
-  }
-
-  // Method to initialize Gemini with user's API key
-  static initialize(apiKey: string, modelName: string = "gemini-1.5-flash"): GeminiAI {
-    if (!apiKey || apiKey.trim() === '') {
-      throw new Error("Gemini API key is required");
-    }
-    
-    console.log(`Initializing Gemini with model: ${modelName}`);
-    return new GeminiAI({
-      apiKey,
-      modelName
-    });
   }
 }
 
