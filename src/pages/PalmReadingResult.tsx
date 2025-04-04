@@ -1,7 +1,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Hand, Download, Share2, Loader2 } from 'lucide-react';
+import { Hand, Download, Share2, Loader2, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { revealAnimation } from '@/lib/animations';
@@ -200,6 +200,15 @@ const PalmReadingResult = () => {
     }
   };
   
+  const retryAnalysis = async () => {
+    // Clear previous results and errors
+    setPalmAnalysis(null);
+    setError(null);
+    
+    // Try analysis again
+    await analyzePalm();
+  };
+  
   const isLoading = isGeminiLoading || isAnalyzing;
   
   if (isLoading) {
@@ -273,16 +282,33 @@ const PalmReadingResult = () => {
                 formatAnalysisContent(palmAnalysis)
               ) : error ? (
                 <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
+                  <div className="flex items-center justify-center mb-4">
+                    <AlertCircle className="h-8 w-8 text-red-500 mr-2" />
+                    <h3 className="text-xl font-medium text-red-700">Analysis Failed</h3>
+                  </div>
                   <p className="text-red-600 font-medium mb-2">Error: {error}</p>
                   <p className="text-muted-foreground mb-4">
-                    Unable to generate palm analysis. Please try uploading a clearer image.
+                    Unable to generate palm analysis. This could be due to one of the following reasons:
                   </p>
-                  <button
-                    onClick={() => navigate('/palm-reading')}
-                    className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                  >
-                    Upload New Image
-                  </button>
+                  <ul className="text-left list-disc mb-6 mx-auto max-w-md">
+                    <li className="mb-2">Your Gemini API key may be invalid or expired</li>
+                    <li className="mb-2">The palm image might not be clear enough for analysis</li>
+                    <li className="mb-2">There might be connection issues with the Gemini API</li>
+                  </ul>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                      onClick={retryAnalysis}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                      Try Again
+                    </button>
+                    <button
+                      onClick={() => navigate('/palm-reading')}
+                      className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                    >
+                      Upload New Image
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="p-6 border border-yellow-300 rounded-lg bg-yellow-50 text-center">

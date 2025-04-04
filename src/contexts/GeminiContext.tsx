@@ -37,11 +37,13 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         console.log('Loading Gemini API key from localStorage');
         const savedApiKey = localStorage.getItem('gemini_api_key');
-        if (savedApiKey) {
+        if (savedApiKey && savedApiKey.trim() !== '') {
           console.log('Found saved API key, will initialize Gemini');
           setApiKey(savedApiKey);
         } else {
-          console.log('No saved API key found');
+          console.log('No saved API key found or API key is empty');
+          setApiKey(null);
+          localStorage.removeItem('gemini_api_key');
         }
       } catch (error) {
         console.error('Error loading API key:', error);
@@ -55,7 +57,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
   
   // Initialize Gemini when API key changes
   useEffect(() => {
-    if (!apiKey) {
+    if (!apiKey || apiKey.trim() === '') {
       console.log('No API key available, clearing Gemini instance');
       setGemini(null);
       return;
@@ -65,6 +67,11 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
       setIsInitializing(true);
       
       try {
+        // Check if API key looks valid (basic validation)
+        if (!apiKey.startsWith('AIza') || apiKey.length < 20) {
+          throw new Error('API key format appears invalid. Please check your Gemini API key.');
+        }
+        
         // Save the API key to localStorage
         console.log('Saving API key to localStorage');
         localStorage.setItem('gemini_api_key', apiKey);
@@ -93,7 +100,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.removeItem('gemini_api_key');
         toast({
           title: "Gemini Initialization Failed",
-          description: "There was a problem connecting to the Gemini API. Please check your API key.",
+          description: error instanceof Error ? error.message : "There was a problem connecting to the Gemini API. Please check your API key.",
           variant: "destructive",
         });
         setGemini(null);

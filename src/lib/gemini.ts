@@ -90,11 +90,11 @@ Analyze this palm image in detail and provide a comprehensive reading based on p
    - Past influences still affecting present
    - Future opportunities and challenges
 
-Format the response as a professional palm reading report with clear section headings. Focus on providing detailed, specific, and personalized insights rather than vague or general statements. Mention specific features visible in the image.
+Format the response as a detailed professional palm reading report with clear section headings. Focus on providing detailed, specific, and personalized insights rather than vague or general statements. Mention specific features visible in the image.
 
 IMPORTANT: If certain lines or features are not visible in this image, please make your best assessment based on what IS visible, rather than stating you cannot see them.
 
-Return a proper and complete palmistry report in a clear format with sections. The report should be comprehensive and at least several paragraphs long.
+Return a proper and complete palmistry report in a clear format with sections. The report should be comprehensive and at least 10-15 paragraphs long.
 `;
       
       // Make sure the image is properly formatted for the API
@@ -138,15 +138,16 @@ Return a proper and complete palmistry report in a clear format with sections. T
         console.log('Response status:', response.status);
         
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Response not OK:', response.status, errorText);
-          let errorData;
+          let errorMessage = `API returned status ${response.status}`;
           try {
-            errorData = JSON.parse(errorText);
+            const errorText = await response.text();
+            console.error('Response not OK:', response.status, errorText);
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error?.message || errorMessage;
           } catch (e) {
-            errorData = { error: { message: errorText || 'Unknown API error' } };
+            console.error('Failed to parse error response', e);
           }
-          throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText || 'API returned status ' + response.status}`);
+          throw new Error(`Gemini API Error: ${errorMessage}`);
         }
 
         const data = await response.json();
@@ -161,13 +162,20 @@ Return a proper and complete palmistry report in a clear format with sections. T
           throw new Error('Invalid response format from Gemini API: No candidates found');
         }
         
-        if (!data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
+        if (!data.candidates[0].content.parts || !data.candidates[0].content.parts[0] || !data.candidates[0].content.parts[0].text) {
           console.error('Unexpected API response format - no text in parts:', data.candidates[0]);
           throw new Error('Invalid response format from Gemini API: No text content found');
         }
         
         const resultText = data.candidates[0].content.parts[0].text;
         console.log('Successfully extracted text result from API response');
+        
+        // Validate that we got a real analysis (not just an error message or empty response)
+        if (resultText.length < 500) {
+          console.error('Response text suspiciously short:', resultText);
+          throw new Error('The generated palm reading is too short to be valid. Please try with a clearer palm image.');
+        }
+        
         return resultText;
       } catch (fetchError) {
         console.error('Fetch error during Gemini API call:', fetchError);
@@ -376,7 +384,7 @@ Return a proper and complete palmistry report in a clear format with sections. T
 
   // Method to initialize Gemini with user's API key
   static initialize(apiKey: string, modelName: string = "gemini-1.5-flash"): GeminiAI {
-    if (!apiKey) {
+    if (!apiKey || apiKey.trim() === '') {
       throw new Error("Gemini API key is required");
     }
     
