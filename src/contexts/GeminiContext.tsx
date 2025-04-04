@@ -63,19 +63,21 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
         // Save the API key to localStorage
         localStorage.setItem('gemini_api_key', apiKey);
         
-        // Initialize the Gemini API
-        const geminiInstance = GeminiAI.initialize(apiKey);
+        // Initialize the Gemini API with the specific model for palm reading
+        const geminiInstance = GeminiAI.initialize(apiKey, "gemini-1.5-flash");
         
-        // Test the API with a simple request to ensure it's working
+        // Log initialization
         console.log("Initializing Gemini with API key");
         setGemini(geminiInstance);
         
+        // Show success toast
         toast({
           title: "Gemini API Connected",
           description: "You can now analyze palm images and check compatibility.",
         });
       } catch (error) {
         console.error('Failed to initialize Gemini:', error);
+        // Clear invalid API key
         localStorage.removeItem('gemini_api_key');
         toast({
           title: "Gemini Initialization Failed",
@@ -93,6 +95,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
   }, [apiKey]);
   
   const clearApiKey = () => {
+    // Clear API key and all stored results
     localStorage.removeItem('gemini_api_key');
     sessionStorage.removeItem('palmReadingResult');
     sessionStorage.removeItem('palmImage');

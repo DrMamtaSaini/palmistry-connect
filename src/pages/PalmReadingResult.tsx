@@ -1,7 +1,6 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Hand, Download, Share2, BookOpen, Loader2 } from 'lucide-react';
+import { Hand, Download, Share2, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { revealAnimation } from '@/lib/animations';
@@ -20,23 +19,37 @@ const PalmReadingResult = () => {
   const analyzePalm = useCallback(async () => {
     const storedImage = sessionStorage.getItem('palmImage');
     
-    if (!storedImage || !gemini) {
-      console.error('Missing image or Gemini not initialized');
-      setError('Missing image or Gemini not initialized');
+    if (!storedImage) {
+      console.error('No palm image found in session storage');
+      setError('No palm image found. Please upload an image first.');
+      return false;
+    }
+    
+    if (!gemini) {
+      console.error('Gemini not initialized');
+      setError('Gemini AI not initialized. Please check your API key.');
       return false;
     }
     
     setIsAnalyzing(true);
+    
     try {
       console.log('Starting palm analysis...');
+      
+      // Make sure the image data is in the correct format for the API
       const result = await gemini.analyzePalm(storedImage);
+      
+      if (!result || typeof result !== 'string' || result.trim() === '') {
+        throw new Error('Empty or invalid result from Gemini API');
+      }
+      
       console.log('Analysis complete, setting result');
       setPalmAnalysis(result);
       sessionStorage.setItem('palmReadingResult', result);
       return true;
     } catch (error) {
       console.error('Error analyzing palm:', error);
-      setError('Error analyzing palm. Please try again.');
+      setError(`Error analyzing palm: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast({
         title: "Analysis Error",
         description: "There was an error analyzing your palm image. Please try again.",
@@ -255,6 +268,12 @@ const PalmReadingResult = () => {
                   <p className="text-muted-foreground">
                     Unable to generate palm analysis. Please try uploading a clearer image.
                   </p>
+                  <button
+                    onClick={() => navigate('/palm-reading')}
+                    className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                  >
+                    Upload New Image
+                  </button>
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground italic">

@@ -36,6 +36,7 @@ export class GeminiAI {
 
   async analyzePalm(imageBase64: string): Promise<string> {
     try {
+      console.log('Starting palm analysis with Gemini API');
       const endpoint = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
       
       const promptText = `
@@ -87,6 +88,9 @@ Format the response as a professional palm reading report with clear section hea
 IMPORTANT: If certain lines or features are not visible in this image, please make your best assessment based on what IS visible, rather than stating you cannot see them.
 `;
       
+      // Make sure the image is properly formatted for the API
+      const imageData = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+      
       const requestBody = {
         contents: [
           {
@@ -97,7 +101,7 @@ IMPORTANT: If certain lines or features are not visible in this image, please ma
               {
                 inline_data: {
                   mime_type: "image/jpeg",
-                  data: imageBase64.replace(/^data:image\/\w+;base64,/, "")
+                  data: imageData
                 }
               }
             ]
@@ -111,6 +115,7 @@ IMPORTANT: If certain lines or features are not visible in this image, please ma
         }
       };
 
+      console.log('Sending request to Gemini API...');
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -121,10 +126,18 @@ IMPORTANT: If certain lines or features are not visible in this image, please ma
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Response not OK:', response.status, errorData);
         throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('Received response from Gemini API');
+      
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
+        console.error('Unexpected API response format:', data);
+        throw new Error('Invalid response format from Gemini API');
+      }
+      
       return data.candidates[0].content.parts[0].text;
     } catch (error) {
       console.error("Error analyzing palm with Gemini:", error);
