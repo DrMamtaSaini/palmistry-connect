@@ -35,9 +35,13 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
     const loadApiKey = async () => {
       setIsLoading(true);
       try {
+        console.log('Loading Gemini API key from localStorage');
         const savedApiKey = localStorage.getItem('gemini_api_key');
         if (savedApiKey) {
+          console.log('Found saved API key, will initialize Gemini');
           setApiKey(savedApiKey);
+        } else {
+          console.log('No saved API key found');
         }
       } catch (error) {
         console.error('Error loading API key:', error);
@@ -52,6 +56,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
   // Initialize Gemini when API key changes
   useEffect(() => {
     if (!apiKey) {
+      console.log('No API key available, clearing Gemini instance');
       setGemini(null);
       return;
     }
@@ -61,13 +66,18 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
       
       try {
         // Save the API key to localStorage
+        console.log('Saving API key to localStorage');
         localStorage.setItem('gemini_api_key', apiKey);
         
         // Initialize the Gemini API with the specific model for palm reading
+        console.log('Initializing Gemini with API key');
         const geminiInstance = GeminiAI.initialize(apiKey, "gemini-1.5-flash");
         
-        // Log initialization
-        console.log("Initializing Gemini with API key");
+        // Verify that the geminiInstance has the required methods
+        if (!geminiInstance.analyzePalm || typeof geminiInstance.analyzePalm !== 'function') {
+          throw new Error('Gemini instance is missing required methods');
+        }
+        
         setGemini(geminiInstance);
         
         // Show success toast
@@ -75,6 +85,8 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
           title: "Gemini API Connected",
           description: "You can now analyze palm images and check compatibility.",
         });
+        
+        console.log('Gemini successfully initialized');
       } catch (error) {
         console.error('Failed to initialize Gemini:', error);
         // Clear invalid API key
@@ -96,6 +108,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
   
   const clearApiKey = () => {
     // Clear API key and all stored results
+    console.log('Clearing API key and stored results');
     localStorage.removeItem('gemini_api_key');
     sessionStorage.removeItem('palmReadingResult');
     sessionStorage.removeItem('palmImage');

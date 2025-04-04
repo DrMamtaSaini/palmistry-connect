@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2 } from 'lucide-react';
@@ -17,6 +18,7 @@ const PalmReadingResult = () => {
   const { gemini, isLoading: isGeminiLoading } = useGemini();
   
   const analyzePalm = useCallback(async () => {
+    console.log('Starting palm analysis...');
     const storedImage = sessionStorage.getItem('palmImage');
     
     if (!storedImage) {
@@ -34,10 +36,11 @@ const PalmReadingResult = () => {
     setIsAnalyzing(true);
     
     try {
-      console.log('Starting palm analysis...');
+      console.log('Sending image to Gemini API for analysis...');
       
       // Make sure the image data is in the correct format for the API
       const result = await gemini.analyzePalm(storedImage);
+      console.log('Received analysis result:', result ? 'Success' : 'Empty result');
       
       if (!result || typeof result !== 'string' || result.trim() === '') {
         throw new Error('Empty or invalid result from Gemini API');
@@ -66,25 +69,31 @@ const PalmReadingResult = () => {
     const cleanup = revealAnimation();
     
     const loadData = async () => {
-      // Get stored palm reading from sessionStorage
-      const storedReading = sessionStorage.getItem('palmReadingResult');
-      const storedImage = sessionStorage.getItem('palmImage');
-      
-      if (storedReading) {
-        console.log('Found stored reading, using it');
-        setPalmAnalysis(storedReading);
-        setHasAttemptedAnalysis(true);
-      } else if (storedImage && gemini && !isGeminiLoading && !hasAttemptedAnalysis) {
-        console.log('No stored reading but we have image and gemini, analyzing');
-        await analyzePalm();
-      } else if (!storedImage) {
-        // If no image, redirect to upload page
-        console.log('No palm image found, redirecting to upload page');
-        toast({
-          title: "No Palm Image",
-          description: "Please upload a palm image for analysis first.",
-        });
-        navigate('/palm-reading');
+      try {
+        // Get stored palm reading from sessionStorage
+        const storedReading = sessionStorage.getItem('palmReadingResult');
+        const storedImage = sessionStorage.getItem('palmImage');
+        
+        if (storedReading) {
+          console.log('Found stored reading, using it');
+          setPalmAnalysis(storedReading);
+          setHasAttemptedAnalysis(true);
+        } else if (storedImage && gemini && !isGeminiLoading) {
+          console.log('No stored reading but we have image and gemini, analyzing now...');
+          setError(null); // Clear any previous errors
+          await analyzePalm();
+        } else if (!storedImage) {
+          // If no image, redirect to upload page
+          console.log('No palm image found, redirecting to upload page');
+          toast({
+            title: "No Palm Image",
+            description: "Please upload a palm image for analysis first.",
+          });
+          navigate('/palm-reading');
+        }
+      } catch (err) {
+        console.error('Error in loadData:', err);
+        setError(`Failed to load palm reading: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     };
     
@@ -95,7 +104,7 @@ const PalmReadingResult = () => {
     return () => {
       cleanup();
     };
-  }, [navigate, gemini, isGeminiLoading, analyzePalm, hasAttemptedAnalysis]);
+  }, [navigate, gemini, isGeminiLoading, analyzePalm]);
 
   const formatAnalysisContent = (content: string) => {
     // Convert markdown-style sections into formatted HTML
@@ -265,7 +274,7 @@ const PalmReadingResult = () => {
               ) : error ? (
                 <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
                   <p className="text-red-600 font-medium mb-2">Error: {error}</p>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-4">
                     Unable to generate palm analysis. Please try uploading a clearer image.
                   </p>
                   <button
@@ -276,11 +285,19 @@ const PalmReadingResult = () => {
                   </button>
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground italic">
-                  {hasAttemptedAnalysis 
-                    ? "Analysis could not be generated. Please try uploading a clearer image of your palm." 
-                    : "No palm analysis available. Please upload a palm image for analysis."}
-                </p>
+                <div className="p-6 border border-yellow-300 rounded-lg bg-yellow-50 text-center">
+                  <p className="text-center text-muted-foreground italic mb-4">
+                    {hasAttemptedAnalysis 
+                      ? "Analysis could not be generated. Please try uploading a clearer image of your palm." 
+                      : "No palm analysis available. Please upload a palm image for analysis."}
+                  </p>
+                  <button
+                    onClick={() => navigate('/palm-reading')}
+                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                  >
+                    Upload Palm Image
+                  </button>
+                </div>
               )}
             </div>
           </div>

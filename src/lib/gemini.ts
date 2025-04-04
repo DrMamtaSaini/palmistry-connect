@@ -39,6 +39,13 @@ export class GeminiAI {
       console.log('Starting palm analysis with Gemini API');
       const endpoint = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
       
+      // Ensure image is properly formatted for the API
+      let formattedImage = imageBase64;
+      if (!imageBase64.startsWith('data:image')) {
+        console.log('Image is not properly formatted, adding data URI prefix');
+        formattedImage = `data:image/jpeg;base64,${imageBase64}`;
+      }
+      
       const promptText = `
 Analyze this palm image in detail and provide a comprehensive reading based on palmistry principles. Focus on:
 
@@ -86,10 +93,12 @@ Analyze this palm image in detail and provide a comprehensive reading based on p
 Format the response as a professional palm reading report with clear section headings. Focus on providing detailed, specific, and personalized insights rather than vague or general statements. Mention specific features visible in the image.
 
 IMPORTANT: If certain lines or features are not visible in this image, please make your best assessment based on what IS visible, rather than stating you cannot see them.
+
+Return a proper and complete palmistry report in a clear format with sections. The report should be comprehensive and at least several paragraphs long.
 `;
       
       // Make sure the image is properly formatted for the API
-      const imageData = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const imageData = formattedImage.replace(/^data:image\/\w+;base64,/, "");
       
       const requestBody = {
         contents: [
@@ -116,29 +125,54 @@ IMPORTANT: If certain lines or features are not visible in this image, please ma
       };
 
       console.log('Sending request to Gemini API...');
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Response not OK:', response.status, errorData);
-        throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Received response from Gemini API');
       
-      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
-        console.error('Unexpected API response format:', data);
-        throw new Error('Invalid response format from Gemini API');
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Response not OK:', response.status, errorText);
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch (e) {
+            errorData = { error: { message: errorText || 'Unknown API error' } };
+          }
+          throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText || 'API returned status ' + response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Received response from Gemini API:', data ? 'Data received' : 'No data');
+        
+        if (!data) {
+          throw new Error('Empty response from Gemini API');
+        }
+        
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+          console.error('Unexpected API response format - no candidates:', data);
+          throw new Error('Invalid response format from Gemini API: No candidates found');
+        }
+        
+        if (!data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
+          console.error('Unexpected API response format - no text in parts:', data.candidates[0]);
+          throw new Error('Invalid response format from Gemini API: No text content found');
+        }
+        
+        const resultText = data.candidates[0].content.parts[0].text;
+        console.log('Successfully extracted text result from API response');
+        return resultText;
+      } catch (fetchError) {
+        console.error('Fetch error during Gemini API call:', fetchError);
+        throw fetchError;
       }
-      
-      return data.candidates[0].content.parts[0].text;
     } catch (error) {
       console.error("Error analyzing palm with Gemini:", error);
       throw error;
@@ -346,6 +380,7 @@ IMPORTANT: If certain lines or features are not visible in this image, please ma
       throw new Error("Gemini API key is required");
     }
     
+    console.log(`Initializing Gemini with model: ${modelName}`);
     return new GeminiAI({
       apiKey,
       modelName
