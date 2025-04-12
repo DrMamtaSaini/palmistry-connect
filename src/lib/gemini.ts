@@ -26,21 +26,26 @@ class GeminiAI {
    * Helper function to format an image into the format expected by the Gemini API
    */
   private formatImageForGemini(imageData: string): any {
-    // Make sure the image data is correctly formatted
-    // It should be a data URL starting with data:image/...
-    if (!imageData.startsWith('data:image/')) {
-      throw new Error('Invalid image format. Expected a data URL.');
-    }
+    try {
+      // Make sure the image data is correctly formatted
+      // It should be a data URL starting with data:image/...
+      if (!imageData.startsWith('data:image/')) {
+        throw new Error('Invalid image format. Expected a data URL.');
+      }
 
-    // Format the image for the Gemini API
-    const base64Image = imageData.split(',')[1];
-    
-    return {
-      inlineData: {
-        data: base64Image,
-        mimeType: imageData.split(';')[0].split(':')[1],
-      },
-    };
+      // Format the image for the Gemini API
+      const base64Image = imageData.split(',')[1];
+      
+      return {
+        inlineData: {
+          data: base64Image,
+          mimeType: imageData.split(';')[0].split(':')[1],
+        },
+      };
+    } catch (error) {
+      console.error('Error formatting image:', error);
+      throw new Error('Failed to format image for analysis. Please try again with a different image.');
+    }
   }
 
   /**
@@ -90,6 +95,13 @@ class GeminiAI {
         },
         body: JSON.stringify(body),
       });
+
+      // Check if the response is OK
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response from Gemini API:', errorText);
+        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+      }
 
       // Parse the response
       const result = await response.json();
@@ -187,6 +199,13 @@ class GeminiAI {
         },
         body: JSON.stringify(body),
       });
+
+      // Check if the response is OK
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response from Gemini API:', errorText);
+        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+      }
 
       // Parse the response
       const result = await response.json();

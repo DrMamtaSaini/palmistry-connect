@@ -80,6 +80,9 @@ const PalmReadingResult = () => {
         const storedReading = sessionStorage.getItem('palmReadingResult');
         const storedImage = sessionStorage.getItem('palmImage');
         
+        console.log('Checking stored reading:', storedReading ? 'Found' : 'Not found');
+        console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
+        
         if (storedReading && storedReading.length > 100) {
           // Only use stored reading if it looks like a real analysis (not dummy data)
           console.log('Found stored reading, using it');
