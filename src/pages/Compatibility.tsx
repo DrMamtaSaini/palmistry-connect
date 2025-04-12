@@ -134,24 +134,12 @@ const Compatibility = () => {
       sessionStorage.setItem('yourBirthPlace', values.yourDetails.birthPlace || '');
       sessionStorage.setItem('partnerBirthPlace', values.partnerDetails.birthPlace || '');
       
-      const compatibilityData = {
-        yourDetails: {
-          name: values.yourDetails.name,
-          birthDate: values.yourDetails.birthDate,
-          birthTime: values.yourDetails.birthTime || '',
-          birthPlace: values.yourDetails.birthPlace || '',
-          palmImage: yourPalmBase64
-        },
-        partnerDetails: {
-          name: values.partnerDetails.name,
-          birthDate: values.partnerDetails.birthDate,
-          birthTime: values.partnerDetails.birthTime || '',
-          birthPlace: values.partnerDetails.birthPlace || '',
-          palmImage: partnerPalmBase64
-        }
-      };
-      
-      const result = await gemini.checkCompatibility(compatibilityData);
+      const result = await gemini.analyzeCompatibility(
+        yourPalmBase64,
+        partnerPalmBase64,
+        values.yourDetails.name,
+        values.partnerDetails.name
+      );
       
       sessionStorage.setItem('compatibilityResult', result);
       
