@@ -125,8 +125,9 @@ const PalmReadingResult = () => {
     const sections = content.split(/\n#{2,3} /);
     
     if (sections.length <= 1) {
+      // If no markdown headers are detected, just split by paragraphs
       return content.split('\n').map((para, idx) => (
-        <p key={idx} className="mb-4">{para}</p>
+        <p key={idx} className="mb-4">{para.trim() ? para : <br />}</p>
       ));
     }
     
@@ -140,7 +141,7 @@ const PalmReadingResult = () => {
         <div key={index} className="mb-8">
           <h3 className="text-xl font-semibold mb-4">{sectionTitle}</h3>
           {sectionContent.split('\n\n').map((para, paraIdx) => (
-            <p key={paraIdx} className="mb-4">{para}</p>
+            <p key={paraIdx} className="mb-4">{para.trim()}</p>
           ))}
         </div>
       );
@@ -149,7 +150,7 @@ const PalmReadingResult = () => {
     return (
       <>
         {intro.split('\n\n').map((para, idx) => (
-          <p key={`intro-${idx}`} className="mb-4">{para}</p>
+          <p key={`intro-${idx}`} className="mb-4">{para.trim() ? para : <br />}</p>
         ))}
         {formattedSections}
       </>

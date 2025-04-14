@@ -74,7 +74,7 @@ class GeminiAI {
                       "4. Relationship/love life insights\n" +
                       "5. Health indications from the palm\n" +
                       "6. Key strengths and potential challenges\n\n" +
-                      "Format the report professionally with section headings and maintain a thoughtful, insightful tone. DO NOT mention that you're an AI - stay in character as an experienced palm reader. Provide specific details based on what you can observe in the image."
+                      "Format the report professionally with section headings (using ## for main sections) and maintain a thoughtful, insightful tone. DO NOT mention that you're an AI - stay in character as an experienced palm reader. Provide specific details based on what you can observe in the image."
               },
               formattedImage
             ]
