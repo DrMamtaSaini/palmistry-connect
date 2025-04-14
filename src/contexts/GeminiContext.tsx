@@ -86,9 +86,7 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error('Gemini instance is missing required methods');
         }
         
-        // Test if the Gemini instance is working properly
-        // Note: We won't do a full API call here to avoid unnecessary usage
-        
+        // Set the Gemini instance in state
         setGemini(geminiInstance);
         
         // Show success toast
