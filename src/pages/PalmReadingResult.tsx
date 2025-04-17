@@ -1,6 +1,7 @@
+
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Hand, Download, Share2, Loader2, AlertCircle } from 'lucide-react';
+import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { revealAnimation } from '@/lib/animations';
@@ -34,17 +35,24 @@ const PalmReadingResult = () => {
     
     try {
       const palmImageData = sessionStorage.getItem('palmImage');
+      console.log('Saving reading to database for user:', userId);
+      
       const { error } = await supabase
         .from('palm_readings')
         .insert({
           user_id: userId,
-          image_url: palmImageData || '', // Changed from palm_image to image_url
-          results: readingText, // Changed from reading_text to results
-          language: 'english' // Added language field with default value
+          image_url: palmImageData || '',
+          results: readingText,
+          language: 'english'
         });
       
       if (error) {
         console.error('Error saving reading to database:', error);
+        toast({
+          title: "Database Error",
+          description: "Failed to save your reading to the database.",
+          variant: "destructive",
+        });
       } else {
         console.log('Successfully saved reading to database');
       }
@@ -75,10 +83,20 @@ const PalmReadingResult = () => {
       console.log('Sending image to Gemini API for analysis...');
       
       const result = await gemini.analyzePalm(storedImage);
-      console.log('Analysis result received:', result ? 'Success' : 'Empty result');
+      console.log('Analysis result received:', result ? `Success (${result.length} chars)` : 'Empty result');
       
       if (!result || typeof result !== 'string' || result.trim() === '') {
         throw new Error('Empty or invalid result from Gemini API');
+      }
+      
+      // Check if the result contains demo-related words
+      const demoKeywords = ['demo', 'example', 'sample', 'this is a demonstration'];
+      const containsDemoKeywords = demoKeywords.some(keyword => 
+        result.toLowerCase().includes(keyword.toLowerCase()));
+      
+      if (containsDemoKeywords) {
+        console.error('Result contains demo keywords, retrying analysis');
+        throw new Error('The AI generated a demo response. Retrying for a real analysis.');
       }
       
       console.log('Analysis complete, setting result');
@@ -97,7 +115,7 @@ const PalmReadingResult = () => {
       setError(`Error analyzing palm: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast({
         title: "Analysis Error",
-        description: "There was an error analyzing your palm image. Please try again with a clearer image.",
+        description: "There was an error analyzing your palm image. Please try again.",
         variant: "destructive",
       });
       return false;
@@ -114,31 +132,69 @@ const PalmReadingResult = () => {
       try {
         setError(null);
         
-        const storedReading = sessionStorage.getItem('palmReadingResult');
-        const storedImage = sessionStorage.getItem('palmImage');
+        // Try to get the reading from Supabase if user is logged in
+        let foundReadingInDb = false;
         
-        console.log('Checking stored reading:', storedReading ? 'Found' : 'Not found');
-        console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
-        
-        if (storedReading && storedReading.trim().length > 100) {
-          console.log('Found valid stored reading, using it');
-          console.log('Reading preview:', storedReading.substring(0, 100) + '...');
-          setPalmAnalysis(storedReading);
-          setHasAttemptedAnalysis(true);
-        } else if (storedImage && gemini && !isGeminiLoading) {
-          console.log('No valid stored reading but we have image and gemini, analyzing now...');
-          if (storedReading) {
-            console.log('Clearing invalid stored reading');
-            sessionStorage.removeItem('palmReadingResult');
+        if (userId) {
+          const { data: readings, error: readingsError } = await supabase
+            .from('palm_readings')
+            .select('results')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1);
+            
+          if (!readingsError && readings && readings.length > 0 && readings[0].results) {
+            console.log('Found reading in database, using it');
+            const readingText = readings[0].results.toString();
+            if (readingText && readingText.length > 100) {
+              setPalmAnalysis(readingText);
+              sessionStorage.setItem('palmReadingResult', readingText);
+              setHasAttemptedAnalysis(true);
+              foundReadingInDb = true;
+            }
           }
-          await analyzePalm();
-        } else if (!storedImage) {
-          console.log('No palm image found, redirecting to upload page');
-          toast({
-            title: "No Palm Image",
-            description: "Please upload a palm image for analysis first.",
-          });
-          navigate('/palm-reading');
+        }
+        
+        if (!foundReadingInDb) {
+          const storedReading = sessionStorage.getItem('palmReadingResult');
+          const storedImage = sessionStorage.getItem('palmImage');
+          
+          console.log('Checking stored reading:', storedReading ? 'Found' : 'Not found');
+          console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
+          
+          if (storedReading && storedReading.trim().length > 100) {
+            // Check if the stored reading contains demo-related words
+            const demoKeywords = ['demo', 'example', 'sample', 'this is a demonstration'];
+            const containsDemoKeywords = demoKeywords.some(keyword => 
+              storedReading.toLowerCase().includes(keyword.toLowerCase()));
+              
+            if (containsDemoKeywords) {
+              console.log('Stored reading contains demo keywords, will reanalyze');
+              sessionStorage.removeItem('palmReadingResult');
+              if (storedImage && gemini && !isGeminiLoading) {
+                await analyzePalm();
+              }
+            } else {
+              console.log('Found valid stored reading, using it');
+              console.log('Reading preview:', storedReading.substring(0, 100) + '...');
+              setPalmAnalysis(storedReading);
+              setHasAttemptedAnalysis(true);
+            }
+          } else if (storedImage && gemini && !isGeminiLoading) {
+            console.log('No valid stored reading but we have image and gemini, analyzing now...');
+            if (storedReading) {
+              console.log('Clearing invalid stored reading');
+              sessionStorage.removeItem('palmReadingResult');
+            }
+            await analyzePalm();
+          } else if (!storedImage) {
+            console.log('No palm image found, redirecting to upload page');
+            toast({
+              title: "No Palm Image",
+              description: "Please upload a palm image for analysis first.",
+            });
+            navigate('/palm-reading');
+          }
         }
       } catch (err) {
         console.error('Error in loadData:', err);
@@ -153,7 +209,7 @@ const PalmReadingResult = () => {
     return () => {
       cleanup();
     };
-  }, [navigate, gemini, isGeminiLoading, analyzePalm]);
+  }, [navigate, gemini, isGeminiLoading, analyzePalm, userId]);
 
   const formatAnalysisContent = (content: string) => {
     if (!content || content.trim() === '') {
@@ -357,9 +413,13 @@ const PalmReadingResult = () => {
                   <Download className="h-4 w-4" />
                   <span>Download Basic Report</span>
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors">
-                  <Share2 className="h-4 w-4" />
-                  <span>Share</span>
+                <button 
+                  onClick={retryAnalysis}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors"
+                  title="Generate a new reading with the same image"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Regenerate</span>
                 </button>
               </div>
             </div>

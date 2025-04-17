@@ -91,15 +91,16 @@ Format the report with clear section headings using markdown (## for main sectio
 Make observations that are specific to the unique features visible in the uploaded palm image.
 Maintain a professional, insightful tone throughout the reading.
 
-DO NOT include the text "demo" or any indications that this is a sample or demo reading.
-This should be presented as a genuine, personal palm reading based on the uploaded image.`
+IMPORTANT: This is for a real user - do NOT include any text like "demo," "sample," or "example" in your response.
+This should be a genuine, personalized palm reading based on the actual uploaded image. 
+Focus on real, specific observations from the provided image rather than generic statements.`
               },
               formattedImage
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.8,
           maxOutputTokens: 4000,
         }
       };
@@ -131,26 +132,36 @@ This should be presented as a genuine, personal palm reading based on the upload
         throw new Error(result.error.message || 'Unknown error from Gemini API');
       }
       
-      // Validate the response structure
-      if (!result.candidates || 
-          !result.candidates[0] || 
-          !result.candidates[0].content || 
-          !result.candidates[0].content.parts || 
-          !result.candidates[0].content.parts[0] || 
-          !result.candidates[0].content.parts[0].text) {
+      // Additional validation to ensure we don't get a demo or example response
+      if (result.candidates && 
+          result.candidates[0] && 
+          result.candidates[0].content && 
+          result.candidates[0].content.parts && 
+          result.candidates[0].content.parts[0] && 
+          result.candidates[0].content.parts[0].text) {
+            
+        const analysisText = result.candidates[0].content.parts[0].text;
+        
+        // Check if response contains demo-related words
+        const demoKeywords = ['demo', 'example', 'sample', 'this is a demonstration'];
+        const containsDemoKeywords = demoKeywords.some(keyword => 
+          analysisText.toLowerCase().includes(keyword.toLowerCase()));
+        
+        if (containsDemoKeywords) {
+          console.error('Gemini API returned a demo/sample response');
+          throw new Error('The AI generated a demo response. Please try again for a real analysis.');
+        }
+        
+        if (!analysisText || analysisText.trim() === '') {
+          throw new Error('Empty response from Gemini API');
+        }
+        
+        console.log('Successfully extracted palm reading from Gemini response');
+        return analysisText;
+      } else {
         console.error('Invalid response structure from Gemini API:', result);
         throw new Error('The response from Gemini API was not in the expected format');
       }
-      
-      // Get the text content from the response
-      const analysisText = result.candidates[0].content.parts[0].text;
-      
-      if (!analysisText || analysisText.trim() === '') {
-        throw new Error('Empty response from Gemini API');
-      }
-      
-      console.log('Successfully extracted palm reading from Gemini response:', analysisText.substring(0, 100) + '...');
-      return analysisText;
     } catch (error) {
       console.error('Error in analyzePalm:', error);
       throw error;

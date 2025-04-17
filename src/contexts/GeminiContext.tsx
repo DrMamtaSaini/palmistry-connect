@@ -72,6 +72,16 @@ export const GeminiProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error('API key format appears invalid. Please check your Gemini API key.');
         }
         
+        // Test the API key with a simple request before saving
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+        const testResponse = await fetch(testUrl);
+        
+        if (!testResponse.ok) {
+          const errorData = await testResponse.json();
+          console.error('API key test failed:', errorData);
+          throw new Error(`API key validation failed: ${errorData.error?.message || 'Unknown error'}`);
+        }
+        
         // Save the API key to localStorage
         console.log('Saving API key to localStorage');
         localStorage.setItem('gemini_api_key', apiKey);
