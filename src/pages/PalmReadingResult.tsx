@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2, AlertCircle } from 'lucide-react';
@@ -36,13 +37,12 @@ const PalmReadingResult = () => {
       const palmImageData = sessionStorage.getItem('palmImage');
       const { data, error } = await supabase
         .from('palm_readings')
-        .insert([
-          { 
-            user_id: userId,
-            reading_text: readingText,
-            palm_image: palmImageData?.substring(0, 100) + '...'
-          }
-        ]);
+        .insert({
+          user_id: userId,
+          image_url: palmImageData || '', // Changed from palm_image to image_url
+          results: readingText, // Changed from reading_text to results
+          language: 'english' // Added language field with default value
+        });
       
       if (error) {
         console.error('Error saving reading to database:', error);
