@@ -89,7 +89,10 @@ Create a comprehensive palm reading report with these CLEARLY MARKED sections:
 
 Format the report with clear section headings using markdown (## for main sections, ### for subsections). 
 Make observations that are specific to the unique features visible in the uploaded palm image.
-Maintain a professional, insightful tone throughout the reading.`
+Maintain a professional, insightful tone throughout the reading.
+
+DO NOT include the text "demo" or any indications that this is a sample or demo reading.
+This should be presented as a genuine, personal palm reading based on the uploaded image.`
               },
               formattedImage
             ]

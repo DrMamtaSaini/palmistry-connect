@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2, AlertCircle } from 'lucide-react';
@@ -35,7 +34,7 @@ const PalmReadingResult = () => {
     
     try {
       const palmImageData = sessionStorage.getItem('palmImage');
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('palm_readings')
         .insert({
           user_id: userId,
@@ -47,7 +46,7 @@ const PalmReadingResult = () => {
       if (error) {
         console.error('Error saving reading to database:', error);
       } else {
-        console.log('Successfully saved reading to database:', data);
+        console.log('Successfully saved reading to database');
       }
     } catch (err) {
       console.error('Error in saveReadingToDatabase:', err);
@@ -343,32 +342,7 @@ const PalmReadingResult = () => {
               <h2 className="heading-md">Full Palmistry Report</h2>
               <div className="flex gap-3 flex-wrap">
                 <button 
-                  onClick={() => {
-                    toast({
-                      title: "Generating Full Report",
-                      description: "Your comprehensive report is being prepared for download...",
-                    });
-                    
-                    try {
-                      generatePDF({
-                        title: "Complete Palm Reading Analysis",
-                        subtitle: "Comprehensive Personal Insights",
-                        content: palmAnalysis || "No analysis available",
-                        fileName: "Palm_Reading_Full_Report.pdf"
-                      }).then(() => {
-                        toast({
-                          title: "Success",
-                          description: "Your comprehensive report has been downloaded successfully.",
-                        });
-                      });
-                    } catch (error) {
-                      toast({
-                        title: "Error",
-                        description: "Failed to generate the report. Please try again.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
+                  onClick={handleFullReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                   disabled={!palmAnalysis}
                 >
@@ -376,36 +350,7 @@ const PalmReadingResult = () => {
                   <span>Download Full Report</span>
                 </button>
                 <button 
-                  onClick={() => {
-                    toast({
-                      title: "Generating Basic Report",
-                      description: "Your basic report is being prepared for download...",
-                    });
-                    
-                    const basicContent = palmAnalysis 
-                      ? palmAnalysis.split('\n').slice(0, 20).join('\n') + '\n\n(This is a basic version of your report. For full insights, please download the complete report.)'
-                      : "No analysis available";
-                    
-                    try {
-                      generatePDF({
-                        title: "Basic Palm Reading Analysis",
-                        subtitle: "Essential Personal Insights",
-                        content: basicContent,
-                        fileName: "Palm_Reading_Basic_Report.pdf"
-                      }).then(() => {
-                        toast({
-                          title: "Success",
-                          description: "Your basic report has been downloaded successfully.",
-                        });
-                      });
-                    } catch (error) {
-                      toast({
-                        title: "Error",
-                        description: "Failed to generate the report. Please try again.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
+                  onClick={handleBasicReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
                   disabled={!palmAnalysis}
                 >
@@ -439,13 +384,7 @@ const PalmReadingResult = () => {
                   </ul>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
-                      onClick={async () => {
-                        setPalmAnalysis(null);
-                        setError(null);
-                        sessionStorage.removeItem('palmReadingResult');
-                        
-                        await analyzePalm();
-                      }}
+                      onClick={retryAnalysis}
                       className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                     >
                       Try Again
