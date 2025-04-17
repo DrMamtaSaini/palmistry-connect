@@ -67,10 +67,10 @@ class GeminiAI {
           {
             parts: [
               {
-                text: `Act as a professional palm reader with extensive knowledge of palmistry traditions. 
-You'll analyze the uploaded palm image and provide a detailed, authentic reading.
+                text: `Act as a professional palm reader with decades of experience in traditional palmistry. 
+Analyze the uploaded palm image and provide a detailed, authentic reading following traditional palmistry principles.
 
-Create a comprehensive palm reading report with these sections:
+Create a comprehensive palm reading report with these CLEARLY MARKED sections:
 1. Introduction - A brief welcome and overview of palmistry
 2. Hand Shape Analysis - Earth/Air/Fire/Water hand type and its significance
 3. Major Lines Analysis:
@@ -78,7 +78,7 @@ Create a comprehensive palm reading report with these sections:
    - Head Line - Intellectual style, thinking patterns, mental attitudes
    - Heart Line - Emotional nature, relationship approach
    - Fate Line - Career path, destiny, life purpose
-4. Minor Lines Analysis (if visible):
+4. Minor Lines Analysis:
    - Health Line - Overall wellness and health concerns
    - Marriage Line - Relationship patterns and timing
    - Money Line - Financial prospects and attitudes
@@ -87,8 +87,8 @@ Create a comprehensive palm reading report with these sections:
 7. Life Path & Potential - Overall life trajectory and key decision points
 8. Guidance & Recommendations - Practical advice based on the reading
 
-Format the report with clear section headings using markdown (##, ###). 
-Be specific and detailed about what you observe in the image, not generic statements.
+Format the report with clear section headings using markdown (## for main sections, ### for subsections). 
+Make observations that are specific to the unique features visible in the uploaded palm image.
 Maintain a professional, insightful tone throughout the reading.`
               },
               formattedImage
@@ -120,7 +120,7 @@ Maintain a professional, insightful tone throughout the reading.`
 
       // Parse the response
       const result = await response.json();
-      console.log('Received response from Gemini API');
+      console.log('Received response from Gemini API:', result);
       
       // Check if the response contains an error
       if (result.error) {
@@ -146,7 +146,7 @@ Maintain a professional, insightful tone throughout the reading.`
         throw new Error('Empty response from Gemini API');
       }
       
-      console.log('Successfully extracted palm reading from Gemini response');
+      console.log('Successfully extracted palm reading from Gemini response:', analysisText.substring(0, 100) + '...');
       return analysisText;
     } catch (error) {
       console.error('Error in analyzePalm:', error);

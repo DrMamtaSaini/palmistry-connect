@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2, AlertCircle } from 'lucide-react';
@@ -8,6 +7,7 @@ import { revealAnimation } from '@/lib/animations';
 import { generatePDF } from '@/lib/pdfUtils';
 import { toast } from '@/hooks/use-toast';
 import { useGemini } from '@/contexts/GeminiContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const PalmReadingResult = () => {
   const navigate = useNavigate();
@@ -16,6 +16,43 @@ const PalmReadingResult = () => {
   const [hasAttemptedAnalysis, setHasAttemptedAnalysis] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { gemini, isLoading: isGeminiLoading } = useGemini();
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setUserId(data.session.user.id);
+      }
+    };
+    
+    checkAuth();
+  }, []);
+  
+  const saveReadingToDatabase = async (readingText: string) => {
+    if (!userId) return;
+    
+    try {
+      const palmImageData = sessionStorage.getItem('palmImage');
+      const { data, error } = await supabase
+        .from('palm_readings')
+        .insert([
+          { 
+            user_id: userId,
+            reading_text: readingText,
+            palm_image: palmImageData?.substring(0, 100) + '...'
+          }
+        ]);
+      
+      if (error) {
+        console.error('Error saving reading to database:', error);
+      } else {
+        console.log('Successfully saved reading to database:', data);
+      }
+    } catch (err) {
+      console.error('Error in saveReadingToDatabase:', err);
+    }
+  };
   
   const analyzePalm = useCallback(async () => {
     console.log('Starting palm analysis...');
@@ -38,7 +75,6 @@ const PalmReadingResult = () => {
     try {
       console.log('Sending image to Gemini API for analysis...');
       
-      // Make sure the image data is in the correct format for the API
       const result = await gemini.analyzePalm(storedImage);
       console.log('Analysis result received:', result ? 'Success' : 'Empty result');
       
@@ -50,7 +86,10 @@ const PalmReadingResult = () => {
       setPalmAnalysis(result);
       sessionStorage.setItem('palmReadingResult', result);
       
-      // Ensure we clear any previous errors
+      if (userId) {
+        await saveReadingToDatabase(result);
+      }
+      
       setError(null);
       console.log('Palm analysis result has been set:', result.substring(0, 100) + '...');
       return true;
@@ -67,17 +106,15 @@ const PalmReadingResult = () => {
       setIsAnalyzing(false);
       setHasAttemptedAnalysis(true);
     }
-  }, [gemini]);
+  }, [gemini, userId]);
   
   useEffect(() => {
     const cleanup = revealAnimation();
     
     const loadData = async () => {
       try {
-        // Clear any previous errors when loading data
         setError(null);
         
-        // Get stored palm reading from sessionStorage
         const storedReading = sessionStorage.getItem('palmReadingResult');
         const storedImage = sessionStorage.getItem('palmImage');
         
@@ -85,21 +122,18 @@ const PalmReadingResult = () => {
         console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
         
         if (storedReading && storedReading.trim().length > 100) {
-          // Real analysis should be substantial in length
           console.log('Found valid stored reading, using it');
           console.log('Reading preview:', storedReading.substring(0, 100) + '...');
           setPalmAnalysis(storedReading);
           setHasAttemptedAnalysis(true);
         } else if (storedImage && gemini && !isGeminiLoading) {
           console.log('No valid stored reading but we have image and gemini, analyzing now...');
-          // Clear any previously stored reading if it exists but is not valid
           if (storedReading) {
             console.log('Clearing invalid stored reading');
             sessionStorage.removeItem('palmReadingResult');
           }
           await analyzePalm();
         } else if (!storedImage) {
-          // If no image, redirect to upload page
           console.log('No palm image found, redirecting to upload page');
           toast({
             title: "No Palm Image",
@@ -130,44 +164,71 @@ const PalmReadingResult = () => {
 
     console.log('Formatting analysis content, length:', content.length);
     
-    // Convert markdown-style sections into formatted HTML
-    const sections = content.split(/\n#{2,3} /);
+    const sections = content.split(/\n(#{2,3} )/);
     
     if (sections.length <= 1) {
-      // If no markdown headers are detected, just split by paragraphs
       console.log('No sections detected, splitting by paragraphs');
-      return content.split('\n').map((para, idx) => (
-        <p key={idx} className="mb-4">{para.trim() ? para : <br />}</p>
-      ));
+      return content.split('\n').map((para, idx) => {
+        if (para.trim().startsWith('**') && para.trim().endsWith('**')) {
+          return (
+            <h3 key={idx} className="text-lg font-bold mb-2 mt-4">
+              {para.trim().replace(/\*\*/g, '')}
+            </h3>
+          );
+        }
+        return <p key={idx} className="mb-4">{para.trim() ? para : <br />}</p>;
+      });
     }
     
-    // Extract the first section (intro text)
-    const intro = sections[0];
-    console.log('Found intro and', sections.length - 1, 'sections');
+    const formattedContent: JSX.Element[] = [];
     
-    const formattedSections = sections.slice(1).map((section, index) => {
-      const sectionLines = section.split('\n');
-      const sectionTitle = sectionLines[0];
-      const sectionContent = sectionLines.slice(1).join('\n').trim();
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
       
-      return (
-        <div key={index} className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">{sectionTitle}</h3>
-          {sectionContent.split('\n\n').map((para, paraIdx) => (
-            <p key={paraIdx} className="mb-4">{para.trim()}</p>
-          ))}
-        </div>
-      );
-    });
+      if (section.trim() === '##' || section.trim() === '###') {
+        if (i + 1 < sections.length) {
+          const headerText = sections[i + 1].split('\n')[0].trim();
+          const headerContent = sections[i + 1].split('\n').slice(1).join('\n');
+          
+          formattedContent.push(
+            <div key={`section-${i}`} className="mb-8">
+              <h3 className="text-xl font-semibold mb-4">{headerText}</h3>
+              {headerContent.split('\n\n').map((para, paraIdx) => {
+                if (!para.trim()) return null;
+                
+                if (para.trim().startsWith('* ') || para.trim().startsWith('- ')) {
+                  const listItems = para.split(/\n[*-] /).filter(item => item.trim());
+                  return (
+                    <ul key={`list-${paraIdx}`} className="list-disc ml-6 mb-4">
+                      {listItems.map((item, itemIdx) => (
+                        <li key={`item-${itemIdx}`} className="mb-2">{item.trim()}</li>
+                      ))}
+                    </ul>
+                  );
+                }
+                
+                return <p key={`para-${paraIdx}`} className="mb-4">{para.trim()}</p>;
+              })}
+            </div>
+          );
+          
+          i++;
+        }
+      } else if (i === 0) {
+        formattedContent.push(
+          <div key="intro" className="mb-6">
+            {section.split('\n\n').map((para, paraIdx) => {
+              if (!para.trim()) return null;
+              return <p key={`intro-${paraIdx}`} className="mb-4">{para.trim()}</p>;
+            })}
+          </div>
+        );
+      }
+    }
     
-    return (
-      <>
-        {intro.split('\n\n').map((para, idx) => (
-          <p key={`intro-${idx}`} className="mb-4">{para.trim() ? para : <br />}</p>
-        ))}
-        {formattedSections}
-      </>
-    );
+    return formattedContent.length > 0 ? formattedContent : content.split('\n').map((para, idx) => (
+      <p key={idx} className="mb-4">{para.trim() ? para : <br />}</p>
+    ));
   };
 
   const handleFullReportDownload = async () => {
@@ -229,12 +290,10 @@ const PalmReadingResult = () => {
   };
   
   const retryAnalysis = async () => {
-    // Clear previous results and errors
     setPalmAnalysis(null);
     setError(null);
     sessionStorage.removeItem('palmReadingResult');
     
-    // Try analysis again
     await analyzePalm();
   };
   
@@ -284,7 +343,32 @@ const PalmReadingResult = () => {
               <h2 className="heading-md">Full Palmistry Report</h2>
               <div className="flex gap-3 flex-wrap">
                 <button 
-                  onClick={handleFullReportDownload}
+                  onClick={() => {
+                    toast({
+                      title: "Generating Full Report",
+                      description: "Your comprehensive report is being prepared for download...",
+                    });
+                    
+                    try {
+                      generatePDF({
+                        title: "Complete Palm Reading Analysis",
+                        subtitle: "Comprehensive Personal Insights",
+                        content: palmAnalysis || "No analysis available",
+                        fileName: "Palm_Reading_Full_Report.pdf"
+                      }).then(() => {
+                        toast({
+                          title: "Success",
+                          description: "Your comprehensive report has been downloaded successfully.",
+                        });
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to generate the report. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                   disabled={!palmAnalysis}
                 >
@@ -292,7 +376,36 @@ const PalmReadingResult = () => {
                   <span>Download Full Report</span>
                 </button>
                 <button 
-                  onClick={handleBasicReportDownload}
+                  onClick={() => {
+                    toast({
+                      title: "Generating Basic Report",
+                      description: "Your basic report is being prepared for download...",
+                    });
+                    
+                    const basicContent = palmAnalysis 
+                      ? palmAnalysis.split('\n').slice(0, 20).join('\n') + '\n\n(This is a basic version of your report. For full insights, please download the complete report.)'
+                      : "No analysis available";
+                    
+                    try {
+                      generatePDF({
+                        title: "Basic Palm Reading Analysis",
+                        subtitle: "Essential Personal Insights",
+                        content: basicContent,
+                        fileName: "Palm_Reading_Basic_Report.pdf"
+                      }).then(() => {
+                        toast({
+                          title: "Success",
+                          description: "Your basic report has been downloaded successfully.",
+                        });
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to generate the report. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
                   disabled={!palmAnalysis}
                 >
@@ -326,7 +439,13 @@ const PalmReadingResult = () => {
                   </ul>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
-                      onClick={retryAnalysis}
+                      onClick={async () => {
+                        setPalmAnalysis(null);
+                        setError(null);
+                        sessionStorage.removeItem('palmReadingResult');
+                        
+                        await analyzePalm();
+                      }}
                       className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                     >
                       Try Again
