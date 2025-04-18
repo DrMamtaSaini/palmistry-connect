@@ -82,6 +82,10 @@ const PalmReadingResult = () => {
     try {
       console.log('Sending image to Gemini API for analysis...');
       
+      // Clear any existing result before starting new analysis
+      setPalmAnalysis(null);
+      sessionStorage.removeItem('palmReadingResult');
+      
       const result = await gemini.analyzePalm(storedImage);
       console.log('Analysis result received:', result ? `Success (${result.length} chars)` : 'Empty result');
       
@@ -136,6 +140,7 @@ const PalmReadingResult = () => {
         let foundReadingInDb = false;
         
         if (userId) {
+          console.log('Checking for reading in database for user:', userId);
           const { data: readings, error: readingsError } = await supabase
             .from('palm_readings')
             .select('results')
@@ -147,11 +152,14 @@ const PalmReadingResult = () => {
             console.log('Found reading in database, using it');
             const readingText = readings[0].results.toString();
             if (readingText && readingText.length > 100) {
+              console.log('Setting palm analysis from database:', readingText.substring(0, 100) + '...');
               setPalmAnalysis(readingText);
               sessionStorage.setItem('palmReadingResult', readingText);
               setHasAttemptedAnalysis(true);
               foundReadingInDb = true;
             }
+          } else {
+            console.log('No readings found in database or error:', readingsError);
           }
         }
         
@@ -180,7 +188,7 @@ const PalmReadingResult = () => {
               setPalmAnalysis(storedReading);
               setHasAttemptedAnalysis(true);
             }
-          } else if (storedImage && gemini && !isGeminiLoading) {
+          } else if (storedImage && gemini && !isGeminiLoading && !isAnalyzing) {
             console.log('No valid stored reading but we have image and gemini, analyzing now...');
             if (storedReading) {
               console.log('Clearing invalid stored reading');
@@ -219,11 +227,17 @@ const PalmReadingResult = () => {
 
     console.log('Formatting analysis content, length:', content.length);
     
-    const sections = content.split(/\n(#{2,3} )/);
+    // First, ensure content is a string
+    const stringContent = String(content);
+    
+    // Log the first part of the content for debugging
+    console.log('Content preview:', stringContent.substring(0, 200));
+    
+    const sections = stringContent.split(/\n(#{2,3} )/);
     
     if (sections.length <= 1) {
       console.log('No sections detected, splitting by paragraphs');
-      return content.split('\n').map((para, idx) => {
+      return stringContent.split('\n').map((para, idx) => {
         if (para.trim().startsWith('**') && para.trim().endsWith('**')) {
           return (
             <h3 key={idx} className="text-lg font-bold mb-2 mt-4">
@@ -281,7 +295,7 @@ const PalmReadingResult = () => {
       }
     }
     
-    return formattedContent.length > 0 ? formattedContent : content.split('\n').map((para, idx) => (
+    return formattedContent.length > 0 ? formattedContent : stringContent.split('\n').map((para, idx) => (
       <p key={idx} className="mb-4">{para.trim() ? para : <br />}</p>
     ));
   };
@@ -426,7 +440,10 @@ const PalmReadingResult = () => {
             
             <div className="prose prose-lg max-w-none text-left">
               {palmAnalysis ? (
-                formatAnalysisContent(palmAnalysis)
+                <>
+                  {console.log('Rendering palm analysis, length:', palmAnalysis.length)}
+                  {formatAnalysisContent(palmAnalysis)}
+                </>
               ) : error ? (
                 <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
                   <div className="flex items-center justify-center mb-4">
