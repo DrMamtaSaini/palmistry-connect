@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -150,7 +149,11 @@ const PalmReadingResult = () => {
             
           if (!readingsError && readings && readings.length > 0 && readings[0].results) {
             console.log('Found reading in database, using it');
-            const readingText = readings[0].results.toString();
+            // Ensure results is treated as a string
+            const readingText = typeof readings[0].results === 'object' 
+              ? JSON.stringify(readings[0].results) 
+              : String(readings[0].results);
+            
             if (readingText && readingText.length > 100) {
               console.log('Setting palm analysis from database:', readingText.substring(0, 100) + '...');
               setPalmAnalysis(readingText);
@@ -233,71 +236,46 @@ const PalmReadingResult = () => {
     // Log the first part of the content for debugging
     console.log('Content preview:', stringContent.substring(0, 200));
     
-    const sections = stringContent.split(/\n(#{2,3} )/);
-    
-    if (sections.length <= 1) {
-      console.log('No sections detected, splitting by paragraphs');
-      return stringContent.split('\n').map((para, idx) => {
-        if (para.trim().startsWith('**') && para.trim().endsWith('**')) {
-          return (
-            <h3 key={idx} className="text-lg font-bold mb-2 mt-4">
-              {para.trim().replace(/\*\*/g, '')}
-            </h3>
-          );
-        }
-        return <p key={idx} className="mb-4">{para.trim() ? para : <br />}</p>;
-      });
-    }
-    
-    const formattedContent: JSX.Element[] = [];
-    
-    for (let i = 0; i < sections.length; i++) {
-      const section = sections[i];
-      
-      if (section.trim() === '##' || section.trim() === '###') {
-        if (i + 1 < sections.length) {
-          const headerText = sections[i + 1].split('\n')[0].trim();
-          const headerContent = sections[i + 1].split('\n').slice(1).join('\n');
+    // Simple rendering for basic markdown
+    return (
+      <div className="palm-reading-content">
+        {stringContent.split('\n').map((line, idx) => {
+          // Handle headers
+          if (line.startsWith('# ')) {
+            return <h1 key={idx} className="text-2xl font-bold mt-6 mb-4">{line.substring(2)}</h1>;
+          }
+          if (line.startsWith('## ')) {
+            return <h2 key={idx} className="text-xl font-bold mt-5 mb-3">{line.substring(3)}</h2>;
+          }
+          if (line.startsWith('### ')) {
+            return <h3 key={idx} className="text-lg font-bold mt-4 mb-2">{line.substring(4)}</h3>;
+          }
           
-          formattedContent.push(
-            <div key={`section-${i}`} className="mb-8">
-              <h3 className="text-xl font-semibold mb-4">{headerText}</h3>
-              {headerContent.split('\n\n').map((para, paraIdx) => {
-                if (!para.trim()) return null;
-                
-                if (para.trim().startsWith('* ') || para.trim().startsWith('- ')) {
-                  const listItems = para.split(/\n[*-] /).filter(item => item.trim());
-                  return (
-                    <ul key={`list-${paraIdx}`} className="list-disc ml-6 mb-4">
-                      {listItems.map((item, itemIdx) => (
-                        <li key={`item-${itemIdx}`} className="mb-2">{item.trim()}</li>
-                      ))}
-                    </ul>
-                  );
-                }
-                
-                return <p key={`para-${paraIdx}`} className="mb-4">{para.trim()}</p>;
-              })}
-            </div>
-          );
+          // Handle bold text
+          if (line.includes('**')) {
+            const parts = line.split(/(\*\*.*?\*\*)/g);
+            return (
+              <p key={idx} className="mb-3">
+                {parts.map((part, partIdx) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={partIdx}>{part.substring(2, part.length - 2)}</strong>;
+                  }
+                  return part;
+                })}
+              </p>
+            );
+          }
           
-          i++;
-        }
-      } else if (i === 0) {
-        formattedContent.push(
-          <div key="intro" className="mb-6">
-            {section.split('\n\n').map((para, paraIdx) => {
-              if (!para.trim()) return null;
-              return <p key={`intro-${paraIdx}`} className="mb-4">{para.trim()}</p>;
-            })}
-          </div>
-        );
-      }
-    }
-    
-    return formattedContent.length > 0 ? formattedContent : stringContent.split('\n').map((para, idx) => (
-      <p key={idx} className="mb-4">{para.trim() ? para : <br />}</p>
-    ));
+          // Handle empty lines
+          if (line.trim() === '') {
+            return <br key={idx} />;
+          }
+          
+          // Default paragraph
+          return <p key={idx} className="mb-3">{line}</p>;
+        })}
+      </div>
+    );
   };
 
   const handleFullReportDownload = async () => {
