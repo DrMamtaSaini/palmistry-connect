@@ -80,6 +80,7 @@ Analyze the palm image provided to generate an in-depth life reading report. Foc
 - Mercury Line: Communication and business aptitude
 - Marriage Line: Relationships and commitment patterns
 - Health Line: Overall wellbeing and potential health concerns
+- Girdle of Venus: Emotional sensitivity and intuition
 
 # Palm Features to Examine
 - Hand Shape (Earth, Air, Fire, Water)
@@ -118,11 +119,14 @@ Analyze the palm image provided to generate an in-depth life reading report. Foc
 - Personal growth opportunities
 
 ## Practical Guidance
-- Traditional remedies if appropriate (gemstones, mantras)
+- Traditional remedies (gemstones, mantras)
 - Modern approaches to maximize potential
-- Specific advice for areas of concern
+- Specific advice for specific questions like:
+  - "Will I settle abroad?"
+  - "When will I get married?"
+  - "What is my true life purpose?"
 
-FORMAT YOUR RESPONSE WITH PROPER MARKDOWN:
+## FORMAT YOUR RESPONSE WITH PROPER MARKDOWN:
 - Use # for main section headers
 - Use ## for subsections
 - Use - for bullet points

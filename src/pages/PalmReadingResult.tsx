@@ -77,6 +77,7 @@ const PalmReadingResult = () => {
     }
     
     setIsAnalyzing(true);
+    setError(null); // Clear any previous errors
     
     try {
       console.log('Sending image to Gemini API for analysis...');
@@ -87,6 +88,7 @@ const PalmReadingResult = () => {
       
       const result = await gemini.analyzePalm(storedImage);
       console.log('Analysis result received:', result ? `Success (${result.length} chars)` : 'Empty result');
+      console.log('Sample of result received:', result ? result.substring(0, 500) : 'No result');
       
       if (!result || typeof result !== 'string' || result.trim() === '') {
         throw new Error('Empty or invalid result from Gemini API');
@@ -215,117 +217,132 @@ const PalmReadingResult = () => {
     console.log('Formatting analysis content, length:', content.length);
     console.log('Content preview:', content.substring(0, 100));
     
-    // Process the content for rendering with enhanced markdown support
-    const lines = content.split('\n');
-    const elements: JSX.Element[] = [];
-    let currentList: JSX.Element[] = [];
-    let inList = false;
-    
-    lines.forEach((line, index) => {
-      // Handle empty lines
-      if (line.trim() === '') {
+    try {
+      // Process the content for rendering with enhanced markdown support
+      const lines = content.split('\n');
+      const elements: JSX.Element[] = [];
+      let currentList: JSX.Element[] = [];
+      let inList = false;
+      
+      lines.forEach((line, index) => {
+        // Handle empty lines
+        if (line.trim() === '') {
+          if (inList) {
+            // End the current list
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+            currentList = [];
+            inList = false;
+          }
+          elements.push(<div key={`empty-${index}`} className="my-2"></div>);
+          return;
+        }
+        
+        // Handle headers
+        if (line.match(/^# /)) {
+          if (inList) {
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+            currentList = [];
+            inList = false;
+          }
+          elements.push(<h1 key={index} className="text-2xl font-bold mt-6 mb-4">{line.replace(/^# /, '')}</h1>);
+          return;
+        }
+        
+        if (line.match(/^## /)) {
+          if (inList) {
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+            currentList = [];
+            inList = false;
+          }
+          elements.push(<h2 key={index} className="text-xl font-bold mt-5 mb-3">{line.replace(/^## /, '')}</h2>);
+          return;
+        }
+        
+        if (line.match(/^### /)) {
+          if (inList) {
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+            currentList = [];
+            inList = false;
+          }
+          elements.push(<h3 key={index} className="text-lg font-bold mt-4 mb-2">{line.replace(/^### /, '')}</h3>);
+          return;
+        }
+        
+        // Handle lists
+        if (line.match(/^- /) || line.match(/^\* /)) {
+          inList = true;
+          const listItem = (
+            <li key={`item-${index}`} className="mb-1">
+              {renderFormattedText(line.replace(/^-\s+/, '').replace(/^\*\s+/, ''))}
+            </li>
+          );
+          currentList.push(listItem);
+          return;
+        }
+        
+        // Handle horizontal rule
+        if (line.match(/^---+$/)) {
+          if (inList) {
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+            currentList = [];
+            inList = false;
+          }
+          elements.push(<hr key={index} className="my-6 border-t border-gray-300" />);
+          return;
+        }
+        
+        // Default paragraph handling
         if (inList) {
-          // End the current list
           elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
           currentList = [];
           inList = false;
         }
-        elements.push(<div key={`empty-${index}`} className="my-2"></div>);
-        return;
-      }
-      
-      // Handle headers
-      if (line.match(/^# /)) {
-        if (inList) {
-          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
-          currentList = [];
-          inList = false;
-        }
-        elements.push(<h1 key={index} className="text-2xl font-bold mt-6 mb-4">{line.replace(/^# /, '')}</h1>);
-        return;
-      }
-      
-      if (line.match(/^## /)) {
-        if (inList) {
-          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
-          currentList = [];
-          inList = false;
-        }
-        elements.push(<h2 key={index} className="text-xl font-bold mt-5 mb-3">{line.replace(/^## /, '')}</h2>);
-        return;
-      }
-      
-      if (line.match(/^### /)) {
-        if (inList) {
-          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
-          currentList = [];
-          inList = false;
-        }
-        elements.push(<h3 key={index} className="text-lg font-bold mt-4 mb-2">{line.replace(/^### /, '')}</h3>);
-        return;
-      }
-      
-      // Handle lists
-      if (line.match(/^- /) || line.match(/^\* /)) {
-        inList = true;
-        const listItem = (
-          <li key={`item-${index}`} className="mb-1">
-            {renderFormattedText(line.replace(/^-\s+/, '').replace(/^\*\s+/, ''))}
-          </li>
+        
+        elements.push(
+          <p key={index} className="mb-3">
+            {renderFormattedText(line)}
+          </p>
         );
-        currentList.push(listItem);
-        return;
+      });
+      
+      // Add any remaining list items
+      if (inList && currentList.length > 0) {
+        elements.push(<ul key="list-end" className="list-disc my-4 ml-6">{currentList}</ul>);
       }
       
-      // Handle horizontal rule
-      if (line.match(/^---+$/)) {
-        if (inList) {
-          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
-          currentList = [];
-          inList = false;
-        }
-        elements.push(<hr key={index} className="my-6 border-t border-gray-300" />);
-        return;
-      }
-      
-      // Default paragraph handling
-      if (inList) {
-        elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
-        currentList = [];
-        inList = false;
-      }
-      
-      elements.push(
-        <p key={index} className="mb-3">
-          {renderFormattedText(line)}
-        </p>
+      return <div className="palm-reading-content">{elements}</div>;
+    } catch (error) {
+      console.error('Error formatting content:', error);
+      // Fallback rendering if there's an error in the formatting logic
+      return (
+        <div className="palm-reading-content-fallback whitespace-pre-wrap">
+          {content}
+        </div>
       );
-    });
-    
-    // Add any remaining list items
-    if (inList && currentList.length > 0) {
-      elements.push(<ul key="list-end" className="list-disc my-4 ml-6">{currentList}</ul>);
     }
-    
-    return <div className="palm-reading-content">{elements}</div>;
   };
   
   // Helper function to render formatted text (bold, italic, etc.)
   const renderFormattedText = (text: string) => {
     if (!text) return null;
     
-    // Process bold text
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return (
-      <>
-        {parts.map((part, idx) => {
-          if (part.startsWith('**') && part.endsWith('**')) {
-            return <strong key={idx}>{part.substring(2, part.length - 2)}</strong>;
-          }
-          return <span key={idx}>{part}</span>;
-        })}
-      </>
-    );
+    try {
+      // Process bold text
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      return (
+        <>
+          {parts.map((part, idx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={idx}>{part.substring(2, part.length - 2)}</strong>;
+            }
+            return <span key={idx}>{part}</span>;
+          })}
+        </>
+      );
+    } catch (error) {
+      console.error('Error in renderFormattedText:', error);
+      return <span>{text}</span>;
+    }
   };
 
   const handleFullReportDownload = async () => {

@@ -73,7 +73,7 @@ const ImageUploader = ({
         // Save to session storage
         try {
           sessionStorage.setItem('palmImage', result);
-          // Also clear any existing reading result when uploading a new image
+          // Always clear any existing reading result when uploading a new image
           sessionStorage.removeItem('palmReadingResult');
           console.log('Image saved to session storage');
           console.log('Previous reading result cleared');
