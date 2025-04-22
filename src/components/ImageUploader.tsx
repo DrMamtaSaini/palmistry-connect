@@ -77,6 +77,12 @@ const ImageUploader = ({
           sessionStorage.removeItem('palmReadingResult');
           console.log('Image saved to session storage');
           console.log('Previous reading result cleared');
+          
+          // Show toast notification to confirm image upload
+          toast({
+            title: "Image uploaded successfully",
+            description: "Your palm image is ready for analysis.",
+          });
         } catch (err) {
           console.error('Error saving image to session storage:', err);
           // If session storage fails, continue anyway
@@ -204,7 +210,7 @@ const ImageUploader = ({
               <Upload className="h-6 w-6 text-primary" />
             )}
           </div>
-          <p className="font-medium mb-1">{label}</p>
+          <p className="font-medium mb-1 text-foreground">{label}</p>
           <p className="text-sm text-muted-foreground mb-4">
             {isDragging ? 'Drop image here' : 'Drag and drop or click to upload'}
           </p>
