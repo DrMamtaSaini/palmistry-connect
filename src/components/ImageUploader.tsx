@@ -21,7 +21,10 @@ const ImageUploader = ({
   multiple = false,
   accept = 'image/jpeg, image/png, image/jpg'
 }: ImageUploaderProps) => {
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(() => {
+    // Try to load from session storage on component mount
+    return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('palmImage') : null;
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,22 +65,35 @@ const ImageUploader = ({
     // Create preview
     const reader = new FileReader();
     reader.onload = () => {
-      const result = reader.result as string;
-      setPreview(result);
-      console.log('Image preview created successfully');
-      
-      // Save to session storage
       try {
-        sessionStorage.setItem('palmImage', result);
-        console.log('Image saved to session storage');
+        const result = reader.result as string;
+        setPreview(result);
+        console.log('Image preview created successfully');
+        
+        // Save to session storage
+        try {
+          sessionStorage.setItem('palmImage', result);
+          // Also clear any existing reading result when uploading a new image
+          sessionStorage.removeItem('palmReadingResult');
+          console.log('Image saved to session storage');
+          console.log('Previous reading result cleared');
+        } catch (err) {
+          console.error('Error saving image to session storage:', err);
+          // If session storage fails, continue anyway
+        }
+        
+        // Pass file to parent component
+        onImageSelect(file);
+        setIsLoading(false);
       } catch (err) {
-        console.error('Error saving image to session storage:', err);
-        // If session storage fails, continue anyway
+        console.error('Error in FileReader onload:', err);
+        setIsLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to process the image. Please try again.",
+          variant: "destructive"
+        });
       }
-      
-      // Pass file to parent component
-      onImageSelect(file);
-      setIsLoading(false);
     };
     
     reader.onerror = (error) => {

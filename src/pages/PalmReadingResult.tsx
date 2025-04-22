@@ -173,30 +173,14 @@ const PalmReadingResult = () => {
           console.log('Checking stored reading:', storedReading ? 'Found' : 'Not found');
           console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
           
-          if (storedReading && storedReading.trim().length > 100) {
-            // Check if the stored reading contains demo-related words
-            const demoKeywords = ['demo', 'example', 'sample', 'this is a demonstration'];
-            const containsDemoKeywords = demoKeywords.some(keyword => 
-              storedReading.toLowerCase().includes(keyword.toLowerCase()));
-              
-            if (containsDemoKeywords) {
-              console.log('Stored reading contains demo keywords, will reanalyze');
-              sessionStorage.removeItem('palmReadingResult');
-              if (storedImage && gemini && !isGeminiLoading) {
-                await analyzePalm();
-              }
-            } else {
-              console.log('Found valid stored reading, using it');
-              console.log('Reading preview:', storedReading.substring(0, 100) + '...');
-              setPalmAnalysis(storedReading);
-              setHasAttemptedAnalysis(true);
-            }
+          if (storedReading && storedReading.trim().length > 10) {
+            // Content exists and is reasonably long
+            console.log('Found valid stored reading, using it');
+            console.log('Reading preview:', storedReading.substring(0, 100) + '...');
+            setPalmAnalysis(storedReading);
+            setHasAttemptedAnalysis(true);
           } else if (storedImage && gemini && !isGeminiLoading && !isAnalyzing) {
             console.log('No valid stored reading but we have image and gemini, analyzing now...');
-            if (storedReading) {
-              console.log('Clearing invalid stored reading');
-              sessionStorage.removeItem('palmReadingResult');
-            }
             await analyzePalm();
           } else if (!storedImage) {
             console.log('No palm image found, redirecting to upload page');
@@ -223,84 +207,125 @@ const PalmReadingResult = () => {
   }, [navigate, gemini, isGeminiLoading, analyzePalm, userId]);
 
   const formatAnalysisContent = (content: string) => {
-    if (!content || content.trim() === '') {
-      console.log('No content to format');
+    if (!content || typeof content !== 'string' || content.trim() === '') {
+      console.log('No content to format or invalid content type');
       return <p>No analysis content available.</p>;
     }
 
     console.log('Formatting analysis content, length:', content.length);
-    
-    // Ensure content is a string
-    const stringContent = String(content);
-    
-    // Log the first part of the content for debugging
-    console.log('Content preview:', stringContent.substring(0, 200));
+    console.log('Content preview:', content.substring(0, 100));
     
     // Process the content for rendering with enhanced markdown support
-    const processedContent = stringContent.split('\n').map((line, idx) => {
-      // Handle headers
-      if (line.match(/^# /)) {
-        return <h1 key={idx} className="text-2xl font-bold mt-6 mb-4">{line.replace(/^# /, '')}</h1>;
-      }
-      if (line.match(/^## /)) {
-        return <h2 key={idx} className="text-xl font-bold mt-5 mb-3">{line.replace(/^## /, '')}</h2>;
-      }
-      if (line.match(/^### /)) {
-        return <h3 key={idx} className="text-lg font-bold mt-4 mb-2">{line.replace(/^### /, '')}</h3>;
-      }
-      
-      // Handle bold text (matches **text**)
-      if (line.includes('**')) {
-        const parts = line.split(/(\*\*.*?\*\*)/g);
-        return (
-          <p key={idx} className="mb-3">
-            {parts.map((part, partIdx) => {
-              if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={partIdx}>{part.substring(2, part.length - 2)}</strong>;
-              }
-              return <span key={partIdx}>{part}</span>;
-            })}
-          </p>
-        );
-      }
-      
-      // Handle lists (- item)
-      if (line.match(/^- /)) {
-        return <li key={idx} className="ml-6 mb-1">{line.replace(/^- /, '')}</li>;
-      }
-      
+    const lines = content.split('\n');
+    const elements: JSX.Element[] = [];
+    let currentList: JSX.Element[] = [];
+    let inList = false;
+    
+    lines.forEach((line, index) => {
       // Handle empty lines
       if (line.trim() === '') {
-        return <br key={idx} />;
+        if (inList) {
+          // End the current list
+          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+          currentList = [];
+          inList = false;
+        }
+        elements.push(<div key={`empty-${index}`} className="my-2"></div>);
+        return;
       }
       
-      // Default paragraph
-      return <p key={idx} className="mb-3">{line}</p>;
-    });
-    
-    // Find consecutive list items and wrap them in <ul> tags
-    const finalContent: JSX.Element[] = [];
-    let listItems: JSX.Element[] = [];
-    
-    processedContent.forEach((element, index) => {
-      if (element.type === 'li') {
-        listItems.push(element);
-      } else {
-        // If we were building a list and now found a non-list element
-        if (listItems.length > 0) {
-          finalContent.push(<ul key={`list-${index}`} className="list-disc mb-4">{listItems}</ul>);
-          listItems = [];
+      // Handle headers
+      if (line.match(/^# /)) {
+        if (inList) {
+          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+          currentList = [];
+          inList = false;
         }
-        finalContent.push(element);
+        elements.push(<h1 key={index} className="text-2xl font-bold mt-6 mb-4">{line.replace(/^# /, '')}</h1>);
+        return;
       }
+      
+      if (line.match(/^## /)) {
+        if (inList) {
+          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+          currentList = [];
+          inList = false;
+        }
+        elements.push(<h2 key={index} className="text-xl font-bold mt-5 mb-3">{line.replace(/^## /, '')}</h2>);
+        return;
+      }
+      
+      if (line.match(/^### /)) {
+        if (inList) {
+          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+          currentList = [];
+          inList = false;
+        }
+        elements.push(<h3 key={index} className="text-lg font-bold mt-4 mb-2">{line.replace(/^### /, '')}</h3>);
+        return;
+      }
+      
+      // Handle lists
+      if (line.match(/^- /) || line.match(/^\* /)) {
+        inList = true;
+        const listItem = (
+          <li key={`item-${index}`} className="mb-1">
+            {renderFormattedText(line.replace(/^-\s+/, '').replace(/^\*\s+/, ''))}
+          </li>
+        );
+        currentList.push(listItem);
+        return;
+      }
+      
+      // Handle horizontal rule
+      if (line.match(/^---+$/)) {
+        if (inList) {
+          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+          currentList = [];
+          inList = false;
+        }
+        elements.push(<hr key={index} className="my-6 border-t border-gray-300" />);
+        return;
+      }
+      
+      // Default paragraph handling
+      if (inList) {
+        elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">{currentList}</ul>);
+        currentList = [];
+        inList = false;
+      }
+      
+      elements.push(
+        <p key={index} className="mb-3">
+          {renderFormattedText(line)}
+        </p>
+      );
     });
     
     // Add any remaining list items
-    if (listItems.length > 0) {
-      finalContent.push(<ul key="list-end" className="list-disc mb-4">{listItems}</ul>);
+    if (inList && currentList.length > 0) {
+      elements.push(<ul key="list-end" className="list-disc my-4 ml-6">{currentList}</ul>);
     }
     
-    return <div className="palm-reading-content">{finalContent}</div>;
+    return <div className="palm-reading-content">{elements}</div>;
+  };
+  
+  // Helper function to render formatted text (bold, italic, etc.)
+  const renderFormattedText = (text: string) => {
+    if (!text) return null;
+    
+    // Process bold text
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return (
+      <>
+        {parts.map((part, idx) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={idx}>{part.substring(2, part.length - 2)}</strong>;
+          }
+          return <span key={idx}>{part}</span>;
+        })}
+      </>
+    );
   };
 
   const handleFullReportDownload = async () => {
