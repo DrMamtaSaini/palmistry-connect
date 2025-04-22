@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -222,6 +223,7 @@ const PalmReadingResult = () => {
     };
   }, [navigate, gemini, isGeminiLoading, analyzePalm, userId]);
 
+  // Enhanced markdown parsing function for better content rendering
   const formatAnalysisContent = (content: string) => {
     if (!content || content.trim() === '') {
       console.log('No content to format');
@@ -230,52 +232,77 @@ const PalmReadingResult = () => {
 
     console.log('Formatting analysis content, length:', content.length);
     
-    // First, ensure content is a string
+    // Ensure content is a string
     const stringContent = String(content);
     
     // Log the first part of the content for debugging
     console.log('Content preview:', stringContent.substring(0, 200));
     
-    // Simple rendering for basic markdown
-    return (
-      <div className="palm-reading-content">
-        {stringContent.split('\n').map((line, idx) => {
-          // Handle headers
-          if (line.startsWith('# ')) {
-            return <h1 key={idx} className="text-2xl font-bold mt-6 mb-4">{line.substring(2)}</h1>;
-          }
-          if (line.startsWith('## ')) {
-            return <h2 key={idx} className="text-xl font-bold mt-5 mb-3">{line.substring(3)}</h2>;
-          }
-          if (line.startsWith('### ')) {
-            return <h3 key={idx} className="text-lg font-bold mt-4 mb-2">{line.substring(4)}</h3>;
-          }
-          
-          // Handle bold text
-          if (line.includes('**')) {
-            const parts = line.split(/(\*\*.*?\*\*)/g);
-            return (
-              <p key={idx} className="mb-3">
-                {parts.map((part, partIdx) => {
-                  if (part.startsWith('**') && part.endsWith('**')) {
-                    return <strong key={partIdx}>{part.substring(2, part.length - 2)}</strong>;
-                  }
-                  return part;
-                })}
-              </p>
-            );
-          }
-          
-          // Handle empty lines
-          if (line.trim() === '') {
-            return <br key={idx} />;
-          }
-          
-          // Default paragraph
-          return <p key={idx} className="mb-3">{line}</p>;
-        })}
-      </div>
-    );
+    // Process the content for rendering with enhanced markdown support
+    const processedContent = stringContent.split('\n').map((line, idx) => {
+      // Handle headers
+      if (line.match(/^# /)) {
+        return <h1 key={idx} className="text-2xl font-bold mt-6 mb-4">{line.replace(/^# /, '')}</h1>;
+      }
+      if (line.match(/^## /)) {
+        return <h2 key={idx} className="text-xl font-bold mt-5 mb-3">{line.replace(/^## /, '')}</h2>;
+      }
+      if (line.match(/^### /)) {
+        return <h3 key={idx} className="text-lg font-bold mt-4 mb-2">{line.replace(/^### /, '')}</h3>;
+      }
+      
+      // Handle bold text (matches **text**)
+      if (line.includes('**')) {
+        const parts = line.split(/(\*\*.*?\*\*)/g);
+        return (
+          <p key={idx} className="mb-3">
+            {parts.map((part, partIdx) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={partIdx}>{part.substring(2, part.length - 2)}</strong>;
+              }
+              return <span key={partIdx}>{part}</span>;
+            })}
+          </p>
+        );
+      }
+      
+      // Handle lists (- item)
+      if (line.match(/^- /)) {
+        return <li key={idx} className="ml-6 mb-1">{line.replace(/^- /, '')}</li>;
+      }
+      
+      // Handle empty lines
+      if (line.trim() === '') {
+        return <br key={idx} />;
+      }
+      
+      // Default paragraph
+      return <p key={idx} className="mb-3">{line}</p>;
+    });
+    
+    // Find consecutive list items and wrap them in <ul> tags
+    const finalContent: JSX.Element[] = [];
+    let listItems: JSX.Element[] = [];
+    
+    processedContent.forEach((element, index) => {
+      if (element.type === 'li') {
+        listItems.push(element);
+      } else {
+        // If we were building a list and now found a non-list element
+        if (listItems.length > 0) {
+          finalContent.push(<ul key={`list-${index}`} className="list-disc mb-4">{listItems}</ul>);
+          listItems = [];
+        }
+        finalContent.push(element);
+      }
+    });
+    
+    // Add any remaining list items
+    if (listItems.length > 0) {
+      finalContent.push(<ul key="list-end" className="list-disc mb-4">{listItems}</ul>);
+    }
+    
+    return <div className="palm-reading-content">{finalContent}</div>;
   };
 
   const handleFullReportDownload = async () => {

@@ -67,41 +67,48 @@ class GeminiAI {
           {
             parts: [
               {
-                text: `Act as a professional palm reader with decades of experience in traditional palmistry. 
-Analyze the uploaded palm image and provide a detailed, authentic reading following traditional palmistry principles.
+                text: `You are an expert AI Palm Reader with deep knowledge of traditional Indian palmistry and modern behavioral psychology.
 
-Create a comprehensive palm reading report with these CLEARLY MARKED sections:
-1. Introduction - A brief welcome and overview of palmistry
-2. Hand Shape Analysis - Earth/Air/Fire/Water hand type and its significance
-3. Major Lines Analysis:
-   - Life Line - Health, vitality, major life changes
-   - Head Line - Intellectual style, thinking patterns, mental attitudes
-   - Heart Line - Emotional nature, relationship approach
-   - Fate Line - Career path, destiny, life purpose
-4. Minor Lines Analysis:
-   - Health Line - Overall wellness and health concerns
-   - Marriage Line - Relationship patterns and timing
-   - Money Line - Financial prospects and attitudes
-5. Mounts Analysis - Prominence of key mounts and their meanings
-6. Personality Insights - Core character traits revealed in the palm
-7. Life Path & Potential - Overall life trajectory and key decision points
-8. Guidance & Recommendations - Practical advice based on the reading
+Analyze the palm images provided to generate an in-depth life reading report. Consider key palmistry lines and elements such as:
 
-Format the report with clear section headings using markdown (## for main sections, ### for subsections). 
-Make observations that are specific to the unique features visible in the uploaded palm image.
-Maintain a professional, insightful tone throughout the reading.
+Heart Line
+Head Line
+Life Line
+Fate Line
+Sun Line
+Girdle of Venus
+Mounts (Mercury, Venus, Moon, Sun, Saturn, Jupiter, Mars)
 
-IMPORTANT: This is for a real user - do NOT include any text like "demo," "sample," or "example" in your response.
-This should be a genuine, personalized palm reading based on the actual uploaded image. 
-Focus on real, specific observations from the provided image rather than generic statements.`
+Include markings, shape, depth, curvature, breaks, forks, and crosslines.
+
+Generate answers about:
+- Personality traits
+- Strengths & Weaknesses
+- Career direction (business vs. job + suitable fields)
+- Financial prosperity timeline
+- Love life, marriage timeline, compatibility
+- Health tendencies and vulnerable periods
+- Life-changing years (milestones)
+- Past life karmic patterns
+- Spiritual guidance and higher purpose
+
+Include both Traditional Remedies (mantras, crystals, fasting, herbs, meditation) and Modern Solutions (lifestyle tips, therapy, career coaching).
+
+Format your response using clear markdown formatting with proper headers, bullet points, and sections. Make it easy to read and understand.
+
+IMPORTANT: This is for a real user - do NOT include any text like "demo," "sample," or "example" in your response. This should be a genuine, personalized palm reading based on the actual uploaded image.
+
+Maintain a warm, professional, and deeply insightful tone throughout your reading.`
               },
               formattedImage
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.8,
+          temperature: 0.9,
           maxOutputTokens: 4000,
+          topP: 0.95,
+          topK: 40
         }
       };
 
@@ -124,7 +131,7 @@ Focus on real, specific observations from the provided image rather than generic
 
       // Parse the response
       const result = await response.json();
-      console.log('Received response from Gemini API:', result);
+      console.log('Received response from Gemini API');
       
       // Check if the response contains an error
       if (result.error) {
@@ -204,7 +211,10 @@ Create a detailed compatibility report with these sections:
 
 Format the report with clear section headings using markdown (##, ###).
 Be specific about what you observe in both images, making direct comparisons.
-Maintain a professional, insightful tone throughout the analysis.`
+Maintain a professional, insightful tone throughout the analysis.
+
+IMPORTANT: DO NOT include any text like "demo," "sample," or "example" in your response.
+This should be a genuine, personalized compatibility analysis based on the actual uploaded images.`
               },
               formattedImage1,
               {
@@ -215,7 +225,7 @@ Maintain a professional, insightful tone throughout the analysis.`
           }
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.8,
           maxOutputTokens: 4000,
         }
       };

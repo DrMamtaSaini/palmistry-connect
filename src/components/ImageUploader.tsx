@@ -22,6 +22,7 @@ const ImageUploader = ({
 }: ImageUploaderProps) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,11 +33,32 @@ const ImageUploader = ({
   };
 
   const handleFile = (file: File) => {
-    onImageSelect(file);
+    setIsLoading(true);
+    console.log(`Processing image file: ${file.name}, size: ${file.size / 1024}KB, type: ${file.type}`);
+    
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size exceeds 10MB. Please choose a smaller image.');
+      setIsLoading(false);
+      return;
+    }
+    
+    // Create preview
     const reader = new FileReader();
     reader.onload = () => {
       setPreview(reader.result as string);
+      console.log('Image preview created successfully');
+      
+      // Pass file to parent component
+      onImageSelect(file);
+      setIsLoading(false);
     };
+    
+    reader.onerror = (error) => {
+      console.error('Error creating image preview:', error);
+      setIsLoading(false);
+    };
+    
     reader.readAsDataURL(file);
   };
 
@@ -64,9 +86,17 @@ const ImageUploader = ({
   };
 
   const clearImage = () => {
+    console.log('Clearing image preview');
     setPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+    
+    // Reset session storage if it exists
+    if (sessionStorage.getItem('palmImage')) {
+      console.log('Removing stored palm image from session storage');
+      sessionStorage.removeItem('palmImage');
+      sessionStorage.removeItem('palmReadingResult');
     }
   };
 
@@ -104,7 +134,9 @@ const ImageUploader = ({
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="p-3 rounded-full bg-primary/10 mb-4">
-            {isDragging ? (
+            {isLoading ? (
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            ) : isDragging ? (
               <ImageIcon className="h-6 w-6 text-primary animate-pulse" />
             ) : (
               <Upload className="h-6 w-6 text-primary" />
