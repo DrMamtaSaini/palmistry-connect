@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -223,7 +222,6 @@ const PalmReadingResult = () => {
     };
   }, [navigate, gemini, isGeminiLoading, analyzePalm, userId]);
 
-  // Enhanced markdown parsing function for better content rendering
   const formatAnalysisContent = (content: string) => {
     if (!content || content.trim() === '') {
       console.log('No content to format');

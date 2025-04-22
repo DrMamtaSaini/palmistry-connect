@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -36,9 +37,24 @@ const ImageUploader = ({
     setIsLoading(true);
     console.log(`Processing image file: ${file.name}, size: ${file.size / 1024}KB, type: ${file.type}`);
     
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPEG, PNG, JPG).",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
+    
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert('File size exceeds 10MB. Please choose a smaller image.');
+      toast({
+        title: "File too large",
+        description: "File size exceeds 10MB. Please choose a smaller image.",
+        variant: "destructive"
+      });
       setIsLoading(false);
       return;
     }
@@ -46,8 +62,18 @@ const ImageUploader = ({
     // Create preview
     const reader = new FileReader();
     reader.onload = () => {
-      setPreview(reader.result as string);
+      const result = reader.result as string;
+      setPreview(result);
       console.log('Image preview created successfully');
+      
+      // Save to session storage
+      try {
+        sessionStorage.setItem('palmImage', result);
+        console.log('Image saved to session storage');
+      } catch (err) {
+        console.error('Error saving image to session storage:', err);
+        // If session storage fails, continue anyway
+      }
       
       // Pass file to parent component
       onImageSelect(file);
@@ -56,6 +82,11 @@ const ImageUploader = ({
     
     reader.onerror = (error) => {
       console.error('Error creating image preview:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process the image. Please try again.",
+        variant: "destructive"
+      });
       setIsLoading(false);
     };
     
@@ -82,6 +113,12 @@ const ImageUploader = ({
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
       handleFile(file);
+    } else {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPEG, PNG, JPG).",
+        variant: "destructive"
+      });
     }
   };
 
@@ -98,6 +135,11 @@ const ImageUploader = ({
       sessionStorage.removeItem('palmImage');
       sessionStorage.removeItem('palmReadingResult');
     }
+
+    toast({
+      title: "Image cleared",
+      description: "The uploaded image has been removed."
+    });
   };
 
   return (
@@ -117,6 +159,7 @@ const ImageUploader = ({
               type="button"
               onClick={clearImage}
               className="absolute top-2 right-2 p-1 rounded-full bg-foreground/10 backdrop-blur-sm text-background hover:bg-foreground/20 transition-colors"
+              aria-label="Clear image"
             >
               <X className="h-5 w-5" />
             </button>
@@ -132,6 +175,9 @@ const ImageUploader = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload image"
         >
           <div className="p-3 rounded-full bg-primary/10 mb-4">
             {isLoading ? (
@@ -156,6 +202,7 @@ const ImageUploader = ({
             onChange={handleFileChange}
             multiple={multiple}
             className="hidden"
+            aria-hidden="true"
           />
         </div>
       )}
