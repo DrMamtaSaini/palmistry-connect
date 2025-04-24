@@ -19,6 +19,9 @@ const PalmReadingResult = () => {
   const { gemini, isLoading: isGeminiLoading } = useGemini();
   const [userId, setUserId] = useState<string | null>(null);
   
+  // Add debug state
+  const [debugInfo, setDebugInfo] = useState<string>('');
+  
   useEffect(() => {
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
@@ -107,7 +110,10 @@ const PalmReadingResult = () => {
       
       console.log('Analysis complete, setting result');
       setPalmAnalysis(result);
+      
+      // Important: Store in session storage for persistence
       sessionStorage.setItem('palmReadingResult', result);
+      setDebugInfo(`Result length: ${result.length} characters. First 100 chars: ${result.substring(0, 100)}`);
       
       if (userId) {
         await saveReadingToDatabase(result);
@@ -137,6 +143,7 @@ const PalmReadingResult = () => {
     const loadData = async () => {
       try {
         setError(null);
+        setDebugInfo('Looking for existing palm reading...');
         
         // Try to get the reading from Supabase if user is logged in
         let foundReadingInDb = false;
@@ -163,6 +170,7 @@ const PalmReadingResult = () => {
               sessionStorage.setItem('palmReadingResult', readingText);
               setHasAttemptedAnalysis(true);
               foundReadingInDb = true;
+              setDebugInfo(`Found reading in database: ${readingText.length} characters`);
             }
           } else {
             console.log('No readings found in database or error:', readingsError);
@@ -175,6 +183,7 @@ const PalmReadingResult = () => {
           
           console.log('Checking stored reading:', storedReading ? 'Found' : 'Not found');
           console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
+          setDebugInfo(`Session storage: Reading ${storedReading ? 'Found' : 'Not found'}, Image ${storedImage ? 'Found' : 'Not found'}`);
           
           if (storedReading && storedReading.trim().length > 10) {
             // Content exists and is reasonably long
@@ -182,11 +191,14 @@ const PalmReadingResult = () => {
             console.log('Reading preview:', storedReading.substring(0, 100) + '...');
             setPalmAnalysis(storedReading);
             setHasAttemptedAnalysis(true);
+            setDebugInfo(`Using stored reading: ${storedReading.length} characters`);
           } else if (storedImage && gemini && !isGeminiLoading && !isAnalyzing) {
             console.log('No valid stored reading but we have image and gemini, analyzing now...');
+            setDebugInfo('Starting new analysis...');
             await analyzePalm();
           } else if (!storedImage) {
             console.log('No palm image found, redirecting to upload page');
+            setDebugInfo('No palm image found, redirecting...');
             toast({
               title: "No Palm Image",
               description: "Please upload a palm image for analysis first.",
@@ -197,6 +209,7 @@ const PalmReadingResult = () => {
       } catch (err) {
         console.error('Error in loadData:', err);
         setError(`Failed to load palm reading: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setDebugInfo(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     };
     
@@ -212,7 +225,7 @@ const PalmReadingResult = () => {
   const formatAnalysisContent = (content: string) => {
     if (!content || typeof content !== 'string' || content.trim() === '') {
       console.log('No content to format or invalid content type');
-      return <p className="text-foreground">No analysis content available.</p>;
+      return <p className="text-foreground font-medium">No analysis content available.</p>;
     }
 
     console.log('Formatting analysis content, length:', content.length);
@@ -316,7 +329,7 @@ const PalmReadingResult = () => {
       console.error('Error formatting content:', error);
       // Fallback rendering if there's an error in the formatting logic
       return (
-        <div className="palm-reading-content-fallback whitespace-pre-wrap text-foreground">
+        <div className="palm-reading-content-fallback whitespace-pre-wrap text-foreground bg-card p-4 rounded-md border">
           {content}
         </div>
       );
@@ -416,7 +429,7 @@ const PalmReadingResult = () => {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-32 pb-24">
           <div className="content-container">
@@ -437,7 +450,7 @@ const PalmReadingResult = () => {
   }
   
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       
       <main className="pt-32 pb-24">
@@ -453,7 +466,7 @@ const PalmReadingResult = () => {
             </p>
           </div>
           
-          <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal">
+          <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal bg-card">
             <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
               <h2 className="heading-md text-foreground">Full Palmistry Report</h2>
               <div className="flex gap-3 flex-wrap">
@@ -484,7 +497,14 @@ const PalmReadingResult = () => {
               </div>
             </div>
             
-            <div className="prose prose-lg max-w-none text-left text-foreground border p-6 rounded-lg shadow-sm">
+            {/* Debug info */}
+            {debugInfo && (
+              <div className="mb-4 p-3 text-xs bg-amber-50 border border-amber-200 rounded-md text-amber-700 text-left">
+                <strong>Debug Info:</strong> {debugInfo}
+              </div>
+            )}
+            
+            <div className="prose prose-lg max-w-none text-left text-foreground border p-6 rounded-lg shadow-sm bg-white">
               {palmAnalysis ? (
                 <>
                   {console.log('Rendering palm analysis, length:', palmAnalysis.length)}

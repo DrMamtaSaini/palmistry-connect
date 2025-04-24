@@ -136,7 +136,9 @@ Analyze the palm image provided to generate an in-depth life reading report. Foc
 
 IMPORTANT: This is for a real person seeking genuine insights. Do NOT include phrases like "this is a demonstration" or "this is a sample reading" anywhere in your response. Provide a genuine, personalized analysis based solely on what you can see in the image.
 
-Keep your tone professional, insightful, and compassionate throughout the reading.`
+Keep your tone professional, insightful, and compassionate throughout the reading.
+
+VERY IMPORTANT: Make sure to format the text so it's clearly readable on any background - use proper markdown formatting with clear section headers and paragraphs. Only use markdown formatting that can be properly rendered in a standard React application.`
               },
               formattedImage
             ]
@@ -203,7 +205,14 @@ Keep your tone professional, insightful, and compassionate throughout the readin
         
         console.log('Successfully extracted palm reading from Gemini response');
         console.log('First 200 chars of response:', analysisText.substring(0, 200));
-        return analysisText;
+        
+        // Detect if the response doesn't start with a proper heading and add one if needed
+        let formattedText = analysisText;
+        if (!formattedText.trim().startsWith('# ')) {
+          formattedText = '# Palm Reading Analysis\n\n' + formattedText;
+        }
+        
+        return formattedText;
       } else {
         console.error('Invalid response structure from Gemini API:', result);
         throw new Error('The response from Gemini API was not in the expected format');
