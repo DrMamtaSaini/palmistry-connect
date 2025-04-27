@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Hand, Upload, AlertCircle } from 'lucide-react';
@@ -19,11 +20,19 @@ const PalmReading = () => {
   
   useEffect(() => {
     const cleanup = revealAnimation();
+
+    // Clear any existing sessions when loading the upload page
+    // This ensures we don't see previous images
+    sessionStorage.removeItem('palmImage');
+    sessionStorage.removeItem('palmReadingResult');
+    console.log('Cleared palm session data on page load');
+    
     return cleanup;
   }, []);
   
   const handleImageSelect = (file: File) => {
     setPalmImage(file);
+    setUploadSuccess(false); // Reset success state when new image is selected
   };
   
   const handleUpload = async () => {
@@ -38,6 +47,9 @@ const PalmReading = () => {
       reader.onload = async (e) => {
         if (e.target?.result) {
           const base64Image = e.target.result.toString();
+          
+          // Clear any existing reading result
+          sessionStorage.removeItem('palmReadingResult');
           
           // Store the image in sessionStorage for the result page
           sessionStorage.setItem('palmImage', base64Image);

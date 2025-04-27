@@ -72,15 +72,11 @@ const ImageUploader = ({
         
         // Save to session storage
         try {
+          // IMPORTANT: Clear ALL palm-related data in session storage first
+          sessionStorage.removeItem('palmReadingResult');
           sessionStorage.setItem('palmImage', result);
           
-          // IMPORTANT: Always clear any existing reading result when uploading a new image
-          if (sessionStorage.getItem('palmReadingResult')) {
-            sessionStorage.removeItem('palmReadingResult');
-            console.log('Previous reading result cleared');
-          }
-          
-          console.log('Image saved to session storage');
+          console.log('Image saved to session storage, previous reading result cleared');
           
           // Show toast notification to confirm image upload
           toast({
@@ -155,17 +151,10 @@ const ImageUploader = ({
       fileInputRef.current.value = '';
     }
     
-    // Reset session storage if it exists
-    if (sessionStorage.getItem('palmImage')) {
-      console.log('Removing stored palm image from session storage');
-      sessionStorage.removeItem('palmImage');
-      
-      // IMPORTANT: Clear any existing reading result
-      if (sessionStorage.getItem('palmReadingResult')) {
-        console.log('Clearing palm reading result from session storage');
-        sessionStorage.removeItem('palmReadingResult');
-      }
-    }
+    // Reset session storage completely
+    sessionStorage.removeItem('palmImage');
+    sessionStorage.removeItem('palmReadingResult');
+    console.log('Removed stored palm image and reading result from session storage');
 
     toast({
       title: "Image cleared",

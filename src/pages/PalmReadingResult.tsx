@@ -497,7 +497,7 @@ const PalmReadingResult = () => {
               </div>
             </div>
             
-            {/* Debug info */}
+            {/* Debug info for troubleshooting */}
             {debugInfo && (
               <div className="mb-4 p-3 text-xs bg-amber-50 border border-amber-200 rounded-md text-amber-700 text-left">
                 <strong>Debug Info:</strong> {debugInfo}

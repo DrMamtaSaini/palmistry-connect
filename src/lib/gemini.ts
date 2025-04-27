@@ -134,6 +134,8 @@ Analyze the palm image provided to generate an in-depth life reading report. Foc
 - Organize content into clear, readable sections
 - Include a brief summary at the beginning
 
+TEXT COLOR REQUIREMENT: Ensure that all text in your response will be clearly visible against both light and dark backgrounds. Do not use any background colors in your response.
+
 IMPORTANT: This is for a real person seeking genuine insights. Do NOT include phrases like "this is a demonstration" or "this is a sample reading" anywhere in your response. Provide a genuine, personalized analysis based solely on what you can see in the image.
 
 Keep your tone professional, insightful, and compassionate throughout the reading.
