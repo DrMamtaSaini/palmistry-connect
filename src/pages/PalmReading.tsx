@@ -9,6 +9,7 @@ import { revealAnimation } from '@/lib/animations';
 import GeminiSetup from '@/components/GeminiSetup';
 import { useGemini } from '@/contexts/GeminiContext';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 const PalmReading = () => {
   const [palmImage, setPalmImage] = useState<File | null>(null);
@@ -196,16 +197,11 @@ const PalmReading = () => {
             </div>
             
             <div className="flex justify-center">
-              <button
+              <Button 
                 onClick={handleUpload}
                 disabled={!palmImage || isUploading || !isConfigured}
-                className={`
-                  px-8 py-3 rounded-full text-base font-medium flex items-center transition-all
-                  ${(!palmImage || !isConfigured)
-                    ? 'bg-muted text-muted-foreground cursor-not-allowed' 
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                  }
-                `}
+                variant={(!palmImage || !isConfigured) ? "outline" : "default"}
+                className="px-8 py-3 rounded-full text-base font-medium"
               >
                 {isUploading ? (
                   <>
@@ -221,7 +217,7 @@ const PalmReading = () => {
                     Analyze My Palm
                   </>
                 )}
-              </button>
+              </Button>
             </div>
             
             {uploadSuccess && (
