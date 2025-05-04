@@ -1,4 +1,3 @@
-
 /**
  * GeminiAI - A class for interacting with the Gemini API for AI-powered palm reading
  */
@@ -134,7 +133,7 @@ Analyze the palm image provided to generate an in-depth life reading report. Foc
 - Organize content into clear, readable sections
 - Include a brief summary at the beginning
 
-TEXT COLOR REQUIREMENT: Ensure that all text in your response will be clearly visible against both light and dark backgrounds. Do not use any background colors in your response.
+TEXT COLOR REQUIREMENT: Ensure that all text in your response will be clearly visible against both light and dark backgrounds. Do not use any background colors or colored text in your response. DO NOT use any colored text except for standard black text that will be clearly visible when rendered.
 
 IMPORTANT: This is for a real person seeking genuine insights. Do NOT include phrases like "this is a demonstration" or "this is a sample reading" anywhere in your response. Provide a genuine, personalized analysis based solely on what you can see in the image.
 
@@ -262,6 +261,8 @@ Create a detailed compatibility report with these sections:
 Format the report with clear section headings using markdown (##, ###).
 Be specific about what you observe in both images, making direct comparisons.
 Maintain a professional, insightful tone throughout the analysis.
+
+TEXT COLOR REQUIREMENT: Ensure that all text in your response will be clearly visible against both light and dark backgrounds. Do not use any background colors or colored text in your response.
 
 IMPORTANT: DO NOT include any text like "demo," "sample," or "example" in your response.
 This should be a genuine, personalized compatibility analysis based on the actual uploaded images.`
