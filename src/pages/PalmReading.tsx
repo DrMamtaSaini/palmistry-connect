@@ -38,6 +38,8 @@ const PalmReading = () => {
   };
   
   const handleUpload = async () => {
+    console.log('handleUpload clicked!');
+    
     if (!palmImage || !gemini) {
       console.log('Cannot upload: palmImage or gemini is missing', { 
         hasPalmImage: !!palmImage, 

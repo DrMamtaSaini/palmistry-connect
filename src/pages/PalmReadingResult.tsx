@@ -496,7 +496,7 @@ const PalmReadingResult = () => {
               <div className="flex gap-3 flex-wrap">
                 <button 
                   onClick={handleFullReportDownload}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
                   disabled={!palmAnalysis}
                 >
                   <Download className="h-4 w-4" />
@@ -504,7 +504,7 @@ const PalmReadingResult = () => {
                 </button>
                 <button 
                   onClick={handleBasicReportDownload}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors cursor-pointer"
                   disabled={!palmAnalysis}
                 >
                   <Download className="h-4 w-4" />
@@ -512,7 +512,7 @@ const PalmReadingResult = () => {
                 </button>
                 <button 
                   onClick={retryAnalysis}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors cursor-pointer"
                   title="Generate a new reading with the same image"
                 >
                   <RefreshCw className="h-4 w-4" />
@@ -526,12 +526,9 @@ const PalmReadingResult = () => {
               <strong>Debug Info:</strong> {debugInfo || 'No debug info available'}
             </div>
             
-            <div className="prose prose-lg max-w-none text-left bg-white text-foreground border p-6 rounded-lg shadow-sm">
+            <div className="prose prose-lg max-w-none text-left bg-white text-black border p-6 rounded-lg shadow-sm">
               {palmAnalysis ? (
-                <>
-                  {console.log('Rendering palm analysis, length:', palmAnalysis.length)}
-                  {formatAnalysisContent(palmAnalysis)}
-                </>
+                formatAnalysisContent(palmAnalysis)
               ) : error ? (
                 <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
                   <div className="flex items-center justify-center mb-4">
@@ -539,7 +536,7 @@ const PalmReadingResult = () => {
                     <h3 className="text-xl font-medium text-red-700">Analysis Failed</h3>
                   </div>
                   <p className="text-red-600 font-medium mb-2">Error: {error}</p>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-gray-700 mb-4">
                     Unable to generate palm analysis. This could be due to one of the following reasons:
                   </p>
                   <ul className="text-left list-disc mb-6 mx-auto max-w-md text-gray-700">
@@ -550,13 +547,13 @@ const PalmReadingResult = () => {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                       onClick={retryAnalysis}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 cursor-pointer"
                     >
                       Try Again
                     </button>
                     <button
                       onClick={() => navigate('/palm-reading')}
-                      className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                      className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 cursor-pointer"
                     >
                       Upload New Image
                     </button>
@@ -571,7 +568,7 @@ const PalmReadingResult = () => {
                   </p>
                   <button
                     onClick={() => navigate('/palm-reading')}
-                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 cursor-pointer"
                   >
                     Upload Palm Image
                   </button>
