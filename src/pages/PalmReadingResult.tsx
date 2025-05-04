@@ -221,6 +221,7 @@ const PalmReadingResult = () => {
     };
   }, [navigate, gemini, isGeminiLoading, analyzePalm, userId]);
 
+  // Fixed function to properly format and display content
   const formatAnalysisContent = (content: string) => {
     if (!content || typeof content !== 'string' || content.trim() === '') {
       console.log('No content to format or invalid content type');
@@ -242,7 +243,7 @@ const PalmReadingResult = () => {
         if (line.trim() === '') {
           if (inList) {
             // End the current list
-            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6 text-white">
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">
                 {currentList}
               </ul>);
             currentList = [];
@@ -255,14 +256,14 @@ const PalmReadingResult = () => {
         // Handle headers
         if (line.match(/^# /)) {
           if (inList) {
-            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6 text-white">
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">
                 {currentList}
               </ul>);
             currentList = [];
             inList = false;
           }
           elements.push(
-            <h1 key={index} className="text-2xl font-bold mt-6 mb-4 text-white">
+            <h1 key={index} className="text-2xl font-bold mt-6 mb-4 text-foreground">
               {line.replace(/^# /, '')}
             </h1>
           );
@@ -271,14 +272,14 @@ const PalmReadingResult = () => {
         
         if (line.match(/^## /)) {
           if (inList) {
-            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6 text-white">
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">
                 {currentList}
               </ul>);
             currentList = [];
             inList = false;
           }
           elements.push(
-            <h2 key={index} className="text-xl font-bold mt-5 mb-3 text-white">
+            <h2 key={index} className="text-xl font-bold mt-5 mb-3 text-foreground">
               {line.replace(/^## /, '')}
             </h2>
           );
@@ -287,14 +288,14 @@ const PalmReadingResult = () => {
         
         if (line.match(/^### /)) {
           if (inList) {
-            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6 text-white">
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">
                 {currentList}
               </ul>);
             currentList = [];
             inList = false;
           }
           elements.push(
-            <h3 key={index} className="text-lg font-bold mt-4 mb-2 text-white">
+            <h3 key={index} className="text-lg font-bold mt-4 mb-2 text-foreground">
               {line.replace(/^### /, '')}
             </h3>
           );
@@ -305,7 +306,7 @@ const PalmReadingResult = () => {
         if (line.match(/^- /) || line.match(/^\* /)) {
           inList = true;
           const listItem = (
-            <li key={`item-${index}`} className="mb-1 text-white">
+            <li key={`item-${index}`} className="mb-1 text-foreground">
               {renderFormattedText(line.replace(/^-\s+/, '').replace(/^\*\s+/, ''))}
             </li>
           );
@@ -316,7 +317,7 @@ const PalmReadingResult = () => {
         // Handle horizontal rule
         if (line.match(/^---+$/)) {
           if (inList) {
-            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6 text-white">
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">
                 {currentList}
               </ul>);
             currentList = [];
@@ -328,7 +329,7 @@ const PalmReadingResult = () => {
         
         // Default paragraph handling
         if (inList) {
-          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6 text-white">
+          elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">
               {currentList}
             </ul>);
           currentList = [];
@@ -336,7 +337,7 @@ const PalmReadingResult = () => {
         }
         
         elements.push(
-          <p key={index} className="mb-3 text-white">
+          <p key={index} className="mb-3 text-foreground">
             {renderFormattedText(line)}
           </p>
         );
@@ -344,15 +345,15 @@ const PalmReadingResult = () => {
       
       // Add any remaining list items
       if (inList && currentList.length > 0) {
-        elements.push(<ul key="list-end" className="list-disc my-4 ml-6 text-white">{currentList}</ul>);
+        elements.push(<ul key="list-end" className="list-disc my-4 ml-6">{currentList}</ul>);
       }
       
-      return <div className="palm-reading-content text-white">{elements}</div>;
+      return <div className="palm-reading-content text-foreground">{elements}</div>;
     } catch (error) {
       console.error('Error formatting content:', error);
       // Fallback rendering if there's an error in the formatting logic
       return (
-        <div className="palm-reading-content-fallback whitespace-pre-wrap text-white bg-gray-900 p-4 rounded-md border border-gray-700">
+        <div className="palm-reading-content-fallback whitespace-pre-wrap text-foreground bg-gray-50 p-4 rounded-md border border-gray-200">
           {content}
         </div>
       );
@@ -370,15 +371,15 @@ const PalmReadingResult = () => {
         <>
           {parts.map((part, idx) => {
             if (part.startsWith('**') && part.endsWith('**')) {
-              return <strong key={idx} className="text-white">{part.substring(2, part.length - 2)}</strong>;
+              return <strong key={idx} className="text-foreground">{part.substring(2, part.length - 2)}</strong>;
             }
-            return <span key={idx} className="text-white">{part}</span>;
+            return <span key={idx} className="text-foreground">{part}</span>;
           })}
         </>
       );
     } catch (error) {
       console.error('Error in renderFormattedText:', error);
-      return <span className="text-white">{text}</span>;
+      return <span className="text-foreground">{text}</span>;
     }
   };
 
@@ -525,7 +526,7 @@ const PalmReadingResult = () => {
               <strong>Debug Info:</strong> {debugInfo || 'No debug info available'}
             </div>
             
-            <div className="prose prose-lg max-w-none text-left text-foreground border p-6 rounded-lg shadow-sm bg-white">
+            <div className="prose prose-lg max-w-none text-left bg-white text-foreground border p-6 rounded-lg shadow-sm">
               {palmAnalysis ? (
                 <>
                   {console.log('Rendering palm analysis, length:', palmAnalysis.length)}
