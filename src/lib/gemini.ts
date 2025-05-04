@@ -1,3 +1,4 @@
+
 /**
  * GeminiAI - A class for interacting with the Gemini API for AI-powered palm reading
  */
@@ -29,11 +30,13 @@ class GeminiAI {
       // Make sure the image data is correctly formatted
       // It should be a data URL starting with data:image/...
       if (!imageData.startsWith('data:image/')) {
+        console.error('Invalid image format:', imageData.substring(0, 20) + '...');
         throw new Error('Invalid image format. Expected a data URL.');
       }
 
       // Format the image for the Gemini API
       const base64Image = imageData.split(',')[1];
+      console.log('Image correctly formatted for Gemini API');
       
       return {
         inlineData: {
@@ -59,6 +62,7 @@ class GeminiAI {
       
       // Create the API request URL
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+      console.log(`Using Gemini API endpoint: ${this.modelName}`);
       
       // Create the API request body with comprehensive palmistry prompt
       const body = {
@@ -120,12 +124,12 @@ Analyze the palm image provided to generate an in-depth life reading report. Foc
 ## Practical Guidance
 - Traditional remedies (gemstones, mantras)
 - Modern approaches to maximize potential
-- Specific advice for specific questions like:
+- Specific advice for questions like:
   - "Will I settle abroad?"
   - "When will I get married?"
   - "What is my true life purpose?"
 
-## FORMAT YOUR RESPONSE WITH PROPER MARKDOWN:
+FORMAT YOUR RESPONSE WITH PROPER MARKDOWN:
 - Use # for main section headers
 - Use ## for subsections
 - Use - for bullet points
@@ -133,13 +137,13 @@ Analyze the palm image provided to generate an in-depth life reading report. Foc
 - Organize content into clear, readable sections
 - Include a brief summary at the beginning
 
-TEXT COLOR REQUIREMENT: Ensure that all text in your response will be clearly visible against both light and dark backgrounds. Do not use any background colors or colored text in your response. DO NOT use any colored text except for standard black text that will be clearly visible when rendered.
+CRITICALLY IMPORTANT: Ensure ALL text is clearly visible and readable with high contrast. Use standard HTML text with NO colored text - only use regular black text that will display clearly on any background. DO NOT use any special formatting that might cause text to be invisible or hard to read.
 
 IMPORTANT: This is for a real person seeking genuine insights. Do NOT include phrases like "this is a demonstration" or "this is a sample reading" anywhere in your response. Provide a genuine, personalized analysis based solely on what you can see in the image.
 
 Keep your tone professional, insightful, and compassionate throughout the reading.
 
-VERY IMPORTANT: Make sure to format the text so it's clearly readable on any background - use proper markdown formatting with clear section headers and paragraphs. Only use markdown formatting that can be properly rendered in a standard React application.`
+VERY IMPORTANT: Make sure to format the text so it's clearly readable with proper markdown formatting with clear section headers and paragraphs. Only use markdown formatting that can be properly rendered in a standard React application.`
               },
               formattedImage
             ]

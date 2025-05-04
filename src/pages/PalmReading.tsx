@@ -31,14 +31,22 @@ const PalmReading = () => {
   }, []);
   
   const handleImageSelect = (file: File) => {
+    console.log('Image selected:', file.name);
     setPalmImage(file);
     setUploadSuccess(false); // Reset success state when new image is selected
   };
   
   const handleUpload = async () => {
-    if (!palmImage || !gemini) return;
+    if (!palmImage || !gemini) {
+      console.log('Cannot upload: palmImage or gemini is missing', { 
+        hasPalmImage: !!palmImage, 
+        hasGemini: !!gemini 
+      });
+      return;
+    }
     
     setIsUploading(true);
+    console.log('Starting palm image upload and analysis process');
     
     try {
       // Convert image to base64 for storage and analysis
@@ -47,31 +55,53 @@ const PalmReading = () => {
       reader.onload = async (e) => {
         if (e.target?.result) {
           const base64Image = e.target.result.toString();
+          console.log('Image converted to base64 successfully');
           
           // Clear any existing reading result
           sessionStorage.removeItem('palmReadingResult');
           
           // Store the image in sessionStorage for the result page
           sessionStorage.setItem('palmImage', base64Image);
+          console.log('Palm image saved to sessionStorage');
           
-          // Only navigate after successful storage
-          setUploadSuccess(true);
-          
-          toast({
-            title: "Image Uploaded Successfully",
-            description: "Your palm image has been uploaded. Preparing analysis...",
-            duration: 3000,
-          });
-          
-          // Redirect to results page after a short delay to allow toast to be seen
-          setTimeout(() => {
-            navigate('/palm-reading-result');
-          }, 1500);
+          try {
+            console.log('Starting Gemini palm analysis');
+            const analysisResult = await gemini.analyzePalm(base64Image);
+            console.log('Gemini analysis completed successfully');
+            
+            // Store the result in sessionStorage
+            sessionStorage.setItem('palmReadingResult', analysisResult);
+            console.log('Analysis result saved to sessionStorage');
+            
+            // Update success state
+            setUploadSuccess(true);
+            
+            toast({
+              title: "Analysis Complete",
+              description: "Your palm reading is ready. You'll be redirected to your results shortly.",
+              duration: 3000,
+            });
+            
+            // Redirect to results page after a short delay to allow toast to be seen
+            setTimeout(() => {
+              navigate('/palm-reading-result');
+            }, 1500);
+          } catch (analysisError) {
+            console.error("Error during palm analysis:", analysisError);
+            setIsUploading(false);
+            toast({
+              title: "Analysis Failed",
+              description: analysisError instanceof Error ? analysisError.message : "Could not analyze your palm image. Please try again.",
+              variant: "destructive",
+              duration: 5000,
+            });
+          }
         }
       };
       
       reader.onerror = () => {
         setIsUploading(false);
+        console.error("Error reading the image file");
         toast({
           title: "Upload Failed",
           description: "There was a problem uploading your image. Please try again.",
