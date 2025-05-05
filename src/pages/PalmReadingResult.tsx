@@ -225,7 +225,7 @@ const PalmReadingResult = () => {
   const formatAnalysisContent = (content: string) => {
     if (!content || typeof content !== 'string' || content.trim() === '') {
       console.log('No content to format or invalid content type');
-      return <p className="text-foreground font-medium">No analysis content available.</p>;
+      return <p className="text-black font-medium">No analysis content available.</p>;
     }
 
     console.log('Formatting analysis content, length:', content.length);
@@ -263,7 +263,7 @@ const PalmReadingResult = () => {
             inList = false;
           }
           elements.push(
-            <h1 key={index} className="text-2xl font-bold mt-6 mb-4 text-foreground">
+            <h1 key={index} className="text-2xl font-bold mt-6 mb-4 text-black">
               {line.replace(/^# /, '')}
             </h1>
           );
@@ -279,7 +279,7 @@ const PalmReadingResult = () => {
             inList = false;
           }
           elements.push(
-            <h2 key={index} className="text-xl font-bold mt-5 mb-3 text-foreground">
+            <h2 key={index} className="text-xl font-bold mt-5 mb-3 text-black">
               {line.replace(/^## /, '')}
             </h2>
           );
@@ -295,7 +295,7 @@ const PalmReadingResult = () => {
             inList = false;
           }
           elements.push(
-            <h3 key={index} className="text-lg font-bold mt-4 mb-2 text-foreground">
+            <h3 key={index} className="text-lg font-bold mt-4 mb-2 text-black">
               {line.replace(/^### /, '')}
             </h3>
           );
@@ -306,7 +306,7 @@ const PalmReadingResult = () => {
         if (line.match(/^- /) || line.match(/^\* /)) {
           inList = true;
           const listItem = (
-            <li key={`item-${index}`} className="mb-1 text-foreground">
+            <li key={`item-${index}`} className="mb-1 text-black">
               {renderFormattedText(line.replace(/^-\s+/, '').replace(/^\*\s+/, ''))}
             </li>
           );
@@ -337,7 +337,7 @@ const PalmReadingResult = () => {
         }
         
         elements.push(
-          <p key={index} className="mb-3 text-foreground">
+          <p key={index} className="mb-3 text-black">
             {renderFormattedText(line)}
           </p>
         );
@@ -348,12 +348,12 @@ const PalmReadingResult = () => {
         elements.push(<ul key="list-end" className="list-disc my-4 ml-6">{currentList}</ul>);
       }
       
-      return <div className="palm-reading-content text-foreground">{elements}</div>;
+      return <div className="palm-reading-content text-black">{elements}</div>;
     } catch (error) {
       console.error('Error formatting content:', error);
       // Fallback rendering if there's an error in the formatting logic
       return (
-        <div className="palm-reading-content-fallback whitespace-pre-wrap text-foreground bg-gray-50 p-4 rounded-md border border-gray-200">
+        <div className="palm-reading-content-fallback whitespace-pre-wrap text-black bg-gray-50 p-4 rounded-md border border-gray-200">
           {content}
         </div>
       );
@@ -371,15 +371,15 @@ const PalmReadingResult = () => {
         <>
           {parts.map((part, idx) => {
             if (part.startsWith('**') && part.endsWith('**')) {
-              return <strong key={idx} className="text-foreground">{part.substring(2, part.length - 2)}</strong>;
+              return <strong key={idx} className="text-black">{part.substring(2, part.length - 2)}</strong>;
             }
-            return <span key={idx} className="text-foreground">{part}</span>;
+            return <span key={idx} className="text-black">{part}</span>;
           })}
         </>
       );
     } catch (error) {
       console.error('Error in renderFormattedText:', error);
-      return <span className="text-foreground">{text}</span>;
+      return <span className="text-black">{text}</span>;
     }
   };
 
@@ -484,15 +484,15 @@ const PalmReadingResult = () => {
               <Hand className="h-4 w-4 mr-2" />
               Comprehensive Palmistry Analysis
             </div>
-            <h1 className="heading-lg mb-6 text-foreground">Your Complete Palm Reading Report</h1>
+            <h1 className="heading-lg mb-6 text-black">Your Complete Palm Reading Report</h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               This in-depth analysis is based on traditional palmistry principles, examining your hand shape, lines, mounts, and unique features to provide insights into your personality and life journey.
             </p>
           </div>
           
-          <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal bg-card">
+          <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal bg-white">
             <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-              <h2 className="heading-md text-foreground">Full Palmistry Report</h2>
+              <h2 className="heading-md text-black">Full Palmistry Report</h2>
               <div className="flex gap-3 flex-wrap">
                 <button 
                   onClick={handleFullReportDownload}

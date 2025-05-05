@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 export const generatePDF = async ({ title, subtitle, content, fileName }) => {
@@ -15,7 +16,7 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
       font-family: Arial, sans-serif;
       line-height: 1.6;
       margin: 40px;
-      color: #333;
+      color: #000000;
     }
     h1 {
       color: #006400;
@@ -69,6 +70,7 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
     p {
       text-align: justify;
       margin-bottom: 10px;
+      color: #000000;
     }
     .compatibility-score {
       font-size: 18px;
@@ -88,6 +90,7 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
     th, td {
       padding: 8px;
       text-align: left;
+      color: #000000;
     }
     th {
       background-color: #f2f2f2;
@@ -95,9 +98,11 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
     ul, ol {
       margin-left: 20px;
       margin-bottom: 15px;
+      color: #000000;
     }
     li {
       margin-bottom: 5px;
+      color: #000000;
     }
     blockquote {
       border-left: 4px solid #00FF7F;
