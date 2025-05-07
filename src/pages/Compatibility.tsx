@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Users, Upload, AlertCircle } from 'lucide-react';
@@ -58,23 +57,28 @@ const Compatibility = () => {
     }
   });
   
-  // Modified canSubmit function to be more reliable
+  // Improved isFormValid function with more logging
   const isFormValid = () => {
+    const yourName = form.getValues('yourDetails.name');
+    const yourBirthDate = form.getValues('yourDetails.birthDate');
+    const partnerName = form.getValues('partnerDetails.name');
+    const partnerBirthDate = form.getValues('partnerDetails.birthDate');
+    
     console.log("Checking form validity");
-    console.log("Your name:", form.getValues('yourDetails.name'));
-    console.log("Your birthdate:", form.getValues('yourDetails.birthDate'));
-    console.log("Partner name:", form.getValues('partnerDetails.name'));
-    console.log("Partner birthdate:", form.getValues('partnerDetails.birthDate'));
+    console.log("Your name:", yourName || "Missing");
+    console.log("Your birthdate:", yourBirthDate || "Missing");
+    console.log("Partner name:", partnerName || "Missing");
+    console.log("Partner birthdate:", partnerBirthDate || "Missing");
     console.log("Your palm image:", yourPalmImage ? "Present" : "Missing");
     console.log("Partner palm image:", partnerPalmImage ? "Present" : "Missing");
     console.log("Is Gemini configured:", isConfigured);
     console.log("Is uploading:", isUploading);
     
     const hasRequiredFields = 
-      !!form.getValues('yourDetails.name') && 
-      !!form.getValues('yourDetails.birthDate') && 
-      !!form.getValues('partnerDetails.name') && 
-      !!form.getValues('partnerDetails.birthDate');
+      !!yourName && 
+      !!yourBirthDate && 
+      !!partnerName && 
+      !!partnerBirthDate;
       
     const hasImages = !!yourPalmImage && !!partnerPalmImage;
     
@@ -158,6 +162,7 @@ const Compatibility = () => {
       const yourPalmBase64 = await fileToBase64(yourPalmImage);
       const partnerPalmBase64 = await fileToBase64(partnerPalmImage);
       
+      // Store data in session storage
       sessionStorage.setItem('yourName', values.yourDetails.name);
       sessionStorage.setItem('partnerName', values.partnerDetails.name);
       sessionStorage.setItem('yourBirthdate', values.yourDetails.birthDate);
@@ -432,7 +437,7 @@ const Compatibility = () => {
                     disabled={!isFormValid()}
                     variant="default"
                     size="lg"
-                    className="px-8 py-3 rounded-full text-base font-medium gap-2 mx-auto"
+                    className={`px-8 py-3 rounded-full text-base font-medium gap-2 mx-auto ${!isFormValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {isUploading ? (
                       <>
@@ -450,7 +455,9 @@ const Compatibility = () => {
                     )}
                   </Button>
                   <p className="text-sm text-muted-foreground mt-4">
-                    More complete birth details result in a more accurate compatibility analysis.
+                    {!isFormValid() 
+                      ? "Please complete all required fields and upload both palm images before analyzing"
+                      : "More complete birth details result in a more accurate compatibility analysis."}
                   </p>
                 </div>
               </form>

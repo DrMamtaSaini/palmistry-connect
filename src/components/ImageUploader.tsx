@@ -71,6 +71,7 @@ const ImageUploader = ({
         // Pass file to parent component
         onImageSelect(file);
         console.log('ImageUploader: File passed to parent component:', file.name);
+        
         setIsLoading(false);
         
         // Show toast notification to confirm image upload
