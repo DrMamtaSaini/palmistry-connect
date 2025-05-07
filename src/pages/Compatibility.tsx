@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Users, Upload, AlertCircle } from 'lucide-react';
@@ -121,12 +122,26 @@ const Compatibility = () => {
   }, [form.watch(), yourPalmImage, partnerPalmImage]);
   
   const handleYourImageSelect = (file: File) => {
+    // Validation to handle empty file case from the ImageUploader when clearing
+    if (file.size === 0 || file.name === 'empty.png') {
+      console.log("Your palm image cleared");
+      setYourPalmImage(null);
+      return;
+    }
+    
     console.log("Your palm image selected:", file.name);
     setYourPalmImage(file);
     setError(null);
   };
   
   const handlePartnerImageSelect = (file: File) => {
+    // Validation to handle empty file case from the ImageUploader when clearing
+    if (file.size === 0 || file.name === 'empty.png') {
+      console.log("Partner palm image cleared");
+      setPartnerPalmImage(null);
+      return;
+    }
+    
     console.log("Partner palm image selected:", file.name);
     setPartnerPalmImage(file);
     setError(null);
@@ -155,10 +170,10 @@ const Compatibility = () => {
       return;
     }
     
-    setIsUploading(true);
-    setError(null);
-    
     try {
+      setIsUploading(true);
+      setError(null);
+      
       const yourPalmBase64 = await fileToBase64(yourPalmImage);
       const partnerPalmBase64 = await fileToBase64(partnerPalmImage);
       

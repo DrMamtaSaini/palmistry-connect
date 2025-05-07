@@ -1,6 +1,7 @@
+
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw, FileText, Book } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { revealAnimation } from '@/lib/animations';
@@ -8,15 +9,20 @@ import { generatePDF } from '@/lib/pdfUtils';
 import { toast } from '@/hooks/use-toast';
 import { useGemini } from '@/contexts/GeminiContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const PalmReadingResult = () => {
   const navigate = useNavigate();
   const [palmAnalysis, setPalmAnalysis] = useState<string | null>(null);
+  const [comprehensivePalmAnalysis, setComprehensivePalmAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isGeneratingComprehensive, setIsGeneratingComprehensive] = useState(false);
   const [hasAttemptedAnalysis, setHasAttemptedAnalysis] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { gemini, isLoading: isGeminiLoading } = useGemini();
   const [userId, setUserId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('basic');
   
   // Add debug state
   const [debugInfo, setDebugInfo] = useState<string>('');
@@ -32,7 +38,7 @@ const PalmReadingResult = () => {
     checkAuth();
   }, []);
   
-  const saveReadingToDatabase = async (readingText: string) => {
+  const saveReadingToDatabase = async (readingText: string, isComprehensive: boolean = false) => {
     if (!userId) return;
     
     try {
@@ -45,7 +51,8 @@ const PalmReadingResult = () => {
           user_id: userId,
           image_url: palmImageData || '',
           results: readingText,
-          language: 'english'
+          language: 'english',
+          is_comprehensive: isComprehensive
         });
       
       if (error) {
@@ -135,6 +142,73 @@ const PalmReadingResult = () => {
       setHasAttemptedAnalysis(true);
     }
   }, [gemini, userId]);
+
+  const generateComprehensiveReport = useCallback(async () => {
+    console.log('Starting comprehensive palm analysis...');
+    const storedImage = sessionStorage.getItem('palmImage');
+    const userName = sessionStorage.getItem('userName') || "User";
+    
+    if (!storedImage) {
+      console.error('No palm image found in session storage');
+      setError('No palm image found. Please upload an image first.');
+      return false;
+    }
+    
+    if (!gemini) {
+      console.error('Gemini not initialized');
+      setError('Gemini AI not initialized. Please check your API key.');
+      return false;
+    }
+    
+    setIsGeneratingComprehensive(true);
+    setError(null); // Clear any previous errors
+    
+    try {
+      console.log('Sending image to Gemini API for comprehensive analysis...');
+      toast({
+        title: "Generating Comprehensive Report",
+        description: "Creating your 20-page PalmCode™ Life Blueprint Report. This may take a minute...",
+      });
+      
+      const result = await gemini.analyzeComprehensivePalm(storedImage, userName);
+      console.log('Comprehensive analysis received:', result ? `Success (${result.length} chars)` : 'Empty result');
+      
+      if (!result || typeof result !== 'string' || result.trim() === '') {
+        throw new Error('Empty or invalid result from Gemini API for comprehensive report');
+      }
+      
+      console.log('Comprehensive analysis complete, setting result');
+      setComprehensivePalmAnalysis(result);
+      
+      // Important: Store in session storage for persistence
+      sessionStorage.setItem('comprehensivePalmReadingResult', result);
+      
+      if (userId) {
+        await saveReadingToDatabase(result, true);
+      }
+      
+      setActiveTab('comprehensive');
+      setError(null);
+      
+      toast({
+        title: "20-Page Report Ready",
+        description: "Your comprehensive PalmCode™ Life Blueprint Report has been generated successfully!",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error generating comprehensive palm analysis:', error);
+      setError(`Error generating comprehensive report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        title: "Analysis Error",
+        description: "There was an error generating your comprehensive palm reading. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsGeneratingComprehensive(false);
+    }
+  }, [gemini, userId]);
   
   useEffect(() => {
     const cleanup = revealAnimation();
@@ -151,26 +225,36 @@ const PalmReadingResult = () => {
           console.log('Checking for reading in database for user:', userId);
           const { data: readings, error: readingsError } = await supabase
             .from('palm_readings')
-            .select('results')
+            .select('results, is_comprehensive')
             .eq('user_id', userId)
             .order('created_at', { ascending: false })
-            .limit(1);
+            .limit(2);
             
-          if (!readingsError && readings && readings.length > 0 && readings[0].results) {
-            console.log('Found reading in database, using it');
-            // Ensure results is treated as a string
-            const readingText = typeof readings[0].results === 'object' 
-              ? JSON.stringify(readings[0].results) 
-              : String(readings[0].results);
+          if (!readingsError && readings && readings.length > 0) {
+            console.log('Found reading(s) in database, using them');
             
-            if (readingText && readingText.length > 100) {
-              console.log('Setting palm analysis from database:', readingText.substring(0, 100) + '...');
-              setPalmAnalysis(readingText);
-              sessionStorage.setItem('palmReadingResult', readingText);
-              setHasAttemptedAnalysis(true);
-              foundReadingInDb = true;
-              setDebugInfo(`Found reading in database: ${readingText.length} characters`);
-            }
+            // Process each reading
+            readings.forEach(reading => {
+              // Ensure results is treated as a string
+              const readingText = typeof reading.results === 'object' 
+                ? JSON.stringify(reading.results) 
+                : String(reading.results);
+              
+              if (readingText && readingText.length > 100) {
+                if (reading.is_comprehensive) {
+                  console.log('Setting comprehensive palm analysis from database:', readingText.substring(0, 100) + '...');
+                  setComprehensivePalmAnalysis(readingText);
+                  sessionStorage.setItem('comprehensivePalmReadingResult', readingText);
+                } else {
+                  console.log('Setting regular palm analysis from database:', readingText.substring(0, 100) + '...');
+                  setPalmAnalysis(readingText);
+                  sessionStorage.setItem('palmReadingResult', readingText);
+                }
+                setHasAttemptedAnalysis(true);
+                foundReadingInDb = true;
+                setDebugInfo(`Found reading in database: ${readingText.length} characters`);
+              }
+            });
           } else {
             console.log('No readings found in database or error:', readingsError);
           }
@@ -178,11 +262,19 @@ const PalmReadingResult = () => {
         
         if (!foundReadingInDb) {
           const storedReading = sessionStorage.getItem('palmReadingResult');
+          const storedComprehensiveReading = sessionStorage.getItem('comprehensivePalmReadingResult');
           const storedImage = sessionStorage.getItem('palmImage');
           
           console.log('Checking stored reading:', storedReading ? 'Found' : 'Not found');
+          console.log('Checking stored comprehensive reading:', storedComprehensiveReading ? 'Found' : 'Not found');
           console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
-          setDebugInfo(`Session storage: Reading ${storedReading ? 'Found' : 'Not found'}, Image ${storedImage ? 'Found' : 'Not found'}`);
+          
+          if (storedComprehensiveReading && storedComprehensiveReading.trim().length > 10) {
+            setComprehensivePalmAnalysis(storedComprehensiveReading);
+            setHasAttemptedAnalysis(true);
+            setDebugInfo(`Using stored comprehensive reading: ${storedComprehensiveReading.length} characters`);
+            setActiveTab('comprehensive');
+          }
           
           if (storedReading && storedReading.trim().length > 10) {
             // Content exists and is reasonably long
@@ -191,6 +283,10 @@ const PalmReadingResult = () => {
             setPalmAnalysis(storedReading);
             setHasAttemptedAnalysis(true);
             setDebugInfo(`Using stored reading: ${storedReading.length} characters`);
+            
+            if (!storedComprehensiveReading) {
+              setActiveTab('basic');
+            }
           } else if (storedImage && gemini && !isGeminiLoading && !isAnalyzing) {
             console.log('No valid stored reading but we have image and gemini, analyzing now...');
             setDebugInfo('Starting new analysis...');
@@ -301,6 +397,23 @@ const PalmReadingResult = () => {
           );
           return;
         }
+
+        // Special handling for page numbers in comprehensive report
+        if (line.match(/^PAGE \d+:/)) {
+          if (inList) {
+            elements.push(<ul key={`list-${index}`} className="list-disc my-4 ml-6">
+                {currentList}
+              </ul>);
+            currentList = [];
+            inList = false;
+          }
+          elements.push(
+            <h2 key={index} className="text-2xl font-bold mt-8 mb-4 text-primary border-b border-primary pb-2">
+              {line}
+            </h2>
+          );
+          return;
+        }
         
         // Handle lists
         if (line.match(/^- /) || line.match(/^\* /)) {
@@ -384,53 +497,27 @@ const PalmReadingResult = () => {
   };
 
   const handleFullReportDownload = async () => {
+    const currentAnalysis = activeTab === 'basic' ? palmAnalysis : comprehensivePalmAnalysis;
+    const title = activeTab === 'basic' ? "Palm Reading Analysis" : "PalmCode™ Life Blueprint Report";
+    const subtitle = activeTab === 'basic' ? "Comprehensive Personal Insights" : "20-Page Personalized Analysis";
+    const fileName = activeTab === 'basic' ? "Palm_Reading_Report.pdf" : "PalmCode_Life_Blueprint_Report.pdf";
+    
     toast({
-      title: "Generating Full Report",
-      description: "Your comprehensive report is being prepared for download...",
+      title: "Generating Report",
+      description: `Your ${activeTab === 'basic' ? 'palmistry report' : '20-page PalmCode™ report'} is being prepared for download...`,
     });
     
     try {
       await generatePDF({
-        title: "Complete Palm Reading Analysis",
-        subtitle: "Comprehensive Personal Insights",
-        content: palmAnalysis || "No analysis available",
-        fileName: "Palm_Reading_Full_Report.pdf"
+        title,
+        subtitle,
+        content: currentAnalysis || "No analysis available",
+        fileName
       });
       
       toast({
         title: "Success",
-        description: "Your comprehensive report has been downloaded successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate the report. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const handleBasicReportDownload = async () => {
-    toast({
-      title: "Generating Basic Report",
-      description: "Your basic report is being prepared for download...",
-    });
-    
-    const basicContent = palmAnalysis 
-      ? palmAnalysis.split('\n').slice(0, 20).join('\n') + '\n\n(This is a basic version of your report. For full insights, please download the complete report.)'
-      : "No analysis available";
-    
-    try {
-      await generatePDF({
-        title: "Basic Palm Reading Analysis",
-        subtitle: "Essential Personal Insights",
-        content: basicContent,
-        fileName: "Palm_Reading_Basic_Report.pdf"
-      });
-      
-      toast({
-        title: "Success",
-        description: "Your basic report has been downloaded successfully.",
+        description: "Your report has been downloaded successfully.",
       });
     } catch (error) {
       toast({
@@ -442,14 +529,18 @@ const PalmReadingResult = () => {
   };
   
   const retryAnalysis = async () => {
-    setPalmAnalysis(null);
-    setError(null);
-    sessionStorage.removeItem('palmReadingResult');
-    
-    await analyzePalm();
+    if (activeTab === 'basic') {
+      setPalmAnalysis(null);
+      sessionStorage.removeItem('palmReadingResult');
+      await analyzePalm();
+    } else {
+      setComprehensivePalmAnalysis(null);
+      sessionStorage.removeItem('comprehensivePalmReadingResult');
+      await generateComprehensiveReport();
+    }
   };
   
-  const isLoading = isGeminiLoading || isAnalyzing;
+  const isLoading = isGeminiLoading || isAnalyzing || isGeneratingComprehensive;
   
   if (isLoading) {
     return (
@@ -460,9 +551,17 @@ const PalmReadingResult = () => {
             <div className="max-w-4xl mx-auto text-center">
               <div className="flex flex-col items-center justify-center space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <h2 className="text-xl font-semibold text-foreground">Analyzing Your Palm</h2>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {isGeneratingComprehensive 
+                    ? "Creating Your 20-Page PalmCode™ Life Blueprint Report" 
+                    : "Analyzing Your Palm"
+                  }
+                </h2>
                 <p className="text-muted-foreground">
-                  Our AI is carefully analyzing your palm image to generate a comprehensive palmistry report. This may take a moment...
+                  {isGeneratingComprehensive 
+                    ? "Our AI is generating your comprehensive 20-page personalized report. This may take 1-2 minutes..." 
+                    : "Our AI is carefully analyzing your palm image to generate a palmistry report. This may take a moment..."
+                  }
                 </p>
               </div>
             </div>
@@ -484,32 +583,39 @@ const PalmReadingResult = () => {
               <Hand className="h-4 w-4 mr-2" />
               Comprehensive Palmistry Analysis
             </div>
-            <h1 className="heading-lg mb-6 text-black">Your Complete Palm Reading Report</h1>
+            <h1 className="heading-lg mb-6 text-black">Your Palm Reading Report</h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              This in-depth analysis is based on traditional palmistry principles, examining your hand shape, lines, mounts, and unique features to provide insights into your personality and life journey.
+              This analysis is based on traditional palmistry principles, examining your hand shape, lines, mounts, and unique features to provide insights into your personality and life journey.
             </p>
           </div>
           
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal bg-white">
             <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-              <h2 className="heading-md text-black">Full Palmistry Report</h2>
+              <h2 className="heading-md text-black">
+                {activeTab === 'comprehensive' 
+                  ? "PalmCode™ Life Blueprint Report" 
+                  : "Palmistry Report"
+                }
+              </h2>
               <div className="flex gap-3 flex-wrap">
                 <button 
                   onClick={handleFullReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
-                  disabled={!palmAnalysis}
+                  disabled={activeTab === 'basic' ? !palmAnalysis : !comprehensivePalmAnalysis}
                 >
                   <Download className="h-4 w-4" />
-                  <span>Download Full Report</span>
+                  <span>Download {activeTab === 'comprehensive' ? 'Full 20-page Report' : 'Report'}</span>
                 </button>
-                <button 
-                  onClick={handleBasicReportDownload}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors cursor-pointer"
-                  disabled={!palmAnalysis}
-                >
-                  <Download className="h-4 w-4" />
-                  <span>Download Basic Report</span>
-                </button>
+                {!comprehensivePalmAnalysis && (
+                  <button 
+                    onClick={generateComprehensiveReport}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors cursor-pointer"
+                    disabled={isGeneratingComprehensive || !palmAnalysis}
+                  >
+                    <Book className="h-4 w-4" />
+                    <span>Generate 20-Page Report</span>
+                  </button>
+                )}
                 <button 
                   onClick={retryAnalysis}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors cursor-pointer"
@@ -521,60 +627,155 @@ const PalmReadingResult = () => {
               </div>
             </div>
             
-            {/* Debug info for troubleshooting */}
-            <div className="mb-4 p-3 text-xs bg-amber-50 border border-amber-200 rounded-md text-amber-700 text-left">
-              <strong>Debug Info:</strong> {debugInfo || 'No debug info available'}
-            </div>
+            {comprehensivePalmAnalysis && (
+              <Tabs defaultValue={activeTab} className="w-full mb-6" onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2 mb-8">
+                  <TabsTrigger value="basic" className="text-sm">Standard Report</TabsTrigger>
+                  <TabsTrigger value="comprehensive" className="text-sm">20-Page PalmCode™ Blueprint</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="basic" className="mt-0">
+                  {/* Basic report content */}
+                  {palmAnalysis ? (
+                    <div className="prose prose-lg max-w-none text-left bg-white text-black border p-6 rounded-lg shadow-sm">
+                      {formatAnalysisContent(palmAnalysis)}
+                    </div>
+                  ) : error ? (
+                    <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
+                      <div className="flex items-center justify-center mb-4">
+                        <AlertCircle className="h-8 w-8 text-red-500 mr-2" />
+                        <h3 className="text-xl font-medium text-red-700">Analysis Failed</h3>
+                      </div>
+                      <p className="text-red-600 font-medium mb-2">Error: {error}</p>
+                      <Button onClick={analyzePalm} variant="default">Try Again</Button>
+                    </div>
+                  ) : (
+                    <div className="p-6 border border-yellow-300 rounded-lg bg-yellow-50 text-center">
+                      <p className="text-center text-gray-700 italic mb-4">
+                        {hasAttemptedAnalysis 
+                          ? "Analysis could not be generated. Please try uploading a clearer image of your palm." 
+                          : "No palm analysis available. Please upload a palm image for analysis."}
+                      </p>
+                      <Button onClick={() => navigate('/palm-reading')} variant="default">Upload Palm Image</Button>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="comprehensive" className="mt-0">
+                  {/* Comprehensive report content */}
+                  {comprehensivePalmAnalysis ? (
+                    <div className="prose prose-lg max-w-none text-left bg-white text-black border p-6 rounded-lg shadow-sm">
+                      <div className="flex justify-between items-center mb-6 pb-3 border-b">
+                        <h1 className="text-2xl font-bold text-primary">PalmCode™ Life Blueprint Report</h1>
+                        <FileText className="h-6 w-6 text-primary" />
+                      </div>
+                      {formatAnalysisContent(comprehensivePalmAnalysis)}
+                    </div>
+                  ) : (
+                    <div className="p-6 border border-blue-300 rounded-lg bg-blue-50 text-center">
+                      <div className="flex items-center justify-center mb-4">
+                        <Book className="h-8 w-8 text-blue-500 mr-2" />
+                        <h3 className="text-xl font-medium text-blue-700">Generate Your 20-Page Report</h3>
+                      </div>
+                      <p className="text-gray-700 mb-4">
+                        Unlock a comprehensive 20-page PalmCode™ Life Blueprint Report that provides deep insights into your personality, relationships, career, purpose, and more.
+                      </p>
+                      <Button 
+                        onClick={generateComprehensiveReport} 
+                        variant="default"
+                        disabled={isGeneratingComprehensive}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {isGeneratingComprehensive ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Book className="mr-2 h-4 w-4" />
+                            Generate 20-Page Report
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
             
-            <div className="prose prose-lg max-w-none text-left bg-white text-black border p-6 rounded-lg shadow-sm">
-              {palmAnalysis ? (
-                formatAnalysisContent(palmAnalysis)
-              ) : error ? (
-                <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
-                  <div className="flex items-center justify-center mb-4">
-                    <AlertCircle className="h-8 w-8 text-red-500 mr-2" />
-                    <h3 className="text-xl font-medium text-red-700">Analysis Failed</h3>
+            {!comprehensivePalmAnalysis && (
+              <div className="prose prose-lg max-w-none text-left bg-white text-black border p-6 rounded-lg shadow-sm">
+                {palmAnalysis ? (
+                  formatAnalysisContent(palmAnalysis)
+                ) : error ? (
+                  <div className="p-6 border border-red-300 rounded-lg bg-red-50 text-center">
+                    <div className="flex items-center justify-center mb-4">
+                      <AlertCircle className="h-8 w-8 text-red-500 mr-2" />
+                      <h3 className="text-xl font-medium text-red-700">Analysis Failed</h3>
+                    </div>
+                    <p className="text-red-600 font-medium mb-2">Error: {error}</p>
+                    <p className="text-gray-700 mb-4">
+                      Unable to generate palm analysis. This could be due to one of the following reasons:
+                    </p>
+                    <ul className="text-left list-disc mb-6 mx-auto max-w-md text-gray-700">
+                      <li className="mb-2">Your Gemini API key may be invalid or expired</li>
+                      <li className="mb-2">The palm image might not be clear enough for analysis</li>
+                      <li className="mb-2">There might be connection issues with the Gemini API</li>
+                    </ul>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <button
+                        onClick={retryAnalysis}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 cursor-pointer"
+                      >
+                        Try Again
+                      </button>
+                      <button
+                        onClick={() => navigate('/palm-reading')}
+                        className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 cursor-pointer"
+                      >
+                        Upload New Image
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-red-600 font-medium mb-2">Error: {error}</p>
-                  <p className="text-gray-700 mb-4">
-                    Unable to generate palm analysis. This could be due to one of the following reasons:
-                  </p>
-                  <ul className="text-left list-disc mb-6 mx-auto max-w-md text-gray-700">
-                    <li className="mb-2">Your Gemini API key may be invalid or expired</li>
-                    <li className="mb-2">The palm image might not be clear enough for analysis</li>
-                    <li className="mb-2">There might be connection issues with the Gemini API</li>
-                  </ul>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button
-                      onClick={retryAnalysis}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                    >
-                      Try Again
-                    </button>
+                ) : (
+                  <div className="p-6 border border-yellow-300 rounded-lg bg-yellow-50 text-center">
+                    <p className="text-center text-gray-700 italic mb-4">
+                      {hasAttemptedAnalysis 
+                        ? "Analysis could not be generated. Please try uploading a clearer image of your palm." 
+                        : "No palm analysis available. Please upload a palm image for analysis."}
+                    </p>
                     <button
                       onClick={() => navigate('/palm-reading')}
                       className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 cursor-pointer"
                     >
-                      Upload New Image
+                      Upload Palm Image
                     </button>
                   </div>
+                )}
+              </div>
+            )}
+            
+            {/* Comprehensive report upgrade banner */}
+            {!isGeneratingComprehensive && !comprehensivePalmAnalysis && palmAnalysis && (
+              <div className="mt-8 p-6 border border-primary/30 rounded-lg bg-primary/5 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <FileText className="h-6 w-6 text-primary mr-2" />
+                  <h3 className="text-xl font-medium text-primary">Upgrade to 20-Page PalmCode™ Life Blueprint Report</h3>
                 </div>
-              ) : (
-                <div className="p-6 border border-yellow-300 rounded-lg bg-yellow-50 text-center">
-                  <p className="text-center text-gray-700 italic mb-4">
-                    {hasAttemptedAnalysis 
-                      ? "Analysis could not be generated. Please try uploading a clearer image of your palm." 
-                      : "No palm analysis available. Please upload a palm image for analysis."}
-                  </p>
-                  <button
-                    onClick={() => navigate('/palm-reading')}
-                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 cursor-pointer"
-                  >
-                    Upload Palm Image
-                  </button>
-                </div>
-              )}
-            </div>
+                <p className="text-muted-foreground mb-4">
+                  Get a detailed 20-page personalized analysis covering personality, relationships, career path, purpose, health, success timing, and more!
+                </p>
+                <Button 
+                  onClick={generateComprehensiveReport} 
+                  variant="default"
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Book className="mr-2 h-4 w-4" />
+                  Generate 20-Page Report
+                </Button>
+              </div>
+            )}
           </div>
           
           <div className="text-center max-w-2xl mx-auto reveal">
@@ -582,7 +783,7 @@ const PalmReadingResult = () => {
               Upload Another Palm Image
             </Link>
             <p className="text-muted-foreground">
-              Want even more detailed insights? Check out our <Link to="/pricing" className="text-primary hover:underline">premium plans</Link>.
+              Want even more detailed insights? Check out our <Link to="/compatibility" className="text-primary hover:underline">compatibility analysis</Link> for relationship matching.
             </p>
           </div>
         </div>

@@ -51,7 +51,7 @@ class GeminiAI {
   }
 
   /**
-   * Analyze a palm image using the Gemini API
+   * Analyze a palm image using the Gemini API - Basic Version
    */
   async analyzePalm(imageData: string): Promise<string> {
     try {
@@ -224,6 +224,250 @@ VERY IMPORTANT: Make sure to format the text so it's clearly readable with prope
       }
     } catch (error) {
       console.error('Error in analyzePalm:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analyze a palm image using the Gemini API to generate a comprehensive 20-page report
+   */
+  async analyzeComprehensivePalm(imageData: string, userName: string = "User"): Promise<string> {
+    try {
+      console.log('Analyzing palm with Gemini API to generate comprehensive 20-page report...');
+      
+      // Format the image for the Gemini API
+      const formattedImage = this.formatImageForGemini(imageData);
+      
+      // Create the API request URL
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+      console.log(`Using Gemini API endpoint: ${this.modelName}`);
+      
+      // Create the API request body with comprehensive 20-page palmistry prompt
+      const body = {
+        contents: [
+          {
+            parts: [
+              {
+                text: `Act as a world-class palmistry expert, life coach, and personality psychologist. You are creating a 20-page personalized "PalmCode™ Life Blueprint Report" for ${userName}. 
+
+This is a premium, high-quality palm reading service that decodes the user's palm lines, mounts, shapes, and patterns using modern palmistry and psychology. Blend mystical insight with practical advice to create a truly personalized report that feels individualized and specific to this person.
+
+# Report Structure
+Create exactly 20 sections, each representing one page of the report. Label each section clearly as "PAGE 1", "PAGE 2", etc. Each page should cover a different aspect of the person's life and personality.
+
+# Content to Include
+Analyze the following aspects from the palm image:
+
+PAGE 1: Executive Summary - Life Blueprint Overview
+- Main characteristics revealed in the palm
+- Summary of key personality traits
+- Core life purpose indicators
+- Visual description of hand type and structure
+
+PAGE 2: Hand Shape & Elemental Analysis
+- Hand shape classification (Earth, Air, Fire, Water)
+- What this reveals about core personality
+- Key strengths based on hand structure
+- Proportion analysis and its meaning
+
+PAGE 3: Life Line Analysis
+- Detailed examination of life line characteristics
+- Vitality and energy indicators
+- Major life transitions revealed
+- Health patterns and longevity indications
+
+PAGE 4: Head Line Analysis
+- Thinking style and intellectual approach
+- Decision-making patterns
+- Mental strengths and potential challenges
+- Learning style and cognitive preferences
+
+PAGE 5: Heart Line Insights
+- Emotional nature and expression
+- Love language and romantic tendencies
+- Emotional intelligence indicators
+- Relationship patterns and needs
+
+PAGE 6: Fate Line & Career Path
+- Career trajectory and professional aptitude
+- Success timing and key periods
+- Natural talents visible in the palm
+- Professional challenges and how to overcome them
+
+PAGE 7: Mount of Venus & Relationships
+- Love compatibility profile
+- Relationship strengths and potential challenges
+- Romantic timeline indicators
+- Partnership compatibility scores with different personality types
+
+PAGE 8: Money & Financial Pattern Analysis
+- Financial aptitude and money relationship
+- Wealth potential indicators
+- Resource management style
+- Prosperity periods and opportunities
+
+PAGE 9: Apollo Line & Creative Expression
+- Creative and artistic abilities
+- Fame and recognition potential
+- Self-expression channels
+- Optimal creative outlets based on palm structure
+
+PAGE 10: Mercury Mount & Communication Style
+- Communication strengths and patterns
+- Business acumen and entrepreneurial potential
+- Persuasive abilities
+- Networking and social influence style
+
+PAGE 11: Jupiter Mount & Leadership Profile
+- Leadership style and strengths
+- Authority presence and charisma indicators
+- Ambition patterns and goal achievement
+- Personal power expression
+
+PAGE 12: Saturn Line & Life Responsibilities
+- Core life responsibilities and duties
+- Discipline and structure indicators
+- Karmic patterns visible in the palm
+- Life lessons and growth areas
+
+PAGE 13: Timing Indicators & Life Phases
+- Key age milestones revealed in the palm
+- Timing indicators for major life events
+- Life phases and their characteristics
+- Current position in life journey
+
+PAGE 14: Health & Wellness Blueprint
+- Physical vitality indicators
+- Stress response patterns
+- Health strengths and potential vulnerabilities
+- Wellness recommendations based on hand characteristics
+
+PAGE 15: Marriage & Relationship Lines
+- Relationship count and quality indicators
+- Marriage timing indicators (if present)
+- Attachment style and emotional bonding
+- Partnership compatibility insights
+
+PAGE 16: Children Lines & Legacy
+- Family life indicators
+- Nurturing tendencies and parenting style
+- Legacy creation and impact potential
+- Generational patterns and influences
+
+PAGE 17: Travel Lines & Life Experience
+- Geographic destiny indicators
+- Travel propensities and patterns
+- Cultural influences and international connections
+- Adaptability and exploration tendencies
+
+PAGE 18: Intuition & Psychic Abilities
+- Intuitive strengths visible in the palm
+- Psychic sensitivity indicators
+- Spiritual connection patterns
+- Intuition development recommendations
+
+PAGE 19: Life Purpose & Soul Mission
+- Core life purpose indicators
+- Spiritual path and evolution
+- Soul-level gifts and talents
+- Higher calling and meaningful work
+
+PAGE 20: Practical Guidance & Future Development
+- Personalized affirmations based on palm characteristics
+- Practical steps to maximize potential
+- Challenges to be mindful of
+- Future development roadmap
+
+# Format Guidelines
+- Create a visually descriptive, well-structured report
+- Use headings, subheadings, and bullet points for clarity
+- Include "compatibility scores" and "potential ratings" as text-based charts where appropriate
+- Bold important insights and key takeaways
+- Use markdown formatting for clean structure
+
+# Style Guidelines
+- Write in a warm, inspiring, and motivational tone
+- Balance mystical insight with practical, actionable advice
+- Be specific and personalized, avoiding generic statements
+- Focus on empowerment and growth opportunities
+- Address the reader directly in second person
+- Use a professional yet conversational tone
+
+The final report should read like a premium product that delivers genuine insight, self-understanding, and growth direction - something the recipient will want to save, revisit, and share with others.
+
+CRITICALLY IMPORTANT: Ensure ALL text is clearly visible and readable with high contrast. Use standard HTML text with NO colored text - only use regular black text that will display clearly on any background.
+
+VERY IMPORTANT: Make sure to format the text so it's clearly readable with proper markdown formatting with clear section headers and paragraphs. Label each page clearly. The report should be detailed and comprehensive.`
+              },
+              formattedImage
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.8,
+          maxOutputTokens: 8000,
+          topP: 0.95,
+          topK: 40
+        }
+      };
+
+      // Make the API request
+      console.log('Sending request to Gemini API for comprehensive report...');
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      // Check if the response is OK
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response from Gemini API:', errorText);
+        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+      }
+
+      // Parse the response
+      const result = await response.json();
+      console.log('Received comprehensive report response from Gemini API');
+      
+      // Check if the response contains an error
+      if (result.error) {
+        console.error('Error from Gemini API:', result.error);
+        throw new Error(result.error.message || 'Unknown error from Gemini API');
+      }
+      
+      // Validate and process the response
+      if (result.candidates && 
+          result.candidates[0] && 
+          result.candidates[0].content && 
+          result.candidates[0].content.parts && 
+          result.candidates[0].content.parts[0] && 
+          result.candidates[0].content.parts[0].text) {
+            
+        const analysisText = result.candidates[0].content.parts[0].text;
+        
+        if (!analysisText || analysisText.trim() === '') {
+          throw new Error('Empty response from Gemini API');
+        }
+        
+        console.log('Successfully extracted comprehensive palm reading from Gemini response');
+        console.log('First 200 chars of response:', analysisText.substring(0, 200));
+        
+        // Ensure the report has a proper title
+        let formattedText = analysisText;
+        if (!formattedText.trim().startsWith('# ') && !formattedText.trim().includes('PAGE 1')) {
+          formattedText = '# PalmCode™ Life Blueprint Report\n\n' + formattedText;
+        }
+        
+        return formattedText;
+      } else {
+        console.error('Invalid response structure from Gemini API:', result);
+        throw new Error('The response from Gemini API was not in the expected format');
+      }
+    } catch (error) {
+      console.error('Error in analyzeComprehensivePalm:', error);
       throw error;
     }
   }

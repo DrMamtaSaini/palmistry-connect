@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -11,6 +11,7 @@ interface ImageUploaderProps {
   imagePreviewClassName?: string;
   multiple?: boolean;
   accept?: string;
+  initialImage?: string | null;
 }
 
 const ImageUploader = ({
@@ -19,12 +20,32 @@ const ImageUploader = ({
   className,
   imagePreviewClassName,
   multiple = false,
-  accept = 'image/jpeg, image/png, image/jpg'
+  accept = 'image/jpeg, image/png, image/jpg',
+  initialImage = null
 }: ImageUploaderProps) => {
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(initialImage);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // If there's an initialImage, simulate the onImageSelect to ensure parent components know there's an image
+  useEffect(() => {
+    if (initialImage && fileInputRef.current && fileInputRef.current.files?.length === 0) {
+      console.log('ImageUploader: Initial image detected, notifying parent component');
+      // Create a mock file to notify the parent component
+      fetch(initialImage)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], "initial-image.jpg", {
+            type: "image/jpeg",
+          });
+          onImageSelect(file);
+        })
+        .catch(err => {
+          console.error('ImageUploader: Error processing initial image', err);
+        });
+    }
+  }, [initialImage, onImageSelect]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -139,6 +160,13 @@ const ImageUploader = ({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    
+    // Notify parent that image has been cleared by passing null
+    // This should trigger the parent component to handle removal of the image
+    // Note: Since we can't pass null with the current type definition, we'll create an empty blob
+    const emptyBlob = new Blob([], { type: 'image/png' });
+    const emptyFile = new File([emptyBlob], 'empty.png', { type: 'image/png' });
+    onImageSelect(emptyFile);
     
     toast({
       title: "Image cleared",
