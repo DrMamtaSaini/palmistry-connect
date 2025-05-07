@@ -21,10 +21,7 @@ const ImageUploader = ({
   multiple = false,
   accept = 'image/jpeg, image/png, image/jpg'
 }: ImageUploaderProps) => {
-  const [preview, setPreview] = useState<string | null>(() => {
-    // Try to load from session storage on component mount
-    return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('palmImage') : null;
-  });
+  const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,27 +67,15 @@ const ImageUploader = ({
         setPreview(result);
         console.log('Image preview created successfully');
         
-        // Save to session storage
-        try {
-          // IMPORTANT: Clear ALL palm-related data in session storage first
-          sessionStorage.removeItem('palmReadingResult');
-          sessionStorage.setItem('palmImage', result);
-          
-          console.log('Image saved to session storage, previous reading result cleared');
-          
-          // Show toast notification to confirm image upload
-          toast({
-            title: "Image uploaded successfully",
-            description: "Your palm image is ready for analysis. Previous readings have been cleared.",
-          });
-        } catch (err) {
-          console.error('Error saving image to session storage:', err);
-          // If session storage fails, continue anyway
-        }
-        
         // Pass file to parent component
         onImageSelect(file);
         setIsLoading(false);
+        
+        // Show toast notification to confirm image upload
+        toast({
+          title: "Image uploaded successfully",
+          description: "Your image is ready for analysis.",
+        });
       } catch (err) {
         console.error('Error in FileReader onload:', err);
         setIsLoading(false);
@@ -151,14 +136,9 @@ const ImageUploader = ({
       fileInputRef.current.value = '';
     }
     
-    // Reset session storage completely
-    sessionStorage.removeItem('palmImage');
-    sessionStorage.removeItem('palmReadingResult');
-    console.log('Removed stored palm image and reading result from session storage');
-
     toast({
       title: "Image cleared",
-      description: "The uploaded image and any related analysis have been removed."
+      description: "The uploaded image has been removed."
     });
   };
 

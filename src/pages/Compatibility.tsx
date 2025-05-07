@@ -16,6 +16,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 
 const birthDetailsSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -56,6 +57,19 @@ const Compatibility = () => {
       }
     }
   });
+  
+  // Determine if the form is ready for submission
+  const canSubmit = () => {
+    const requiredFieldsComplete = 
+      form.getValues('yourDetails.name') && 
+      form.getValues('yourDetails.birthDate') && 
+      form.getValues('partnerDetails.name') && 
+      form.getValues('partnerDetails.birthDate') && 
+      yourPalmImage !== null && 
+      partnerPalmImage !== null;
+    
+    return requiredFieldsComplete && isConfigured && !isUploading;
+  };
   
   useEffect(() => {
     const cleanup = revealAnimation();
@@ -134,6 +148,8 @@ const Compatibility = () => {
       sessionStorage.setItem('yourBirthPlace', values.yourDetails.birthPlace || '');
       sessionStorage.setItem('partnerBirthPlace', values.partnerDetails.birthPlace || '');
       
+      console.log("Starting compatibility analysis...");
+      
       const result = await gemini.analyzeCompatibility(
         yourPalmBase64,
         partnerPalmBase64,
@@ -141,6 +157,7 @@ const Compatibility = () => {
         values.partnerDetails.name
       );
       
+      console.log("Compatibility analysis completed successfully");
       sessionStorage.setItem('compatibilityResult', result);
       
       toast({
@@ -391,20 +408,16 @@ const Compatibility = () => {
                 </div>
                 
                 <div className="text-center mt-8">
-                  <button
+                  <Button 
                     type="submit"
-                    disabled={!yourPalmImage || !partnerPalmImage || isUploading || !isConfigured}
-                    className={`
-                      px-8 py-3 rounded-full text-base font-medium flex items-center transition-all mx-auto
-                      ${(!yourPalmImage || !partnerPalmImage || !isConfigured) 
-                        ? 'bg-muted text-muted-foreground cursor-not-allowed' 
-                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      }
-                    `}
+                    disabled={!canSubmit()}
+                    variant="default"
+                    size="lg"
+                    className="px-8 py-3 rounded-full text-base font-medium gap-2 mx-auto"
                   >
                     {isUploading ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -412,11 +425,11 @@ const Compatibility = () => {
                       </>
                     ) : (
                       <>
-                        <Upload className="h-5 w-5 mr-2" />
+                        <Upload className="h-5 w-5" />
                         Analyze Compatibility
                       </>
                     )}
-                  </button>
+                  </Button>
                   <p className="text-sm text-muted-foreground mt-4">
                     More complete birth details result in a more accurate compatibility analysis.
                   </p>
