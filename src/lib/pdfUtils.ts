@@ -17,6 +17,7 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
       line-height: 1.6;
       margin: 40px;
       color: #000000;
+      background-color: #ffffff;
     }
     h1 {
       color: #006400;
