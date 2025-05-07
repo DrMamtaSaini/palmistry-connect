@@ -29,13 +29,14 @@ const ImageUploader = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log(`ImageUploader: File selected via input: ${file.name}`);
       handleFile(file);
     }
   };
 
   const handleFile = (file: File) => {
     setIsLoading(true);
-    console.log(`Processing image file: ${file.name}, size: ${file.size / 1024}KB, type: ${file.type}`);
+    console.log(`ImageUploader: Processing image file: ${file.name}, size: ${file.size / 1024}KB, type: ${file.type}`);
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -65,10 +66,11 @@ const ImageUploader = ({
       try {
         const result = reader.result as string;
         setPreview(result);
-        console.log('Image preview created successfully');
+        console.log('ImageUploader: Image preview created successfully');
         
         // Pass file to parent component
         onImageSelect(file);
+        console.log('ImageUploader: File passed to parent component:', file.name);
         setIsLoading(false);
         
         // Show toast notification to confirm image upload
@@ -77,7 +79,7 @@ const ImageUploader = ({
           description: "Your image is ready for analysis.",
         });
       } catch (err) {
-        console.error('Error in FileReader onload:', err);
+        console.error('ImageUploader: Error in FileReader onload:', err);
         setIsLoading(false);
         toast({
           title: "Error",
@@ -88,7 +90,7 @@ const ImageUploader = ({
     };
     
     reader.onerror = (error) => {
-      console.error('Error creating image preview:', error);
+      console.error('ImageUploader: Error creating image preview:', error);
       toast({
         title: "Error",
         description: "Failed to process the image. Please try again.",
@@ -119,6 +121,7 @@ const ImageUploader = ({
     
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
+      console.log(`ImageUploader: File dropped: ${file.name}`);
       handleFile(file);
     } else {
       toast({
@@ -130,7 +133,7 @@ const ImageUploader = ({
   };
 
   const clearImage = () => {
-    console.log('Clearing image preview');
+    console.log('ImageUploader: Clearing image preview');
     setPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';

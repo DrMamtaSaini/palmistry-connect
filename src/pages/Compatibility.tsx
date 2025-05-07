@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, Upload, AlertCircle, Camera } from 'lucide-react';
+import { Users, Upload, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ImageUploader from '@/components/ImageUploader';
@@ -10,7 +11,6 @@ import GeminiSetup from '@/components/GeminiSetup';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -58,17 +58,30 @@ const Compatibility = () => {
     }
   });
   
-  // Determine if the form is ready for submission
-  const canSubmit = () => {
-    const requiredFieldsComplete = 
-      form.getValues('yourDetails.name') && 
-      form.getValues('yourDetails.birthDate') && 
-      form.getValues('partnerDetails.name') && 
-      form.getValues('partnerDetails.birthDate') && 
-      yourPalmImage !== null && 
-      partnerPalmImage !== null;
+  // Modified canSubmit function to be more reliable
+  const isFormValid = () => {
+    console.log("Checking form validity");
+    console.log("Your name:", form.getValues('yourDetails.name'));
+    console.log("Your birthdate:", form.getValues('yourDetails.birthDate'));
+    console.log("Partner name:", form.getValues('partnerDetails.name'));
+    console.log("Partner birthdate:", form.getValues('partnerDetails.birthDate'));
+    console.log("Your palm image:", yourPalmImage ? "Present" : "Missing");
+    console.log("Partner palm image:", partnerPalmImage ? "Present" : "Missing");
+    console.log("Is Gemini configured:", isConfigured);
+    console.log("Is uploading:", isUploading);
     
-    return requiredFieldsComplete && isConfigured && !isUploading;
+    const hasRequiredFields = 
+      !!form.getValues('yourDetails.name') && 
+      !!form.getValues('yourDetails.birthDate') && 
+      !!form.getValues('partnerDetails.name') && 
+      !!form.getValues('partnerDetails.birthDate');
+      
+    const hasImages = !!yourPalmImage && !!partnerPalmImage;
+    
+    const result = hasRequiredFields && hasImages && isConfigured && !isUploading;
+    console.log("Form is valid:", result);
+    
+    return result;
   };
   
   useEffect(() => {
@@ -104,16 +117,22 @@ const Compatibility = () => {
   }, [form.watch(), yourPalmImage, partnerPalmImage]);
   
   const handleYourImageSelect = (file: File) => {
+    console.log("Your palm image selected:", file.name);
     setYourPalmImage(file);
     setError(null);
   };
   
   const handlePartnerImageSelect = (file: File) => {
+    console.log("Partner palm image selected:", file.name);
     setPartnerPalmImage(file);
     setError(null);
   };
   
   const onSubmit = async (values: z.infer<typeof compatibilitySchema>) => {
+    console.log("Form submitted with values:", values);
+    console.log("Your palm image:", yourPalmImage);
+    console.log("Partner palm image:", partnerPalmImage);
+    
     if (!yourPalmImage || !partnerPalmImage) {
       toast({
         title: "Missing Images",
@@ -410,7 +429,7 @@ const Compatibility = () => {
                 <div className="text-center mt-8">
                   <Button 
                     type="submit"
-                    disabled={!canSubmit()}
+                    disabled={!isFormValid()}
                     variant="default"
                     size="lg"
                     className="px-8 py-3 rounded-full text-base font-medium gap-2 mx-auto"
