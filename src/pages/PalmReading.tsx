@@ -202,8 +202,15 @@ const PalmReading = () => {
               <Button 
                 onClick={handleUpload}
                 disabled={!palmImage || isUploading || !isConfigured}
-                variant={(!palmImage || !isConfigured) ? "outline" : "default"}
-                className="px-8 py-3 rounded-full text-base font-medium"
+                variant="default"
+                size="lg"
+                className={`
+                  px-8 py-6 rounded-full text-base font-medium transition-all duration-200
+                  ${(!palmImage || !isConfigured) 
+                    ? 'bg-gray-400 hover:bg-gray-500 cursor-not-allowed' 
+                    : 'bg-primary hover:bg-primary/80 hover:scale-105 hover:shadow-lg active:scale-95'
+                  }
+                `}
               >
                 {isUploading ? (
                   <>
