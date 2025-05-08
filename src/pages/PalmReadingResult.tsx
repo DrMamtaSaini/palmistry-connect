@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw, FileText, Book } from 'lucide-react';
@@ -142,7 +141,7 @@ const PalmReadingResult = () => {
       setHasAttemptedAnalysis(true);
     }
   }, [gemini, userId]);
-
+  
   const generateComprehensiveReport = useCallback(async () => {
     console.log('Starting comprehensive palm analysis...');
     const storedImage = sessionStorage.getItem('palmImage');
@@ -255,8 +254,10 @@ const PalmReadingResult = () => {
                 setDebugInfo(`Found reading in database: ${readingText.length} characters`);
               }
             });
+          } else if (readingsError) {
+            console.log('Error fetching readings:', readingsError);
           } else {
-            console.log('No readings found in database or error:', readingsError);
+            console.log('No readings found in database');
           }
         }
         

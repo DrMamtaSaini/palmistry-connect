@@ -14,6 +14,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string
+          is_comprehensive: boolean | null
           language: string | null
           results: Json | null
           translation_note: string | null
@@ -23,6 +24,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url: string
+          is_comprehensive?: boolean | null
           language?: string | null
           results?: Json | null
           translation_note?: string | null
@@ -32,6 +34,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string
+          is_comprehensive?: boolean | null
           language?: string | null
           results?: Json | null
           translation_note?: string | null
