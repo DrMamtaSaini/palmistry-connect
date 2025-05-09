@@ -44,14 +44,20 @@ const HeroSection = () => {
           <div className="flex flex-col sm:flex-row gap-4 mb-16 animate-fade-in" style={{ animationDelay: '500ms' }}>
             <Link 
               to="/palm-reading" 
-              className="px-8 py-3 rounded-full bg-[#00FF7F] text-primary-foreground text-base font-medium transition-all hover:bg-[#00FF7F]/90 flex items-center justify-center gap-2"
+              className="px-8 py-4 rounded-full bg-[#00FF7F] text-primary-foreground text-lg font-medium transition-all duration-300
+              hover:bg-[#00FF7F]/90 hover:scale-105 hover:shadow-lg active:scale-95
+              flex items-center justify-center gap-2 relative overflow-hidden group"
             >
+              {/* Pulsing highlight effect */}
+              <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-full transition-all duration-500"></span>
+              <span className="absolute -inset-1 bg-[#00FF7F]/30 rounded-full blur-sm opacity-0 group-hover:opacity-100 animate-pulse-slow"></span>
+              
               <Hand className="h-5 w-5" />
-              Try Palm Reading
+              <span className="relative z-10">Analyze My Palm</span>
             </Link>
             <Link 
               to="/compatibility" 
-              className="px-8 py-3 rounded-full bg-secondary text-secondary-foreground text-base font-medium transition-all hover:bg-secondary/80 flex items-center justify-center gap-2"
+              className="px-8 py-4 rounded-full bg-secondary text-secondary-foreground text-lg font-medium transition-all duration-300 hover:bg-secondary/80 hover:scale-105 flex items-center justify-center gap-2"
             >
               <Users className="h-5 w-5" />
               Check Compatibility
