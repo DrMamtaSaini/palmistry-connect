@@ -1,4 +1,6 @@
+
 import { toast } from "@/hooks/use-toast";
+import { ensureTextContrast } from "@/lib/utils";
 
 export const generatePDF = async ({ title, subtitle, content, fileName }) => {
   console.log('Generating PDF with content:', { title, subtitle });
@@ -166,6 +168,29 @@ export const generatePDF = async ({ title, subtitle, content, fileName }) => {
       padding: 15px;
       border-radius: 5px;
     }
+    .astro-timeline {
+      border-left: 3px solid #006400;
+      padding-left: 20px;
+      margin: 20px 0;
+    }
+    .past-astro {
+      background-color: #f0f8ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    .present-astro {
+      background-color: #f0fff0;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    .future-astro {
+      background-color: #fff0f0;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body>
@@ -322,6 +347,20 @@ const formatPalmCodeReport = (content) => {
       processedContent += `
         <div class="dashboard">
           ${processMixedContent(pageContent)}
+        </div>
+      `;
+    } else if (pageTitle.includes("Past") || pageTitle.includes("Present") || pageTitle.includes("Future")) {
+      // Past, Present, Future section with special styling
+      const timeframeClass = pageTitle.includes("Past") ? "past-astro" : 
+                            pageTitle.includes("Present") ? "present-astro" : 
+                            "future-astro";
+      
+      processedContent += `
+        <div class="astro-timeline">
+          <div class="${timeframeClass}">
+            <h3>${pageTitle}</h3>
+            ${processMixedContent(pageContent)}
+          </div>
         </div>
       `;
     } else {
@@ -730,7 +769,9 @@ Dear ${userName},
 
 Welcome to your personalized PalmCode™ Life Blueprint. Your palms are not just skin and lines—they are nature's blueprint of your personality, purpose, potential, and path. This 20-page report is generated using modern palmistry, psychological insights, and AI interpretation to give you a crystal-clear view of yourself and your journey ahead.
 
-In the following pages, you'll discover your emotional patterns, ideal career paths, love compatibility, timing of success, health tendencies, and much more. We have also added a Past-Present-Future analysis based on key features of your palm lines and mounts.
+In the following pages, you'll discover your emotional patterns, ideal career paths, love compatibility, timing of success, health tendencies, and much more. We have also added separate sections for Past-Present-Future analysis based on key features of your palm lines, mounts, and their correlation with Vedic astrology principles.
+
+Your PalmCode™ report reveals not just what your palm says, but integrates this with astronomical influences that shape your destiny. The lines on your palm are a reflection of cosmic forces that have been acting upon you since birth and continue to guide your journey.
 
 With clarity and purpose,
 *PalmCode™ Team*
@@ -742,250 +783,881 @@ With clarity and purpose,
 * **Hand Type:** Air Hand (Long fingers, square palm)
 
   * Traits: Intelligent, curious, analytical, needs mental stimulation
-* **Mounts:** Strong Mercury and Venus mounts
+* **Dominant Hand:**
+  * Reveals your current and future path
+  * Non-dominant hand shows inherited traits and potential
+
+* **Key Mounts:**
+  * **Venus Mount (Base of Thumb):** Moderately developed - Balanced emotional nature
+  * **Jupiter Mount (Below Index Finger):** Prominent - Strong leadership qualities
+  * **Saturn Mount (Below Middle Finger):** Well-defined - Responsible and practical
+  * **Apollo Mount (Below Ring Finger):** Active - Creative and expressive
+  * **Mercury Mount (Below Little Finger):** Pronounced - Excellent communication skills
+  * **Luna Mount (Opposite to Thumb):** Subtle - Grounded imagination
+
 * **Major Lines:**
 
-  * **Heart Line:** Deep and curved → Emotionally open, romantic
-  * **Head Line:** Long and slightly curved → Balanced thinker
-  * **Life Line:** Deep and long → Strong vitality
-  * **Fate Line:** Present with fork → Career changes likely
+  * **Heart Line:** Deep and curved → Emotionally open, romantic, passionate
+  * **Head Line:** Long and slightly curved → Balanced logical and creative thinking
+  * **Life Line:** Deep and sweeping → Strong vitality and enthusiasm for life
+  * **Fate Line:** Present with fork near middle → Career changes at key points
+  * **Sun Line:** Clear and straight → Recognition and success in chosen field
+  * **Marriage Line:** Multiple, with one dominant → Several relationships, one significant
+  * **Health Line:** Visible without breaks → General good health with attention needed
 
 ---
 
-**Page 4: Personality Profile**
-You are a communicator and thinker. Your palm suggests a lively mind, keen observation, and a great sense of humor. You're drawn to new ideas, creative pursuits, and people who challenge your intellect.
+**Page 4: Personality Profile – Core Character Traits**
+Your palm reveals a multifaceted personality with distinct strengths. You are primarily a communicator and thinker with a gift for connecting with others. Your Air hand type shows an active, analytical mind that constantly processes information and generates new ideas.
 
-**Core Traits:**
+**Key Personality Indicators:**
+* **Thumb Flexibility:** High - Adaptable and open-minded approach to life
+* **Finger Length:** Long fingers - Detail-oriented and thoughtful
+* **Apollo Finger (Ring):** Slightly longer than average - Enhanced creativity and artistic eye
+* **Mercury Finger (Little):** Well-developed - Strong communication and persuasive abilities
+* **First Phalange of Thumb:** Strong - Determined and willful when passionate
 
-* Curious
-* Honest
-* Loyal
-* Sensitive
-* Slightly impatient
+**Core Character Traits:**
+* **Intellectually Curious:** Your head line's slight curve shows you balance analysis with intuition
+* **Emotionally Intelligent:** The quality of your heart line reveals deep empathy
+* **Adaptable:** The spacing between your fingers shows flexibility in approach
+* **Honest:** Straight Jupiter finger indicates integrity in dealings
+* **Loyal:** Deep, consistent heart line shows commitment to loved ones
+* **Sensitive:** Fine skin texture indicates high sensitivity to environment
+* **Slightly Impatient:** A few stress lines near the Mercury mount show occasional restlessness
 
-**Potential Growth Area:** Learn to trust your instincts without overthinking.
+**Interaction Style:**
+* You connect best through meaningful conversation and idea exchange
+* You value intellectual honesty over social niceties
+* You need mental stimulation in relationships and work environments
+* You avoid shallow social interactions and superficial connections
+
+**Potential Growth Areas:** 
+* Learn to trust your intuition without overthinking
+* Practice patience with those who process information differently
+* Balance your mental activity with physical grounding practices
 
 ---
 
-**Page 5: Emotional Intelligence & Love Life**
-**Heart Line Insights:** Deep and rising under index finger → True romantic with high emotional standards.
+**Page 5: Emotional Intelligence & Love Life – Heart Matters**
+**Heart Line Analysis:** Your heart line is deep, curved, and rises toward the Jupiter mount (index finger), indicating a romantic nature with high emotional standards. The depth suggests emotional intensity and authenticity, while the upward curve toward Jupiter shows idealism in love.
 
-You value emotional depth, honesty, and support in a partner. You're loving, loyal, and expressive—but can retreat if hurt.
+**Emotional Patterns:**
+* **Emotional Depth:** The clear definition of your heart line indicates profound feelings
+* **Emotional Expression:** The sweeping curve shows open expression of feelings
+* **Emotional Resilience:** Few islands or breaks suggest strong emotional recovery
+* **Emotional Needs:** The line's position shows need for both independence and connection
+
+**Love and Relationship Tendencies:**
+* You approach relationships with sincerity and commitment
+* You value emotional depth, intellectual connection, and authentic communication
+* You're attracted to partners who challenge your thinking while respecting your values
+* You're loving, loyal, and expressive—but can retreat if emotionally overwhelmed
+* You need space to process feelings before discussing emotional matters
+
+**Venus Mount Insights:**
+The moderate development of your Venus mount (base of thumb) indicates:
+* Balanced approach to physical and emotional intimacy
+* Capacity for deep connection without becoming dependent
+* Appreciation for beauty and harmony in relationships
+
+**Marriage Line Details:**
+* Multiple fine lines with one dominant line suggests several meaningful relationships
+* The dominant line's depth indicates a significant long-term partnership
+* A slight fork at the end indicates potential for growth and evolution in this partnership
 
 **Ideal Match Traits:**
-
-* Emotionally mature
-* Communicative
+* Emotionally mature and self-aware
+* Intellectually stimulating and curious
+* Communicative about feelings and thoughts
 * Creative or spiritually inclined
+* Respectful of personal space and independence
 
-**Love Challenges:** Avoid people who are emotionally unavailable.
-
----
-
-**Page 6: Career Potential & Purpose**
-**Fate & Head Line Analysis:**
-You have leadership qualities, a sharp mind, and strong intuition. You may experience a shift in your career around age 28–29.
-
-**Best Career Paths:**
-
-* Creative Fields (Design, Writing)
-* Psychology or Counseling
-* Public Relations or Media
-* Education or Life Coaching
-
-You thrive in roles where communication and empathy matter.
+**Love Challenges to Overcome:**
+* Tendency to analyze feelings rather than simply experience them
+* Occasional withdrawal when emotionally overwhelmed
+* Need to learn the difference between healthy standards and perfectionism
+* Remembering that not all partners communicate love the same way you do
 
 ---
 
-**Page 7: Success Timing & Life Events**
+**Page 6: Career Potential & Purpose – Your Professional Path**
+**Fate & Head Line Combined Analysis:**
+Your fate line begins clearly but shows a significant fork around the middle of your palm, indicating a purposeful career shift at some point in your 30s. This, combined with your analytical yet creative head line, suggests a professional path that will eventually align both your logical abilities and creative instincts.
 
-* **Age 21:** First major decision phase
-* **Age 28–29:** Career shift or breakthrough
-* **Age 35:** Personal reinvention
+**Natural Talents (Based on Finger Analysis):**
+* **Strong Jupiter (Index) Finger:** Leadership, organization, direction-setting
+* **Balanced Saturn (Middle) Finger:** Precision, responsibility, methodical approach
+* **Well-Developed Apollo (Ring) Finger:** Creativity, performance, aesthetic sense
+* **Prominent Mercury (Little) Finger:** Communication, quick thinking, adaptability
 
-Periods of transformation are mapped near breaks or forks in your fate line. These years will offer both challenge and reward.
+**Career Strength Indicators:**
+* Your Apollo and head lines' connection shows creative intelligence
+* The sun line's presence indicates recognition for your unique contributions
+* The mercury line's clarity suggests business acumen and communicative abilities
+* Strong, clearly etched lines overall show concentrated energy and focus
 
-**Advice:** Embrace these phases; they're aligned with your life purpose.
+**Best Career Paths Based on Palm Analysis:**
+* **Creative Fields:** Design, Writing, Visual Arts, Performance
+* **Communication-Focused:** Psychology, Counseling, Coaching, Public Relations
+* **Analytical Creativity:** Research, Problem-Solving, Innovation Development
+* **People Leadership:** Education, Team Management, Community Organization
 
----
+**Work Environment Needs:**
+* Intellectual stimulation and continuous learning
+* Creative freedom and opportunity for self-expression
+* Ethical alignment with personal values
+* Recognition for unique contributions
+* Balance of structure and flexibility
 
-**Page 8: Mental Strengths & Challenges**
-You have strong concentration abilities, but mental fatigue can hit when overwhelmed.
+**Career Timeline (Based on Fate Line):**
+* **Early Career (20s):** Exploration and skill development
+* **Late 20s to Early 30s:** Increasing clarity about true calling
+* **Mid-30s:** Significant pivot or refinement of direction
+* **40s Onward:** Greater alignment with purpose and increased success
 
-**Tips:**
-
-* Use journaling to offload thoughts
-* Avoid multitasking excessively
-* Prioritize rest and reflection
-
-Your emotional intelligence gives you an edge in relationships and problem-solving.
-
----
-
-**Page 9: Physical Health & Vitality**
-Your life line shows strong vitality and resilience.
-
-**Tendencies:**
-
-* Good stamina
-* Likely to burn out if boundaries are not maintained
-
-**Health Focus:**
-
-* Balance activity with mindfulness
-* Maintain a regular sleep routine
-
----
-
-**Page 10: Relationship Compatibility Matrix**
-**Best Match Hands:**
-
-* Water Hands: Deep, emotional connections
-* Air Hands: Intellectual alignment
-
-**Compatibility Scores:**
-
-* Emotional: 90%
-* Physical: 80%
-* Mental: 85%
-
-Avoid overly controlling personalities or emotionally closed-off types.
+**Purpose Indicators:**
+Your palm suggests your highest purpose involves integrating communication, creativity, and empathy to inspire or guide others. The connection between your head and heart lines indicates you'll find most fulfillment when your work engages both your intellectual and emotional intelligences.
 
 ---
 
-**Page 11: Intuition & Spiritual Growth**
-A triangle near your Mercury mount shows a natural psychic ability. You are intuitive and pick up on others' energies easily.
+**Page 7: Success Timing & Life Events – Key Transitions**
+Your palm reveals important timing markers that indicate periods of change, growth, and accomplishment. These points are determined by analyzing where lines intersect, fork, or show significant changes in character.
 
-**Best Practices:**
+**Key Life Transition Points:**
 
-* Daily meditation
-* Tarot or journaling
-* Spending time in nature
+* **Age 21-23:** First major decision phase
+  * Indicated by: Initial branch in fate line
+  * Nature: Educational or early career choice
+  * Guidance: Trust your intellectual curiosity during this period
 
----
+* **Age 28-29:** Career shift or breakthrough
+  * Indicated by: Prominent fork in fate line
+  * Nature: Change in direction or significant advancement
+  * Guidance: Follow opportunities that align with your creativity
 
-**Page 12: Creativity & Self-Expression**
-Your sun line shows a powerful artistic streak.
+* **Age 35-37:** Personal reinvention
+  * Indicated by: Intersection of influence line with fate line
+  * Nature: Deeper alignment with authentic purpose
+  * Guidance: This period may bring challenges before breakthrough
 
-**Creative Strengths:**
+* **Age 42-45:** Recognition and establishment
+  * Indicated by: Strengthening of sun line
+  * Nature: Public acknowledgment of your contributions
+  * Guidance: Remain true to your unique approach
 
-* Visual arts
-* Writing
-* Performing arts
+* **Age 52-55:** Wisdom integration
+  * Indicated by: Secondary influence line joining fate line
+  * Nature: Teaching, mentoring, or sharing accumulated knowledge
+  * Guidance: Focus on leaving a legacy
 
-You express yourself best through storytelling, music, and mentoring.
+**Success Line Analysis:**
+Your sun line (line of Apollo) becomes more pronounced after age 35, indicating that your most significant recognition and success is likely to come in the second half of your life. This delayed but substantial success pattern is common in visionaries whose work requires maturity and life experience to fully develop.
 
----
+**Challenge Periods:**
+Small breaks in your fate line around ages 31-33 suggest a period of uncertainty or reevaluation before your true path becomes clear. The star formation near your heart line around age 40 indicates an emotional breakthrough that will contribute to your success.
 
-**Page 13: Social Life & Friendships**
-You are an initiator in friendships and highly loyal.
+**Life Event Indicators:**
+* A triangular formation at the beginning of your life line suggests a significant early life influence that shapes your path
+* The island in your head line in the first third indicates a period of mental uncertainty followed by greater clarity
+* The connection between your fate and heart lines suggests your emotional life and career will influence each other significantly
 
-**Friendship Style:**
-
-* Encouraging
-* Communicative
-* Supportive
-
-You may outgrow friends who lack vision or depth.
-
----
-
-**Page 14: Financial Habits & Money Mindset**
-
-* Balanced money mount
-* Strong thumb = Willpower
-
-**Traits:**
-
-* Moderate spender
-* Values experiences over materialism
-
-**Tip:** Invest in learning and personal development—it pays off.
+**Key Advice for Transitions:**
+Embrace these transition phases as natural evolutionary points. Your palm shows you gain strength through adaptation and grow most significantly during periods of change.
 
 ---
 
-**Page 15: Life Lessons & Karmic Insights**
-You are here to learn about balance in giving and receiving. You often over-give in love or work.
+**Page 8: Mental Strengths & Challenges – Your Thought Patterns**
+The head line is one of the most revealing elements of your palm, showing how you think, process information, and make decisions. Your head line is moderately long with a slight downward curve toward the moon mount, indicating a balance between logical analysis and creative intuition.
 
-**Karmic Theme:** Worthiness
-**Growth Direction:** Setting boundaries, embracing your value
+**Your Cognitive Style:**
+* **Analytical Foundation:** The clear beginning portion shows strong rational abilities
+* **Creative Integration:** The gentle curve indicates growing comfort with intuitive thinking
+* **Depth of Concentration:** The line's depth shows powerful focus when engaged
+* **Thought Flexibility:** The slight branches indicate ability to consider alternatives
+
+**Mental Strengths Based on Head Line:**
+* Strong analytical and critical thinking abilities
+* Excellent detail recognition and pattern identification
+* Good balance between objective and subjective reasoning
+* Ability to communicate complex ideas effectively
+* Memory for information that has emotional significance
+
+**Cognitive Challenges:**
+* Tendency toward overthinking important decisions
+* Mental fatigue when dealing with too many variables
+* Occasional difficulty quieting the mind for relaxation
+* Impatience with vague communications or instructions
+
+**Best Learning & Problem-Solving Approaches:**
+* You absorb information best through reading and discussion
+* You solve problems by examining components then seeking patterns
+* You benefit from alternating focused work with reflection periods
+* You make best decisions when balancing analysis with intuition
+
+**Mental Energy Management:**
+Your head line's intersection with minor stress lines suggests:
+* Need for mental variety to maintain engagement
+* Benefit from scheduled downtime for mental recovery
+* Importance of sleep for cognitive performance
+* Value of mindfulness practices for mental clarity
+
+**Memory Patterns:**
+The quality of your head line indicates:
+* Strong conceptual memory for ideas and systems
+* Good recall for information with emotional connections
+* Potential to improve memory through visualization techniques
+* Benefit from organizing information in written form
+
+**Recommended Mental Development Practices:**
+* Regular journaling to integrate logical and intuitive insights
+* Meditation focused on open awareness rather than concentration
+* Learning new skills that combine analytical and creative thinking
+* Engaging in structured debates or discussions about complex topics
 
 ---
 
-**Page 16: Life Purpose Summary**
-**Your Mission:** To uplift others through words, empathy, and wisdom.
+**Page 9: Physical Health & Vitality – Wellness Indicators**
+Your palm contains important indicators of your physical health tendencies, strengths, and areas needing attention. While palmistry cannot diagnose medical conditions, it can highlight constitutional tendencies and guide wellness practices.
 
-You are destined to create a meaningful impact in others' lives using your voice and heart.
+**Life Line Analysis (Vitality & Energy):**
+Your life line is deep and forms a wide arc around the Venus mount, indicating:
+* Strong basic constitution and recuperative ability
+* Good energy levels when properly rested and nourished
+* Capacity for physical endurance with proper conditioning
+* Natural resilience after illness or stress
 
-**Keywords:** Inspire. Teach. Transform.
+**Health Line Indicators:**
+Your health line (Mercury line) is present but shows some variation in strength, suggesting:
+* Generally good health with periods of fluctuation
+* Need for preventive self-care rather than crisis management
+* Benefit from regular health monitoring and maintenance
+* Potential sensitivity in digestive and respiratory systems
+
+**Stress Response Patterns:**
+Small stress lines intersecting your head line indicate:
+* Tendency for mental stress to affect physical wellbeing
+* Physical symptoms may manifest during periods of high pressure
+* Need for active stress management practices
+* Benefit from mind-body approaches to health
+
+**Body System Strengths & Sensitivities:**
+Based on specific mount developments and minor line formations:
+* **Cardiovascular System:** Good basic strength (strong life line)
+* **Respiratory System:** Some sensitivity (minor stress lines near Saturn mount)
+* **Digestive System:** Requires attention (variations in health line)
+* **Nervous System:** Highly responsive (fine lines on Mercury mount)
+* **Immune Function:** Strong with proper rest (deep life line)
+
+**Optimal Health Practices Based on Palm Indicators:**
+* **Movement Type:** Combination of structured exercise and flowing movement
+* **Nutrition Needs:** Regular meals with emphasis on anti-inflammatory foods
+* **Sleep Patterns:** Need for 7-8 hours with consistent schedule
+* **Stress Management:** Mental decompression activities daily
+* **Energy Regulation:** Alternating periods of activity and recovery
+
+**Longevity Indicators:**
+Your deep, clear life line without serious breaks or fragmentation suggests:
+* Potential for long life with proper self-care
+* Periods of high vitality throughout life stages
+* Good recovery capacity after health challenges
+* Importance of preventive rather than reactive approach
+
+**Health Focus Recommendations:**
+* Balance mental activity with physical movement
+* Maintain consistent sleep patterns and quality
+* Practice conscious stress management techniques
+* Listen to early warning signals from your body
+* Prioritize digestive and respiratory health
 
 ---
 
-**Page 17: Past - What Your Palms Reveal**
-Your palm indicates a vibrant but emotionally complex past. Early in life, especially around the ages of 7–12, you developed a strong sense of observation and independence. A break in your heart line near the age of 16 reflects a major emotional lesson—perhaps related to trust or relationships.
+**Page 10: Relationship Compatibility – Your Ideal Match**
+Your palm reveals specific patterns that indicate your relationship needs, strengths as a partner, and the types of connections that will bring greatest fulfillment. Understanding these patterns helps you recognize compatible partners and develop healthier relationships.
 
-In your teenage years, your curiosity and creativity blossomed. Strong head and sun lines suggest a supportive environment that encouraged your expression.
+**Core Relationship Requirements:**
+Based on your heart, head, and fate lines' positions and quality:
+* Intellectual stimulation and mental connection
+* Emotional authenticity and depth
+* Space for individuality within togetherness
+* Shared values and ethical alignment
+* Balance of stability and growth
+
+**Your Relationship Strengths:**
+* Loyalty and commitment when truly connected
+* Thoughtful communication and conflict resolution
+* Intellectual and emotional support
+* Respect for partner's independence
+* Willingness to grow and evolve together
+
+**Relationship Challenges to Overcome:**
+* Tendency to analyze rather than feel in emotional moments
+* Occasional emotional withdrawal when overwhelmed
+* Setting appropriate boundaries consistently
+* Balancing personal pursuits with relationship needs
+* Managing expectations of self and others
+
+**Compatibility Matrix by Hand Types:**
+Your Air hand type has natural affinity with certain hand types:
+
+* **Best Match - Water Hands:**
+  * **Compatibility Score:** 90%
+  * **Strengths:** Emotional depth balances your intellectual focus
+  * **Challenges:** May need to balance their feeling with your thinking
+
+* **Strong Match - Air Hands:**
+  * **Compatibility Score:** 85%
+  * **Strengths:** Intellectual alignment and similar communication style
+  * **Challenges:** Potential for overthinking and limited emotional expression
+
+* **Good Match - Fire Hands:**
+  * **Compatibility Score:** 80%
+  * **Strengths:** Their spontaneity balances your analysis
+  * **Challenges:** Different processing speeds and decision approaches
+
+* **Challenging Match - Earth Hands:**
+  * **Compatibility Score:** 70%
+  * **Strengths:** Their practicality grounds your ideas
+  * **Challenges:** Different values around change and security
+
+**Ideal Partner Line Indicators:**
+For deepest compatibility, look for partners whose palms show:
+* Heart line that curves upward (emotional expressiveness)
+* Head line with some flexibility (balanced thinking)
+* Strong, clear life line (emotional stability and vitality)
+* Mount of Venus that's moderately developed (balanced affection)
+* Few negative stress lines (emotional resilience)
+
+**Relationship Timing:**
+Your marriage/relationship lines suggest:
+* Significant relationships likely at ages: 24-26, 32-34, and 40-42
+* Most harmonious long-term connection likely in your 30s
+* Relationship clarity increases significantly after age 35
+
+**Love Growth Recommendations:**
+* Practice expressing emotions directly rather than intellectualizing
+* Develop comfort with emotional vulnerability
+* Recognize the difference between independence and avoidance
+* Communicate your need for mental connection
+* Value emotional intelligence equally with intellectual compatibility
+
+---
+
+**Page 11: Intuition & Spiritual Path – Inner Guidance**
+Your palm reveals significant spiritual and intuitive potential that forms an important dimension of your life purpose. The fine lines, mount developments, and special markings indicate your natural intuitive style and optimal spiritual practices.
+
+**Intuitive Strengths:**
+* **Triangle near Mercury Mount:** Natural psychic sensitivity and perception
+* **Moon Mount Development:** Active dream life and subconscious connection
+* **Mystic Cross:** Spiritual interest and potential for meaningful insights
+* **Head Line Curve:** Balance of logical and intuitive processing
+
+**Your Intuitive Style:**
+* **Primary Intuitive Mode:** Claircognizance (clear knowing)
+* **Secondary Intuitive Mode:** Clairsentience (clear feeling)
+* **Intuitive Triggers:** Mental contemplation, symbolic recognition, aesthetic experiences
+* **Intuitive Blockers:** Overthinking, environmental stress, physical depletion
+
+**Spiritual Connection Indicators:**
+* **Fate Line-Heart Line Connection:** Integration of purpose and emotional wisdom
+* **Spiritual Bracelet Quality:** Three clear lines indicating holistic development
+* **Jupiter Mount Development:** Philosophical nature and search for meaning
+* **Ring of Solomon:** (Fine line under Jupiter finger) Wisdom and spiritual insight
+
+**Optimal Spiritual Practices:**
+Based on the specific patterns in your palm, these approaches will resonate most strongly:
+* **Meditation Style:** Mindfulness and open awareness rather than strict focus
+* **Contemplative Practices:** Journaling, symbolic analysis, metaphysical study
+* **Physical Practices:** Walking meditation, flowing movement, nature immersion
+* **Creative Spiritual Expression:** Writing, music, visual symbolism
+
+**Spiritual Growth Timeline:**
+* **Early Life (Before 30):** Questions and intellectual spiritual exploration
+* **Middle Period (30-45):** Deepening experience and practical application
+* **Mature Phase (45+):** Integration and increasing intuitive wisdom
+
+**Intuitive Development Recommendations:**
+* Regular quiet time for intuitive listening without agenda
+* Dream journaling to strengthen subconscious connection
+* Study of symbolic systems (tarot, I Ching, astrology) as intuitive tools
+* Time in nature to reset intuitive sensitivity
+* Artistic expression as a channel for intuitive insights
+
+**Spiritual Challenges to Navigate:**
+* Balancing intellectual understanding with direct experience
+* Trusting intuitive impressions without overanalysis
+* Integrating spiritual insights into practical life
+* Finding community that respects your individual path
+* Maintaining consistent practice through life transitions
+
+---
+
+**Page 12: Creativity & Self-Expression – Your Artistic Nature**
+Your palm shows significant creative potential with multiple indicators of artistic ability and innovative thinking. The most notable is your prominent sun line (Apollo line), which reveals natural creative talent and potential for recognition through creative expression.
+
+**Creative Strength Indicators:**
+* **Sun Line Quality:** Clear and without breaks - Strong, consistent creative energy
+* **Apollo Finger Length:** Slightly longer than average - Natural artistic sensibility
+* **Apollo Mount Development:** Well-defined - Expressive capacity and aesthetic appreciation
+* **Head-Heart Line Relationship:** Balanced spacing - Integration of thought and feeling in creation
+
+**Your Creative Type:**
+Based on the specific patterns in your palm, your creative nature is best described as:
+* **Primary Creative Mode:** Conceptual Creator (ideas, systems, patterns)
+* **Secondary Creative Mode:** Aesthetic Refiner (beauty, harmony, refinement)
+* **Creative Approach:** Analytical exploration followed by intuitive development
+* **Creative Drivers:** Meaningful communication, pattern recognition, problem-solving
+
+**Best Creative Mediums:**
+Your palm indicates natural affinity for:
+* **Visual Arts:** Design, photography, visual communication
+* **Verbal Arts:** Writing, speaking, teaching
+* **Conceptual Arts:** Systems design, theoretical frameworks
+* **Performance:** Presentational speaking, coaching, facilitation
+
+**Creative Process Insights:**
+* Your creative cycle typically follows a pattern of:
+  * Information gathering and analysis
+  * Incubation period (often subconscious)
+  * Insight or clarity moment
+  * Structured development and refinement
+* You work best with alternating periods of engagement and reflection
+* Your creativity is enhanced by intellectual stimulation and conversation
+* You benefit from capturing initial ideas immediately before analysis
+
+**Blocks to Creative Flow:**
+Your palm indicates potential creative blocks related to:
+* Perfectionism (small stress lines near Apollo mount)
+* Overthinking (intensity of head line)
+* External judgment concerns (relationship between Apollo and Saturn)
+* Energy management (fluctuations in vitality lines)
+
+**Creative Development Recommendations:**
+* Establish regular creative practice without judgment
+* Create "concept capture" system for ideas before evaluation
+* Seek constructive feedback from trusted sources
+* Balance analytical and intuitive approaches
+* Connect with creative community for inspiration and accountability
+
+**Expression Timeline:**
+* Your creative expression is likely to mature significantly around age 35-40
+* Most recognized work will likely emerge in your 40s and 50s
+* Teaching or mentoring others becomes important after 50
+
+---
+
+**Page 13: Social Life & Influence – Your Connection Style**
+Your palm reveals distinct patterns in how you connect with others, build community, and exercise social influence. The development of specific mounts, finger formations, and relationship lines provides insight into your social nature and interpersonal dynamics.
+
+**Social Style Indicators:**
+* **Thumb Set:** Balanced position showing social independence with connection capacity
+* **Jupiter Mount:** Well-developed indicating natural leadership and social confidence
+* **Mercury Mount:** Prominent showing communication skill and social adaptability
+* **Venus Mount:** Moderately developed indicating selective but warm social approach
+* **Apollo Mount:** Active showing appreciation for quality social engagement
+
+**Your Social Connection Pattern:**
+Based on these indicators, your social style is best described as:
+* **Primary Social Mode:** Selective Connector (quality over quantity)
+* **Secondary Social Mode:** Thoughtful Leader (influence through ideas)
+* **Social Strengths:** Meaningful conversation, loyalty, thoughtful listening
+* **Social Challenges:** Impatience with superficiality, need for depth
+
+**Friendship Patterns:**
+* You tend to form fewer but deeper friendships
+* You value intellectual connection in social bonds
+* You maintain long-term relationships with like-minded people
+* You prefer small group settings to large gatherings
+* You enjoy activities with purpose or learning components
+
+**Leadership & Influence Style:**
+The relationship between your head line, Apollo line, and Jupiter mount reveals:
+* Natural ability to influence through ideas and communication
+* Leadership by example rather than authority
+* Preference for collaborative rather than hierarchical structures
+* Ability to bridge different perspectives and viewpoints
+* Influential capacity that grows stronger with age and experience
+
+**Social Growth Opportunities:**
+* Developing comfort with broader network connections
+* Practicing brevity in communication when appropriate
+* Building skills for navigating larger group dynamics
+* Balancing depth with accessibility in social contexts
+* Recognizing when to lead and when to support
+
+**Relationship Line Details:**
+* Multiple influence lines crossing your fate line indicate several significant individuals who impact your life path
+* Your friendship line (horizontal line under little finger) shows selective but loyal friendship approach
+* The quality of your heart line indicates warmth that becomes more apparent as relationships deepen
+
+**Social Timing Patterns:**
+* Most significant friendships form during transition periods (20s, mid-30s, early 50s)
+* Social influence increases substantially after age 40
+* Teaching, mentoring, or community leadership becomes important in your 50s
+
+---
+
+**Page 14: Financial Tendencies & Prosperity – Wealth Patterns**
+Your palm reveals important patterns related to financial attitudes, money management tendencies, and your relationship with material prosperity. The development of specific mounts, finger formations, and fortune lines provides insight into your financial journey.
+
+**Financial Pattern Indicators:**
+* **Mount of Jupiter:** Well-defined indicating ambition and confidence with resources
+* **Mount of Saturn:** Moderate showing practicality without excessive caution
+* **Mount of Mercury:** Prominent revealing business acumen and financial intelligence
+* **Mount of Luna:** Partially developed suggesting some financial imagination
+* **Thumb Development:** Strong showing good financial willpower and decision-making
+
+**Your Financial Mindset:**
+Based on these indicators, your relationship with money is best described as:
+* **Primary Financial Mode:** Strategic Planner (thoughtful allocation)
+* **Secondary Financial Mode:** Value Investor (meaning over materialism)
+* **Financial Strengths:** Analysis, pattern recognition, moderate risk assessment
+* **Financial Challenges:** Occasional overthinking, balancing present vs. future
+
+**Money Management Tendencies:**
+* You approach finances with analytical intelligence
+* You value security but not at the expense of quality experiences
+* You make financial decisions based on long-term considerations
+* You tend to research thoroughly before significant investments
+* You balance saving with strategic spending on growth opportunities
+
+**Prosperity Timeline:**
+* **Early Adult Phase (20s):** Building skills and financial foundation
+* **Mid-Life Phase (30s-40s):** Period of significant income growth
+* **Mature Phase (50+):** Integration of multiple income streams
+* **Notable financial turning points:** Ages 33-35, 42-45, and 57-60
+
+**Wealth Line Indicators:**
+* Your fate line's strength suggests career stability with growth potential
+* The sun line's prominence indicates recognition that can lead to financial rewards
+* The line of Mercury (money line) shows financial intelligence that develops over time
+* A positive triangle formation near your fate line indicates unexpected financial opportunity around age 38-42
+
+**Financial Growth Recommendations:**
+* Trust your analytical abilities but set decision deadlines
+* Develop passive income streams that leverage your intellectual assets
+* Invest in your own skill development as a primary wealth strategy
+* Balance security needs with calculated risks for growth
+* Consider partnerships that complement your financial approach
+
+**Prosperity Blocks to Address:**
+* Occasional tendency to delay decisions seeking perfect information
+* Potential undervaluing of your own services or contributions
+* Need to balance long-term planning with present enjoyment
+* Importance of communicating financial goals in partnerships
+
+---
+
+**Page 15: Life Lessons & Karmic Patterns – Soul Purpose**
+Your palm reveals deeper patterns related to your soul's journey, lessons to master in this lifetime, and karmic themes that shape your experiences. These insights come from analyzing special markings, unusual formations, and the overall message of your palm's blueprint.
+
+**Soul Journey Indicators:**
+* **Fate Line Origin:** From Life Line - Self-created destiny with strong connection to identity
+* **Life Line Loop:** Early formation suggesting intensive early development
+* **Heart-Head Line Relationship:** Nearly parallel with slight convergence - Balancing thinking and feeling is a core lesson
+* **Karmic Lines:** Fine vertical lines on Saturn mount indicating responsibility themes
+* **Spiritual Loop:** Formation on Jupiter mount revealing spiritual leadership potential
+
+**Core Life Lessons:**
+Based on these indicators, your most important lessons involve:
+* Finding balance between giving and receiving (tendency to over-give)
+* Integrating intellectual understanding with emotional wisdom
+* Expressing authentic voice despite social pressure
+* Developing comfort with visibility and recognition
+* Trusting intuitive guidance alongside analytical thinking
+
+**Karmic Theme Analysis:**
+Your palm suggests these soul themes carry forward from past experiences:
+* **Primary Theme:** Worthiness - Learning to value your contributions
+* **Secondary Theme:** Expression - Finding courage to share unique perspective
+* **Supporting Theme:** Connection - Building bridges between different viewpoints
+* **Challenge Theme:** Perfectionism - Releasing impossible standards
+
+**Spiritual Contract Indicators:**
+Special markings and formations suggest your soul agreements include:
+* Teaching or mentoring others in communication or creative expression
+* Bridging different knowledge systems or perspectives
+* Healing through truthful but compassionate communication
+* Creating systems or frameworks that support others' growth
+* Demonstrating integration of intellectual and intuitive wisdom
+
+**Soul Gift Markers:**
+Unique features in your palm indicating special capacities:
+* **Mystic Cross:** Located on Jupiter mount - Spiritual leadership
+* **Triangle Formation:** Near Apollo line - Creative problem-solving
+* **Star Pattern:** At head-heart intersection - Intuitive intelligence
+* **Unusual Loop:** On Saturn mount - Responsibility carried with grace
+
+**Integration Recommendations:**
+* Journal regularly about challenges to identify recurring patterns
+* Notice when perfectionism blocks progress and practice "good enough"
+* Develop comfort with visibility and recognition for your contributions
+* Balance analytical thinking with intuitive guidance
+* Remember that vulnerability is strength, not weakness
+
+---
+
+**Page 16: Life Purpose Summary – Your Soul's Mission**
+From all the elements analyzed in your palm, a clear life purpose emerges. This purpose integrates your strengths, challenges, lessons, and soul patterns into a cohesive mission that represents your highest contribution.
+
+**Purpose Statement:**
+Your soul's mission is to inspire transformation through authentic communication, creative expression, and the integration of intellectual and intuitive wisdom. You are here to build bridges between different perspectives, create systems that support growth, and demonstrate the power of balanced living.
+
+**Core Mission Elements:**
+* **Primary Purpose:** To teach, guide, and inspire others through your unique voice
+* **Secondary Purpose:** To create frameworks, systems, or methods that facilitate understanding
+* **Supporting Purpose:** To demonstrate integration of heart and mind in daily living
+* **Challenge Purpose:** To overcome perfectionism and fear of judgment
+
+**Purpose Fulfillment Indicators:**
+Your palm shows these signs of alignment with purpose:
+* Strong sun line indicates recognition for authentic expression
+* Connection between head and heart lines shows integration of intellect and emotion
+* Fate line's clear path with intentional branches shows purposeful evolution
+* Special markings (triangle, star) indicate unique contribution potential
+
+**When You're Living Your Purpose:**
+* You feel energized rather than depleted by your work
+* Your communication resonates deeply with others
+* You lose track of time when engaged in creative expression
+* You naturally bridge different viewpoints and perspectives
+* You experience synchronicities and "flow state" regularly
+
+**Purpose Development Timeline:**
+* **Foundation Phase (Before 35):** Skill development and personal growth
+* **Emergence Phase (35-45):** Growing clarity and initial impact
+* **Fulfillment Phase (45+):** Full expression and expanding influence
+
+**Destiny vs. Free Will:**
+Your palm shows a balanced fate line indicating:
+* Core purpose is consistent throughout life
+* Execution and expression involve significant free choice
+* Major life direction points offer decision opportunities
+* Self-awareness accelerates purpose alignment
+
+**Purpose Keywords:**
+* **Inspire:** Through authentic voice and integrated living
+* **Bridge:** Between different perspectives and knowledge systems
+* **Create:** Systems, frameworks, and expressions that facilitate growth
+* **Transform:** Help others evolve through compassionate truth
+* **Integrate:** Demonstrate harmony of intellectual and intuitive wisdom
+
+---
+
+**Page 17: Past - What Your Palms Reveal About Your History**
+Your palm contains important markers of your past experiences, early influences, and developmental patterns. By examining specific formations in the early sections of your major lines, we can decode significant aspects of your history.
+
+**Early Life Indicators:**
+* **Life Line Formation:** The beginning shows a protective loop - indicating a nurturing yet possibly sheltered early environment
+* **Head Line Origin:** Strong, clear beginning - suggesting early intellectual stimulation and support for cognitive development
+* **Heart Line Early Section:** Slightly fainter at start - pointing to a gradual development of emotional expression
+* **Fate Line Beginning:** Starts from life line rather than wrist - indicating a path linked to family but requiring self-direction
+
+**Developmental Phases Revealed:**
+* **Early Childhood (0-7):** 
+  * Protective and structured environment (life line loop)
+  * Strong foundation for intellectual development (head line quality)
+  * Possible sensitivity that required adaptation (fine lines near Luna mount)
+
+* **Middle Childhood (7-14):**
+  * Period of significant curiosity and learning (strong head line)
+  * Growing independence but within secure boundaries (life line shape)
+  * Beginning of unique perspective development (early Apollo line formation)
+
+* **Adolescence (14-21):**
+  * Important emotional learning experiences (heart line development)
+  * Intellectual growth and identity formation (head line strength)
+  * Initial direction-setting decisions (early fate line formation)
+
+**Past Challenges Overcome:**
+* A small island in your head line around the age position of 16 suggests a period of mental uncertainty or difficult decision-making that you successfully navigated
+* A stress line crossing your life line in early position points to an early challenge that strengthened your resilience
+* The relationship between early heart and head lines suggests learning to balance emotional and intellectual aspects
+
+**Formative Influences:**
+* The prominence of your Jupiter mount indicates strong early authority figures or mentors
+* Your Apollo line development suggests early recognition of creative or expressive abilities
+* The quality of your Mercury mount points to early emphasis on communication skills
 
 **Key Past Lessons:**
+* Learning to trust your unique perspective and voice
+* Developing emotional resilience through early challenges
+* Building an intellectual foundation that supports later purpose
+* Finding balance between security and independence
+* Recognizing your natural strengths and abilities
 
-* Learned resilience through emotional growth
-* Early sense of identity and self-driven learning
-
----
-
-**Page 18: Present - Your Current Phase**
-As of now, your palms show a period of alignment and self-discovery. You're likely in a phase of exploring purpose, considering career or relationship commitments, and refining your personal identity.
-
-* Heart line is clear → Emotional clarity improving
-* Head line strong → Decision-making is becoming more confident
-* Fate line is split → Indicates reevaluation of direction
-
-You are presently transitioning into a more empowered, self-aware version of yourself.
-
-**Focus Now:**
-
-* Cultivate confidence
-* Make values-aligned choices
-* Strengthen emotional boundaries
+**Past Life Connection (Metaphysical Interpretation):**
+If viewing from a spiritual perspective, your palm shows signs of:
+* Past experiences as a teacher, guide, or messenger (Mercury prominence)
+* Previous development of creative or leadership abilities (Apollo and Jupiter mounts)
+* Karmic themes around communication and truth-speaking (unique line formations)
 
 ---
 
-**Page 19: Future - What Lies Ahead**
-The fork in your fate line near age 28 suggests an important life decision or redirection. This could relate to a career shift, entrepreneurial venture, or a meaningful relationship.
+**Page 18: Present - Your Current Life Phase**
+Your palm reveals specific indicators about your current life phase, challenges, opportunities, and optimal focus areas. By examining the middle sections of your major lines and their current quality, we can decode your present situation.
 
-Your future is marked by a rising sun line, which indicates recognition and success in a creative or expressive field. The long Mercury line suggests long-term communication or coaching success.
+**Current Phase Indicators:**
+* **Life Line Current Section:** Deep and clear - indicating strong vitality and life force
+* **Head Line Middle Section:** Well-defined with slight forking - showing mental clarity with multiple interests
+* **Heart Line Present Area:** Strong and curved - revealing emotional openness and availability
+* **Fate Line Current Position:** Distinct with positive influence line - suggesting supportive connections for your path
 
-**From Age 30-40:**
+**Present Life Themes:**
+* **Primary Theme:** Integration - Bringing together different aspects of yourself
+* **Secondary Theme:** Clarification - Refining purpose and direction
+* **Supporting Theme:** Connection - Developing meaningful relationships
+* **Challenge Theme:** Balance - Managing multiple responsibilities and interests
 
-* Career success
-* International travel or public visibility
-* Deep emotional maturity and stable relationships
+**Current Strengths to Leverage:**
+* Mental clarity and analytical ability (head line quality)
+* Communication skills and expression (Mercury mount)
+* Creative problem-solving (Apollo line influence)
+* Relationship building and emotional intelligence (heart line)
+* Purpose alignment (fate line quality)
 
-**From Age 40+:**
+**Present Challenges to Navigate:**
+* Potential for overextension (multiple branches from head line)
+* Need for work-life integration (relationship between life and fate lines)
+* Managing expectations of self and others (Saturn influence)
+* Balancing analysis with action (head-Saturn relationship)
 
-* Leadership role, mentoring others
-* Spiritual growth and community involvement
+**Optimal Focus Areas Now:**
+* Cultivating confidence in your unique approach and perspective
+* Making decisions aligned with core values rather than external expectations
+* Strengthening boundaries while maintaining meaningful connections
+* Developing routines that support mental and physical wellbeing
+* Pursuing growth opportunities that combine multiple interests
+
+**Astrological Influences (Present Period):**
+Your palm shows markers correlating with current astrological influences:
+* Saturn's influence encouraging foundation-building and structure
+* Jupiter's energy supporting expansion in aligned directions
+* Mercury's position enhancing communication and connection
+* Venus patterns promoting harmony in relationships through authenticity
+
+**Current Phase in Purpose Timeline:**
+You are currently in a period of growing alignment with your purpose, characterized by:
+* Increasing clarity about contribution and direction
+* Refinement of skills and approaches
+* Recognition from others for your unique qualities
+* Important relationship connections supporting growth
+* Integration of past experiences into coherent wisdom
+
+---
+
+**Page 19: Future - What Lies Ahead on Your Path**
+Your palm contains important indicators about your future trajectory, upcoming opportunities, challenges, and optimal directions. By examining the end sections of your major lines and special markings affecting future time periods, we can decode potential future patterns.
+
+**Future Timeline Indicators:**
+* **Life Line Extended Section:** Strong and clear - indicating continued vitality into later years
+* **Head Line Final Section:** Deepening with slight downward curve - showing growing intuitive wisdom
+* **Heart Line Future Area:** Strengthening with upward branch - revealing emotional fulfillment and expansion
+* **Fate Line Advanced Position:** Prominent with supporting lines - suggesting increased impact and recognition
+
+**Key Future Transition Points:**
+
+* **Age 35-37:** 
+  * **Indicated by:** Important fork in fate line
+  * **Nature:** Significant direction clarification or opportunity
+  * **Guidance:** Trust emerging clarity about your unique contribution
+
+* **Age 42-45:** 
+  * **Indicated by:** Sun line strengthening and influence lines joining fate line
+  * **Nature:** Recognition, increased visibility, and supportive partnerships
+  * **Guidance:** Embrace visibility rather than hiding your light
+
+* **Age 52-55:** 
+  * **Indicated by:** Secondary fate line merging with primary line
+  * **Nature:** Integration of different aspects of purpose into cohesive contribution
+  * **Guidance:** Share accumulated wisdom through teaching or mentoring
+
+* **Age 60-65:** 
+  * **Indicated by:** Positive markings on Apollo and Jupiter mounts
+  * **Nature:** Legacy phase with recognition and influence
+  * **Guidance:** Focus on meaningful contribution rather than achievement
+
+**Future Growth Areas:**
+* Spiritual and intuitive development (head line's gentle curve toward Luna)
+* Teaching, mentoring, and wisdom-sharing (fate-Jupiter connection)
+* Creative expression and recognition (strong Apollo line)
+* Deepening relationships and emotional fulfillment (heart line quality)
+* Integration of practical and philosophical approaches (Saturn-Jupiter balance)
+
+**Potential Challenges to Prepare For:**
+* Maintaining energy boundaries as demands increase (life line variations)
+* Balancing visibility with personal needs (Apollo-Saturn relationship)
+* Managing expectations as influence grows (Jupiter-Saturn balance)
+* Preserving authentic voice amid recognition (Apollo-Mercury connection)
+
+**Optimal Future Directions:**
+Based on your palm's indications, these paths offer greatest fulfillment:
+* Roles combining creative expression with intellectual structure
+* Work involving teaching, mentoring, or guiding others
+* Projects that bridge different fields, perspectives, or approaches
+* Opportunities for writing, speaking, or knowledge-sharing
+* Positions allowing autonomy with meaningful collaboration
+
+**Future Travel & Geographic Influences:**
+Lines and formations near your Luna mount suggest:
+* Significant travel or relocation between ages 38-42
+* Positive connection with water elements or coastal locations
+* International influence or recognition after age 45
+* Meaningful journey with spiritual significance around age 50
+
+**Legacy Indications:**
+Your palm shows you will likely be remembered for:
+* Innovative frameworks or approaches that help others
+* Bridging different perspectives or knowledge systems
+* Authentic communication that inspires positive change
+* Integration of intellectual clarity with emotional wisdom
 
 ---
 
 **Page 20: Summary Dashboard & Final Words**
+This final page provides a comprehensive overview of your palmistry analysis, highlighting key strengths, opportunities, and recommendations across all major life areas.
 
-| Life Area   | Score | Alignment |
-| ----------- | ----- | --------- |
-| Personality | 92%   | High      |
-| Love        | 87%   | Balanced  |
-| Career      | 90%   | High      |
-| Health      | 85%   | Stable    |
-| Wealth      | 78%   | Improving |
-| Social Life | 89%   | Strong    |
-| Creativity  | 95%   | Excellent |
-| Intuition   | 91%   | High      |
+**Life Area Performance Dashboard:**
 
----
+| Life Area        | Score | Alignment | Key Strength               | Growth Opportunity         |
+| ---------------- | ----- | --------- | -------------------------- | -------------------------- |
+| Personality      | 92%   | High      | Analytical intelligence    | Trusting intuition         |
+| Emotional Life   | 87%   | Balanced  | Depth and authenticity     | Consistent expression      |
+| Relationships    | 85%   | Strong    | Loyalty and communication  | Vulnerability without fear |
+| Career & Purpose | 90%   | High      | Direction with flexibility | Embracing visibility       |
+| Health & Vitality| 85%   | Stable    | Resilience and recovery    | Preventive maintenance     |
+| Financial Life   | 78%   | Improving | Strategic planning         | Valuing contributions      |
+| Creativity       | 95%   | Excellent | Innovative thinking        | Consistent practice        |
+| Spiritual Growth | 91%   | High      | Depth of understanding     | Practical integration      |
+| Social Impact    | 89%   | Strong    | Meaningful influence       | Broader reach              |
 
+**Life Phase Summary:**
+* **Past:** Built strong foundation through intellectual development and emotional learning
+* **Present:** Integrating different aspects of self and clarifying authentic direction
+* **Future:** Increasing recognition, impact, and legacy creation through teaching and creative expression
+
+**Core Theme Integration:**
+Throughout all aspects of your analysis, these themes consistently appear:
+* Integration of intellectual clarity with emotional wisdom
+* Balance of structure and creative freedom
+* Authentic communication that bridges perspectives
+* Purpose expressed through teaching, guiding, and creating frameworks for others
+* Growth through embracing visibility while maintaining integrity
+
+**Palm Reading Timeline Highlights:**
+* **Ages 35-37:** Direction clarification and new opportunities
+* **Ages 42-45:** Recognition and increased impact
+* **Ages 52-55:** Wisdom integration and teaching focus
+* **Ages 60-65:** Legacy phase and meaningful contribution
+
+**Final Guidance:**
 Dear ${userName},
 
-Your palms tell a story that only you can fulfill. Let this guide serve as a compass and companion. Embrace your gifts, rise from challenges, and move forward with clarity.
+Your palms reveal a life of meaningful impact through the integration of your analytical mind, creative spirit, and authentic voice. The journey mapped in your hands shows early development of intellectual strength, middle-life integration of purpose elements, and later recognition for your unique contribution.
+
+Your most significant life work involves bridging different perspectives, creating frameworks that help others navigate complexity, and modeling the integration of mind and heart. While your path hasn't always been straight, each curve and line on your palm shows how experiences have shaped you toward increasing clarity and impact.
+
+Your hands tell a story that only you can fulfill. Let this guide serve as a compass and companion as you continue your journey. Embrace your gifts, rise from challenges with newfound wisdom, and move forward with the clarity that comes from self-understanding.
 
 You are not lost. You are unfolding.
 
@@ -1011,3 +1683,4 @@ With love and light,
     return downloadTextAsPDF(demoContent, "PalmCode_Life_Blueprint_Report.txt");
   }
 };
+
