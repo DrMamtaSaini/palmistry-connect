@@ -230,10 +230,11 @@ VERY IMPORTANT: Make sure to format the text so it's clearly readable with prope
 
   /**
    * Analyze a palm image using the Gemini API to generate a comprehensive 20-page report
+   * with detailed astrology insights for past, present, and future
    */
   async analyzeComprehensivePalm(imageData: string, userName: string = "User"): Promise<string> {
     try {
-      console.log('Analyzing palm with Gemini API to generate comprehensive 20-page report...');
+      console.log('Analyzing palm with Gemini API to generate comprehensive 20-page report with astrology...');
       
       // Format the image for the Gemini API
       const formattedImage = this.formatImageForGemini(imageData);
@@ -248,12 +249,12 @@ VERY IMPORTANT: Make sure to format the text so it's clearly readable with prope
           {
             parts: [
               {
-                text: `Act as a world-class palmistry expert, life coach, and personality psychologist. You are creating a 20-page personalized "PalmCode™ Life Blueprint Report" for ${userName}. 
+                text: `Act as a world-class palmistry expert, astrologer, life coach, and personality psychologist. You are creating a 20-page personalized "PalmCode™ Life Blueprint Report" for ${userName}. 
 
-This is a premium, high-quality palm reading service that decodes the user's palm lines, mounts, shapes, and patterns using modern palmistry and psychology. Blend mystical insight with practical advice to create a truly personalized report that feels individualized and specific to this person.
+This is a premium, high-quality palm reading service that decodes the user's palm lines, mounts, shapes, and patterns using modern palmistry, advanced astrology, and psychology. Blend mystical insight with practical advice to create a truly personalized report that feels individualized and specific to this person.
 
 # Report Structure
-Create exactly 20 sections, each representing one page of the report. Label each section clearly as "PAGE 1", "PAGE 2", etc. Each page should cover a different aspect of the person's life and personality.
+Create exactly 20 sections, each representing one page of the report. Label each section clearly as "PAGE 1", "PAGE 2", etc. Each page should cover a different aspect of the person's life and personality in considerable detail (minimum 500 words per page).
 
 # Content to Include
 Analyze the following aspects from the palm image:
@@ -263,123 +264,143 @@ PAGE 1: Executive Summary - Life Blueprint Overview
 - Summary of key personality traits
 - Core life purpose indicators
 - Visual description of hand type and structure
+- Overview of past, present, and future trajectory
 
 PAGE 2: Hand Shape & Elemental Analysis
 - Hand shape classification (Earth, Air, Fire, Water)
 - What this reveals about core personality
 - Key strengths based on hand structure
 - Proportion analysis and its meaning
+- Detailed interpretation of finger size, shape, and alignment
 
-PAGE 3: Life Line Analysis
+PAGE 3: Astrological Past - Formative Years & Origins
+- How planetary positions at birth influenced early development
+- Key karmic patterns from past lives visible in the palm
+- Early life challenges and gifts as shown in minor lines
+- Childhood indicators and formative experiences
+- Family dynamics and inherited patterns
+
+PAGE 4: Life Line Analysis
 - Detailed examination of life line characteristics
 - Vitality and energy indicators
 - Major life transitions revealed
 - Health patterns and longevity indications
+- Specific timing of important life events
 
-PAGE 4: Head Line Analysis
+PAGE 5: Head Line Analysis
 - Thinking style and intellectual approach
 - Decision-making patterns
 - Mental strengths and potential challenges
 - Learning style and cognitive preferences
+- Critical thinking abilities and rational tendencies
 
-PAGE 5: Heart Line Insights
+PAGE 6: Heart Line Insights
 - Emotional nature and expression
 - Love language and romantic tendencies
 - Emotional intelligence indicators
 - Relationship patterns and needs
+- Capacity for empathy and emotional depth
 
-PAGE 6: Fate Line & Career Path
+PAGE 7: Astrological Present - Current Life Phase
+- Current planetary influences and their manifestation
+- Active dasha/antardasha periods and their effects
+- Current life lessons and growth opportunities
+- Present challenges and how they align with palm indicators
+- Timing for current phase transitions
+
+PAGE 8: Fate Line & Career Path
 - Career trajectory and professional aptitude
 - Success timing and key periods
 - Natural talents visible in the palm
 - Professional challenges and how to overcome them
+- Career advancement strategies based on palm structure
 
-PAGE 7: Mount of Venus & Relationships
+PAGE 9: Mount of Venus & Relationships
 - Love compatibility profile
 - Relationship strengths and potential challenges
 - Romantic timeline indicators
 - Partnership compatibility scores with different personality types
+- Deeper relationship patterns and attachment styles
 
-PAGE 8: Money & Financial Pattern Analysis
+PAGE 10: Money & Financial Pattern Analysis
 - Financial aptitude and money relationship
 - Wealth potential indicators
 - Resource management style
 - Prosperity periods and opportunities
+- Specific timing for financial growth and challenges
 
-PAGE 9: Apollo Line & Creative Expression
+PAGE 11: Astrological Future - Coming Life Phases
+- Future planetary transits and their likely effects
+- Upcoming life opportunities and challenges
+- Critical decision points in the next 5-10 years
+- Long-term destiny indicators
+- Prediction of major life transitions
+
+PAGE 12: Apollo Line & Creative Expression
 - Creative and artistic abilities
 - Fame and recognition potential
 - Self-expression channels
 - Optimal creative outlets based on palm structure
+- Unique gifts and how to manifest them
 
-PAGE 10: Mercury Mount & Communication Style
+PAGE 13: Mercury Mount & Communication Style
 - Communication strengths and patterns
 - Business acumen and entrepreneurial potential
 - Persuasive abilities
 - Networking and social influence style
+- Optimal communication strategies
 
-PAGE 11: Jupiter Mount & Leadership Profile
+PAGE 14: Jupiter Mount & Leadership Profile
 - Leadership style and strengths
 - Authority presence and charisma indicators
 - Ambition patterns and goal achievement
 - Personal power expression
+- Growth and expansion opportunities
 
-PAGE 12: Saturn Line & Life Responsibilities
+PAGE 15: Saturn Line & Life Responsibilities
 - Core life responsibilities and duties
 - Discipline and structure indicators
 - Karmic patterns visible in the palm
 - Life lessons and growth areas
+- Managing obligations and commitments
 
-PAGE 13: Timing Indicators & Life Phases
-- Key age milestones revealed in the palm
-- Timing indicators for major life events
-- Life phases and their characteristics
-- Current position in life journey
-
-PAGE 14: Health & Wellness Blueprint
+PAGE 16: Health & Wellness Blueprint
 - Physical vitality indicators
 - Stress response patterns
 - Health strengths and potential vulnerabilities
 - Wellness recommendations based on hand characteristics
+- Preventative health strategies and timing
 
-PAGE 15: Marriage & Relationship Lines
+PAGE 17: Marriage & Relationship Lines
 - Relationship count and quality indicators
 - Marriage timing indicators (if present)
 - Attachment style and emotional bonding
 - Partnership compatibility insights
+- Long-term relationship potential and challenges
 
-PAGE 16: Children Lines & Legacy
+PAGE 18: Children Lines & Legacy
 - Family life indicators
 - Nurturing tendencies and parenting style
 - Legacy creation and impact potential
 - Generational patterns and influences
+- Creative and personal projects as extensions of self
 
-PAGE 17: Travel Lines & Life Experience
+PAGE 19: Travel Lines & Life Experience
 - Geographic destiny indicators
 - Travel propensities and patterns
 - Cultural influences and international connections
 - Adaptability and exploration tendencies
+- Major relocations and their timing
 
-PAGE 18: Intuition & Psychic Abilities
+PAGE 20: Intuition, Psychic Abilities & Spiritual Path
 - Intuitive strengths visible in the palm
 - Psychic sensitivity indicators
 - Spiritual connection patterns
 - Intuition development recommendations
-
-PAGE 19: Life Purpose & Soul Mission
-- Core life purpose indicators
-- Spiritual path and evolution
-- Soul-level gifts and talents
-- Higher calling and meaningful work
-
-PAGE 20: Practical Guidance & Future Development
-- Personalized affirmations based on palm characteristics
-- Practical steps to maximize potential
-- Challenges to be mindful of
-- Future development roadmap
+- Higher purpose and soul mission
 
 # Format Guidelines
-- Create a visually descriptive, well-structured report
+- Create a visually descriptive, well-structured report with BLACK TEXT on white background
 - Use headings, subheadings, and bullet points for clarity
 - Include "compatibility scores" and "potential ratings" as text-based charts where appropriate
 - Bold important insights and key takeaways
@@ -395,9 +416,9 @@ PAGE 20: Practical Guidance & Future Development
 
 The final report should read like a premium product that delivers genuine insight, self-understanding, and growth direction - something the recipient will want to save, revisit, and share with others.
 
-CRITICALLY IMPORTANT: Ensure ALL text is clearly visible and readable with high contrast. Use standard HTML text with NO colored text - only use regular black text that will display clearly on any background.
+CRITICALLY IMPORTANT: Ensure ALL text is clearly visible and readable with high contrast. Use standard HTML text with NO colored text - only use regular black text that will display clearly on any background. DO NOT use any colors that might blend with the background.
 
-VERY IMPORTANT: Make sure to format the text so it's clearly readable with proper markdown formatting with clear section headers and paragraphs. Label each page clearly. The report should be detailed and comprehensive.`
+VERY IMPORTANT: Make sure to format the text so it's clearly readable with proper markdown formatting with clear section headers and paragraphs. Label each page clearly. The report should be detailed, comprehensive, and at least 500 words per page for a total of 10,000+ words.`
               },
               formattedImage
             ]
