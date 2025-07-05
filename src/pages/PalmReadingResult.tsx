@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw, FileText, Book } from 'lucide-react';
+import { Hand, Download, Share2, Loader2, AlertCircle, RefreshCw, FileText, Book, Star } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import UserProfileForm from '@/components/UserProfileForm';
 import { revealAnimation } from '@/lib/animations';
 import { generatePDF } from '@/lib/pdfUtils';
 import { toast } from '@/hooks/use-toast';
@@ -15,10 +16,13 @@ const PalmReadingResult = () => {
   const navigate = useNavigate();
   const [palmAnalysis, setPalmAnalysis] = useState<string | null>(null);
   const [comprehensivePalmAnalysis, setComprehensivePalmAnalysis] = useState<string | null>(null);
+  const [comprehensive50PageReport, setComprehensive50PageReport] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGeneratingComprehensive, setIsGeneratingComprehensive] = useState(false);
+  const [isGenerating50Page, setIsGenerating50Page] = useState(false);
   const [hasAttemptedAnalysis, setHasAttemptedAnalysis] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showProfileForm, setShowProfileForm] = useState(false);
   const { gemini, isLoading: isGeminiLoading } = useGemini();
   const [userId, setUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
@@ -208,6 +212,73 @@ const PalmReadingResult = () => {
       setIsGeneratingComprehensive(false);
     }
   }, [gemini, userId]);
+
+  const generate50PageReport = useCallback(async (userProfile: any) => {
+    console.log('Starting 50-page comprehensive report generation...');
+    const storedImage = sessionStorage.getItem('palmImage');
+    
+    if (!storedImage) {
+      console.error('No palm image found in session storage');
+      setError('No palm image found. Please upload an image first.');
+      return false;
+    }
+    
+    if (!gemini) {
+      console.error('Gemini not initialized');
+      setError('Gemini AI not initialized. Please check your API key.');
+      return false;
+    }
+    
+    setIsGenerating50Page(true);
+    setError(null);
+    
+    try {
+      console.log('Generating 50-page report with user profile...');
+      toast({
+        title: "Generating 50-Page Report",
+        description: "Creating your comprehensive palmistry and astrology report. This may take several minutes...",
+      });
+      
+      const result = await gemini.generateComprehensive50PageReport(storedImage, userProfile);
+      console.log('50-page report received:', result ? `Success (${result.length} chars)` : 'Empty result');
+      
+      if (!result || typeof result !== 'string' || result.trim() === '') {
+        throw new Error('Empty or invalid result from Gemini API for 50-page report');
+      }
+      
+      console.log('50-page report complete, setting result');
+      setComprehensive50PageReport(result);
+      
+      // Store in session storage for persistence
+      sessionStorage.setItem('comprehensive50PageReport', result);
+      
+      if (userId) {
+        await saveReadingToDatabase(result, true);
+      }
+      
+      setActiveTab('50page');
+      setShowProfileForm(false);
+      setError(null);
+      
+      toast({
+        title: "50-Page Report Ready",
+        description: "Your comprehensive palmistry and astrology report has been generated successfully!",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error generating 50-page report:', error);
+      setError(`Error generating 50-page report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        title: "Analysis Error",
+        description: "There was an error generating your 50-page report. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsGenerating50Page(false);
+    }
+  }, [gemini, userId]);
   
   useEffect(() => {
     const cleanup = revealAnimation();
@@ -264,13 +335,20 @@ const PalmReadingResult = () => {
         if (!foundReadingInDb) {
           const storedReading = sessionStorage.getItem('palmReadingResult');
           const storedComprehensiveReading = sessionStorage.getItem('comprehensivePalmReadingResult');
+          const stored50PageReport = sessionStorage.getItem('comprehensive50PageReport');
           const storedImage = sessionStorage.getItem('palmImage');
           
           console.log('Checking stored reading:', storedReading ? 'Found' : 'Not found');
           console.log('Checking stored comprehensive reading:', storedComprehensiveReading ? 'Found' : 'Not found');
+          console.log('Checking stored 50-page report:', stored50PageReport ? 'Found' : 'Not found');
           console.log('Checking stored image:', storedImage ? 'Found' : 'Not found');
           
-          if (storedComprehensiveReading && storedComprehensiveReading.trim().length > 10) {
+          if (stored50PageReport && stored50PageReport.trim().length > 10) {
+            setComprehensive50PageReport(stored50PageReport);
+            setHasAttemptedAnalysis(true);
+            setDebugInfo(`Using stored 50-page report: ${stored50PageReport.length} characters`);
+            setActiveTab('50page');
+          } else if (storedComprehensiveReading && storedComprehensiveReading.trim().length > 10) {
             setComprehensivePalmAnalysis(storedComprehensiveReading);
             setHasAttemptedAnalysis(true);
             setDebugInfo(`Using stored comprehensive reading: ${storedComprehensiveReading.length} characters`);
@@ -285,7 +363,7 @@ const PalmReadingResult = () => {
             setHasAttemptedAnalysis(true);
             setDebugInfo(`Using stored reading: ${storedReading.length} characters`);
             
-            if (!storedComprehensiveReading) {
+            if (!storedComprehensiveReading && !stored50PageReport) {
               setActiveTab('basic');
             }
           } else if (storedImage && gemini && !isGeminiLoading && !isAnalyzing) {
@@ -498,14 +576,22 @@ const PalmReadingResult = () => {
   };
 
   const handleFullReportDownload = async () => {
-    const currentAnalysis = activeTab === 'basic' ? palmAnalysis : comprehensivePalmAnalysis;
-    const title = activeTab === 'basic' ? "Palm Reading Analysis" : "PalmCode™ Life Blueprint Report";
-    const subtitle = activeTab === 'basic' ? "Comprehensive Personal Insights" : "20-Page Personalized Analysis";
-    const fileName = activeTab === 'basic' ? "Palm_Reading_Report.pdf" : "PalmCode_Life_Blueprint_Report.pdf";
+    const currentAnalysis = activeTab === 'basic' ? palmAnalysis : 
+                            activeTab === 'comprehensive' ? comprehensivePalmAnalysis : 
+                            comprehensive50PageReport;
+    const title = activeTab === 'basic' ? "Palm Reading Analysis" : 
+                  activeTab === 'comprehensive' ? "PalmCode™ Life Blueprint Report" : 
+                  "Comprehensive 50-Page Palmistry & Astrology Report";
+    const subtitle = activeTab === 'basic' ? "Comprehensive Personal Insights" : 
+                     activeTab === 'comprehensive' ? "20-Page Personalized Analysis" : 
+                     "50-Page In-Depth Life Report";
+    const fileName = activeTab === 'basic' ? "Palm_Reading_Report.pdf" : 
+                     activeTab === 'comprehensive' ? "PalmCode_Life_Blueprint_Report.pdf" : 
+                     "50_Page_Comprehensive_Report.pdf";
     
     toast({
       title: "Generating Report",
-      description: `Your ${activeTab === 'basic' ? 'palmistry report' : '20-page PalmCode™ report'} is being prepared for download...`,
+      description: `Your ${activeTab === 'basic' ? 'palmistry report' : activeTab === 'comprehensive' ? '20-page PalmCode™ report' : '50-page comprehensive report'} is being prepared for download...`,
     });
     
     try {
@@ -534,16 +620,20 @@ const PalmReadingResult = () => {
       setPalmAnalysis(null);
       sessionStorage.removeItem('palmReadingResult');
       await analyzePalm();
-    } else {
+    } else if (activeTab === 'comprehensive') {
       setComprehensivePalmAnalysis(null);
       sessionStorage.removeItem('comprehensivePalmReadingResult');
       await generateComprehensiveReport();
+    } else {
+      setComprehensive50PageReport(null);
+      sessionStorage.removeItem('comprehensive50PageReport');
+      setShowProfileForm(true);
     }
   };
   
-  const isLoading = isGeminiLoading || isAnalyzing || isGeneratingComprehensive;
+  const isLoading = isGeminiLoading || isAnalyzing || isGeneratingComprehensive || isGenerating50Page;
   
-  if (isLoading) {
+  if (isLoading && !showProfileForm) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -553,18 +643,47 @@ const PalmReadingResult = () => {
               <div className="flex flex-col items-center justify-center space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <h2 className="text-xl font-semibold text-foreground">
-                  {isGeneratingComprehensive 
+                  {isGenerating50Page 
+                    ? "Creating Your 50-Page Comprehensive Report" 
+                    : isGeneratingComprehensive 
                     ? "Creating Your 20-Page PalmCode™ Life Blueprint Report" 
                     : "Analyzing Your Palm"
                   }
                 </h2>
                 <p className="text-muted-foreground">
-                  {isGeneratingComprehensive 
+                  {isGenerating50Page 
+                    ? "Our AI is generating your comprehensive 50-page personalized report with palmistry and astrology insights. This may take 3-5 minutes..." 
+                    : isGeneratingComprehensive 
                     ? "Our AI is generating your comprehensive 20-page personalized report. This may take 1-2 minutes..." 
                     : "Our AI is carefully analyzing your palm image to generate a palmistry report. This may take a moment..."
                   }
                 </p>
               </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (showProfileForm) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-32 pb-24">
+          <div className="content-container">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <h1 className="heading-lg mb-4 text-black">Generate 50-Page Comprehensive Report</h1>
+                <p className="text-muted-foreground text-lg">
+                  Provide your personal details for an in-depth palmistry and astrology analysis that combines traditional wisdom with modern insights.
+                </p>
+              </div>
+              <UserProfileForm 
+                onSubmit={generate50PageReport} 
+                isLoading={isGenerating50Page}
+              />
             </div>
           </div>
         </main>
@@ -593,7 +712,9 @@ const PalmReadingResult = () => {
           <div className="max-w-4xl mx-auto glass-panel rounded-2xl p-10 mb-16 reveal bg-white">
             <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
               <h2 className="heading-md text-black">
-                {activeTab === 'comprehensive' 
+                {activeTab === '50page' 
+                  ? "50-Page Comprehensive Report" 
+                  : activeTab === 'comprehensive' 
                   ? "PalmCode™ Life Blueprint Report" 
                   : "Palmistry Report"
                 }
@@ -602,16 +723,25 @@ const PalmReadingResult = () => {
                 <button 
                   onClick={handleFullReportDownload}
                   className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
-                  disabled={activeTab === 'basic' ? !palmAnalysis : !comprehensivePalmAnalysis}
+                  disabled={!palmAnalysis && !comprehensivePalmAnalysis && !comprehensive50PageReport}
                 >
                   <Download className="h-4 w-4" />
-                  <span>Download {activeTab === 'comprehensive' ? 'Full 20-page Report' : 'Report'}</span>
+                  <span>Download Report</span>
                 </button>
-                {!comprehensivePalmAnalysis && (
+                {!comprehensive50PageReport && (
+                  <button 
+                    onClick={() => setShowProfileForm(true)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transition-colors cursor-pointer"
+                  >
+                    <Star className="h-4 w-4" />
+                    <span>Generate 50-Page Report</span>
+                  </button>
+                )}
+                {!comprehensivePalmAnalysis && palmAnalysis && (
                   <button 
                     onClick={generateComprehensiveReport}
                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors cursor-pointer"
-                    disabled={isGeneratingComprehensive || !palmAnalysis}
+                    disabled={isGeneratingComprehensive}
                   >
                     <Book className="h-4 w-4" />
                     <span>Generate 20-Page Report</span>
@@ -628,11 +758,14 @@ const PalmReadingResult = () => {
               </div>
             </div>
             
-            {comprehensivePalmAnalysis && (
+            {(comprehensivePalmAnalysis || comprehensive50PageReport) && (
               <Tabs defaultValue={activeTab} className="w-full mb-6" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 mb-8">
+                <TabsList className={`grid w-full ${comprehensive50PageReport ? 'grid-cols-3' : 'grid-cols-2'} mb-8`}>
                   <TabsTrigger value="basic" className="text-sm">Standard Report</TabsTrigger>
-                  <TabsTrigger value="comprehensive" className="text-sm">20-Page PalmCode™ Blueprint</TabsTrigger>
+                  <TabsTrigger value="comprehensive" className="text-sm">20-Page PalmCode™</TabsTrigger>
+                  {comprehensive50PageReport && (
+                    <TabsTrigger value="50page" className="text-sm">50-Page Complete</TabsTrigger>
+                  )}
                 </TabsList>
                 
                 <TabsContent value="basic" className="mt-0">
@@ -702,10 +835,22 @@ const PalmReadingResult = () => {
                     </div>
                   )}
                 </TabsContent>
+
+                {comprehensive50PageReport && (
+                  <TabsContent value="50page" className="mt-0">
+                    <div className="prose prose-lg max-w-none text-left bg-white text-black border p-6 rounded-lg shadow-sm">
+                      <div className="flex justify-between items-center mb-6 pb-3 border-b">
+                        <h1 className="text-2xl font-bold text-gradient bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">50-Page Comprehensive Report</h1>
+                        <Star className="h-6 w-6 text-purple-600" />
+                      </div>
+                      {formatAnalysisContent(comprehensive50PageReport)}
+                    </div>
+                  </TabsContent>
+                )}
               </Tabs>
             )}
             
-            {!comprehensivePalmAnalysis && (
+            {!comprehensivePalmAnalysis && !comprehensive50PageReport && (
               <div className="prose prose-lg max-w-none text-left bg-white text-black border p-6 rounded-lg shadow-sm">
                 {palmAnalysis ? (
                   formatAnalysisContent(palmAnalysis)
@@ -757,8 +902,28 @@ const PalmReadingResult = () => {
               </div>
             )}
             
-            {/* Comprehensive report upgrade banner */}
-            {!isGeneratingComprehensive && !comprehensivePalmAnalysis && palmAnalysis && (
+            {/* Upgrade banners */}
+            {!isGenerating50Page && !comprehensive50PageReport && (palmAnalysis || comprehensivePalmAnalysis) && (
+              <div className="mt-8 p-6 border border-purple-300 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Star className="h-6 w-6 text-purple-600 mr-2" />
+                  <h3 className="text-xl font-medium text-purple-700">Upgrade to 50-Page Comprehensive Report</h3>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Get the ultimate palmistry and astrology analysis with detailed predictions, timing, career guidance, relationship insights, health patterns, and actionable success strategies!
+                </p>
+                <Button 
+                  onClick={() => setShowProfileForm(true)} 
+                  variant="default"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                >
+                  <Star className="mr-2 h-4 w-4" />
+                  Generate 50-Page Report
+                </Button>
+              </div>
+            )}
+
+            {!isGeneratingComprehensive && !comprehensivePalmAnalysis && !comprehensive50PageReport && palmAnalysis && (
               <div className="mt-8 p-6 border border-primary/30 rounded-lg bg-primary/5 text-center">
                 <div className="flex items-center justify-center mb-2">
                   <FileText className="h-6 w-6 text-primary mr-2" />

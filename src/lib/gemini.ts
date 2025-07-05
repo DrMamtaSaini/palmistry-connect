@@ -1,4 +1,3 @@
-
 /**
  * GeminiAI - A class for interacting with the Gemini API for AI-powered palm reading
  */
@@ -224,6 +223,181 @@ VERY IMPORTANT: Make sure to format the text so it's clearly readable with prope
       }
     } catch (error) {
       console.error('Error in analyzePalm:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate a comprehensive 50-page palmistry and astrology report
+   */
+  async generateComprehensive50PageReport(imageData: string, userProfile: any): Promise<string> {
+    try {
+      console.log('Generating comprehensive 50-page palmistry and astrology report...');
+      
+      // Format the image for the Gemini API
+      const formattedImage = this.formatImageForGemini(imageData);
+      
+      // Create the API request URL
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
+      
+      // Create comprehensive 50-page report prompt
+      const comprehensivePrompt = `You are a master palmist and astrologer with 30+ years of experience. Generate a comprehensive, 50-page in-depth life report based on the provided palm data and astrological data.
+
+USER PROFILE:
+${JSON.stringify(userProfile, null, 2)}
+
+ANALYSIS REQUIREMENTS:
+
+# PART 1: FOUNDATIONAL ANALYSIS (Pages 1-10)
+PAGE 1: Executive Summary & Life Blueprint Overview
+PAGE 2: Hand Shape & Elemental Analysis (Earth/Air/Fire/Water classification)
+PAGE 3: Finger Analysis (Length, flexibility, proportions, nail analysis)
+PAGE 4: Thumb Analysis (Will power, logic, energy levels)
+PAGE 5: Palm Texture & Skin Analysis (Energy levels, sensitivity)
+PAGE 6: Major Lines Overview (Heart, Head, Life, Fate lines)
+PAGE 7: Mount Analysis (All 7 classical mounts)
+PAGE 8: Special Markings & Symbols (Stars, crosses, triangles, squares)
+PAGE 9: Hand Dominance & Bilateral Comparison
+PAGE 10: Overall Hand Harmony & Balance Assessment
+
+# PART 2: ASTROLOGICAL FOUNDATION (Pages 11-15)
+PAGE 11: Birth Chart Overview & Planetary Positions
+PAGE 12: Ascendant & House Analysis
+PAGE 13: Major Planetary Aspects & Configurations
+PAGE 14: Nodal Analysis (Rahu/Ketu or North/South Node)
+PAGE 15: Current Dasha/Planetary Period Analysis
+
+# PART 3: PAST INFLUENCES & KARMIC PATTERNS (Pages 16-20)
+PAGE 16: Childhood & Early Life Indicators
+PAGE 17: Family Dynamics & Inherited Patterns
+PAGE 18: Past Life Karmic Influences
+PAGE 19: Educational Journey & Early Career
+PAGE 20: Formative Relationships & Their Impact
+
+# PART 4: PRESENT CIRCUMSTANCES & CURRENT PHASE (Pages 21-25)
+PAGE 21: Current Life Phase Analysis
+PAGE 22: Present Career & Professional Status
+PAGE 23: Current Relationship Dynamics
+PAGE 24: Health & Vitality Assessment
+PAGE 25: Financial Status & Resource Management
+
+# PART 5: PERSONALITY & PSYCHOLOGICAL PROFILE (Pages 26-30)
+PAGE 26: Core Personality Traits & Temperament
+PAGE 27: Emotional Intelligence & Processing Style
+PAGE 28: Communication Style & Social Interactions
+PAGE 29: Decision-Making Patterns & Mental Approach
+PAGE 30: Hidden Talents & Unexpressed Potentials
+
+# PART 6: RELATIONSHIPS & FAMILY (Pages 31-35)
+PAGE 31: Love Life & Romantic Patterns
+PAGE 32: Marriage Compatibility & Partnership Dynamics
+PAGE 33: Family Relationships & Dynamics
+PAGE 34: Children - Number, Nature & Timing
+PAGE 35: Social Circle & Friendship Patterns
+
+# PART 7: CAREER & FINANCIAL DESTINY (Pages 36-40)
+PAGE 36: Career Path Analysis & Professional Aptitudes
+PAGE 37: Business vs. Employment Suitability
+PAGE 38: Financial Patterns & Wealth Accumulation
+PAGE 39: Success Timing & Peak Achievement Periods
+PAGE 40: Professional Challenges & Growth Opportunities
+
+# PART 8: HEALTH & WELLBEING (Pages 41-45)
+PAGE 41: Physical Constitution & Health Patterns
+PAGE 42: Mental Health & Stress Management
+PAGE 43: Lifestyle Recommendations & Wellness Strategies
+PAGE 44: Health Timing & Preventive Measures
+PAGE 45: Longevity & Vitality Indicators
+
+# PART 9: FUTURE PREDICTIONS & OPPORTUNITIES (Pages 46-50)
+PAGE 46: Next 5 Years - Major Transitions & Opportunities
+PAGE 47: Long-term Life Trajectory (10-20 years)
+PAGE 48: Spiritual Evolution & Growth Path
+PAGE 49: Timing for Major Life Events
+PAGE 50: Final Guidance, Remedies & Success Strategies
+
+SPECIFIC REQUIREMENTS:
+- Each page should contain 300-500 words of detailed analysis
+- Include specific predictions where possible (career fields, earning potential, number of children, partner characteristics)
+- Provide actionable strategies and timing guidance
+- Use illustrative examples and analogies
+- Maintain professional yet compassionate tone
+- Include both palmistry and astrological insights for each topic
+- Format with clear headers and readable structure
+
+CRITICAL FORMATTING:
+- Use clear page headers: "PAGE X: [Title]"
+- Use markdown formatting for structure
+- Ensure all text is black and clearly readable
+- Include specific predictions and practical guidance
+- Avoid generic statements - be specific and personalized
+
+Generate the complete 50-page report now:`;
+
+      const body = {
+        contents: [
+          {
+            parts: [
+              {
+                text: comprehensivePrompt
+              },
+              formattedImage
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.8,
+          maxOutputTokens: 8000,
+          topP: 0.95,
+          topK: 40
+        }
+      };
+
+      // Make the API request
+      console.log('Sending request for comprehensive 50-page report...');
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response from Gemini API:', errorText);
+        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Received comprehensive 50-page report response');
+      
+      if (result.error) {
+        console.error('Error from Gemini API:', result.error);
+        throw new Error(result.error.message || 'Unknown error from Gemini API');
+      }
+      
+      if (result.candidates && 
+          result.candidates[0] && 
+          result.candidates[0].content && 
+          result.candidates[0].content.parts && 
+          result.candidates[0].content.parts[0] && 
+          result.candidates[0].content.parts[0].text) {
+            
+        const analysisText = result.candidates[0].content.parts[0].text;
+        
+        if (!analysisText || analysisText.trim() === '') {
+          throw new Error('Empty response from Gemini API');
+        }
+        
+        console.log('Successfully generated comprehensive 50-page report');
+        return analysisText;
+      } else {
+        console.error('Invalid response structure from Gemini API:', result);
+        throw new Error('The response from Gemini API was not in the expected format');
+      }
+    } catch (error) {
+      console.error('Error generating comprehensive 50-page report:', error);
       throw error;
     }
   }
