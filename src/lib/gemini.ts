@@ -1,811 +1,518 @@
-/**
- * GeminiAI - A class for interacting with the Gemini API for AI-powered palm reading
- */
-class GeminiAI {
-  private apiKey: string;
-  private modelName: string;
 
-  /**
-   * Private constructor - use the static initialize method to create instances
-   */
-  private constructor(apiKey: string, modelName: string = "gemini-1.5-flash") {
-    this.apiKey = apiKey;
-    this.modelName = modelName;
-    console.log('Initializing Gemini with model:', modelName);
-  }
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-  /**
-   * Creates a new instance of the GeminiAI class
-   */
-  static initialize(apiKey: string, modelName: string = "gemini-1.5-flash"): GeminiAI {
-    return new GeminiAI(apiKey, modelName);
-  }
+export class GeminiService {
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
 
-  /**
-   * Helper function to format an image into the format expected by the Gemini API
-   */
-  private formatImageForGemini(imageData: string): any {
-    try {
-      // Make sure the image data is correctly formatted
-      // It should be a data URL starting with data:image/...
-      if (!imageData.startsWith('data:image/')) {
-        console.error('Invalid image format:', imageData.substring(0, 20) + '...');
-        throw new Error('Invalid image format. Expected a data URL.');
-      }
-
-      // Format the image for the Gemini API
-      const base64Image = imageData.split(',')[1];
-      console.log('Image correctly formatted for Gemini API');
-      
-      return {
-        inlineData: {
-          data: base64Image,
-          mimeType: imageData.split(';')[0].split(':')[1],
-        },
-      };
-    } catch (error) {
-      console.error('Error formatting image:', error);
-      throw new Error('Failed to format image for analysis. Please try again with a different image.');
+  constructor(apiKey?: string) {
+    if (apiKey) {
+      this.initialize(apiKey);
     }
   }
 
-  /**
-   * Analyze a palm image using the Gemini API - Basic Version
-   */
+  initialize(apiKey: string) {
+    try {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    } catch (error) {
+      console.error('Error initializing Gemini:', error);
+      throw new Error('Failed to initialize Gemini API');
+    }
+  }
+
   async analyzePalm(imageData: string): Promise<string> {
+    if (!this.model) {
+      throw new Error('Gemini not initialized. Please set your API key first.');
+    }
+
     try {
-      console.log('Analyzing palm with Gemini API...');
+      // Convert base64 to the format expected by Gemini
+      const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
       
-      // Format the image for the Gemini API
-      const formattedImage = this.formatImageForGemini(imageData);
-      
-      // Create the API request URL
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
-      console.log(`Using Gemini API endpoint: ${this.modelName}`);
-      
-      // Create the API request body with comprehensive palmistry prompt
-      const body = {
-        contents: [
-          {
-            parts: [
-              {
-                text: `You are an expert AI Palm Reader with deep knowledge of traditional Indian palmistry and modern behavioral psychology.
-
-Analyze the palm image provided to generate an in-depth life reading report. Focus on these key elements:
-
-# Key Lines to Analyze
-- Heart Line: Emotional life and relationships
-- Head Line: Intellect, thinking style, and mental approach
-- Life Line: Vitality, energy, and major life changes
-- Fate Line: Career path and life direction
-- Sun Line: Success, fame, and recognition
-- Mercury Line: Communication and business aptitude
-- Marriage Line: Relationships and commitment patterns
-- Health Line: Overall wellbeing and potential health concerns
-- Girdle of Venus: Emotional sensitivity and intuition
-
-# Palm Features to Examine
-- Hand Shape (Earth, Air, Fire, Water)
-- Finger Length and Proportions
-- Thumb Flexibility and Position
-- Mounts (Mercury, Venus, Moon, Mars, Jupiter, Saturn, Apollo)
-- Special Markings (stars, crosses, triangles, islands)
-
-# Content to Include in Your Report
-## Personal Overview
-- Core personality traits
-- Key strengths and potential weaknesses
-- Dominant energies and tendencies
-
-## Career & Financial Path
-- Natural professional aptitudes
-- Financial prosperity indicators
-- Best career directions
-- Timeline for major career developments
-
-## Relationships & Emotional Life
-- Love patterns and compatibility
-- Marriage timeline indicators (if present)
-- Emotional tendencies in relationships
-- Communication style in close relationships
-
-## Health & Wellbeing
-- Areas of potential vulnerability
-- Stress indicators and coping mechanisms
-- Lifestyle recommendations based on hand indicators
-
-## Life Journey & Spiritual Path
-- Major life transitions indicated
-- Spiritual or philosophical tendencies
-- Higher purpose indicators
-- Personal growth opportunities
-
-## Practical Guidance
-- Traditional remedies (gemstones, mantras)
-- Modern approaches to maximize potential
-- Specific advice for questions like:
-  - "Will I settle abroad?"
-  - "When will I get married?"
-  - "What is my true life purpose?"
-
-FORMAT YOUR RESPONSE WITH PROPER MARKDOWN:
-- Use # for main section headers
-- Use ## for subsections
-- Use - for bullet points
-- Use **bold text** for emphasis on key points
-- Organize content into clear, readable sections
-- Include a brief summary at the beginning
-
-CRITICALLY IMPORTANT: Ensure ALL text is clearly visible and readable with high contrast. Use standard HTML text with NO colored text - only use regular black text that will display clearly on any background. DO NOT use any special formatting that might cause text to be invisible or hard to read.
-
-IMPORTANT: This is for a real person seeking genuine insights. Do NOT include phrases like "this is a demonstration" or "this is a sample reading" anywhere in your response. Provide a genuine, personalized analysis based solely on what you can see in the image.
-
-Keep your tone professional, insightful, and compassionate throughout the reading.
-
-VERY IMPORTANT: Make sure to format the text so it's clearly readable with proper markdown formatting with clear section headers and paragraphs. Only use markdown formatting that can be properly rendered in a standard React application.`
-              },
-              formattedImage
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4000,
-          topP: 0.95,
-          topK: 40
+      const imagePart = {
+        inlineData: {
+          data: base64Data,
+          mimeType: 'image/jpeg'
         }
       };
 
-      // Make the API request
-      console.log('Sending request to Gemini API...');
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
+      const prompt = `You are a master palmist with decades of experience in reading palms. Analyze this palm image with deep expertise and provide a comprehensive, personalized palmistry reading.
 
-      // Check if the response is OK
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response from Gemini API:', errorText);
-        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-      }
+IMPORTANT INSTRUCTIONS:
+- This is a REAL palm reading for a real person, not a demonstration or example
+- Provide specific, actionable insights based on what you actually observe in the image
+- Be detailed and thorough while maintaining authenticity
+- Focus on personality traits, life patterns, and meaningful guidance
 
-      // Parse the response
-      const result = await response.json();
-      console.log('Received response from Gemini API');
-      
-      // Check if the response contains an error
-      if (result.error) {
-        console.error('Error from Gemini API:', result.error);
-        throw new Error(result.error.message || 'Unknown error from Gemini API');
-      }
-      
-      // Additional validation to ensure we don't get a demo or example response
-      if (result.candidates && 
-          result.candidates[0] && 
-          result.candidates[0].content && 
-          result.candidates[0].content.parts && 
-          result.candidates[0].content.parts[0] && 
-          result.candidates[0].content.parts[0].text) {
-            
-        const analysisText = result.candidates[0].content.parts[0].text;
-        
-        // Check if response contains demo-related words
-        const demoKeywords = ['demo', 'example', 'sample', 'this is a demonstration'];
-        const containsDemoKeywords = demoKeywords.some(keyword => 
-          analysisText.toLowerCase().includes(keyword.toLowerCase()));
-        
-        if (containsDemoKeywords) {
-          console.error('Gemini API returned a demo/sample response');
-          throw new Error('The AI generated a demo response. Please try again for a real analysis.');
-        }
-        
-        if (!analysisText || analysisText.trim() === '') {
-          throw new Error('Empty response from Gemini API');
-        }
-        
-        console.log('Successfully extracted palm reading from Gemini response');
-        console.log('First 200 chars of response:', analysisText.substring(0, 200));
-        
-        // Detect if the response doesn't start with a proper heading and add one if needed
-        let formattedText = analysisText;
-        if (!formattedText.trim().startsWith('# ')) {
-          formattedText = '# Palm Reading Analysis\n\n' + formattedText;
-        }
-        
-        return formattedText;
-      } else {
-        console.error('Invalid response structure from Gemini API:', result);
-        throw new Error('The response from Gemini API was not in the expected format');
-      }
-    } catch (error) {
-      console.error('Error in analyzePalm:', error);
-      throw error;
-    }
-  }
+Please analyze the following aspects in detail:
 
-  /**
-   * Generate a comprehensive 50-page palmistry and astrology report
-   */
-  async generateComprehensive50PageReport(imageData: string, userProfile: any): Promise<string> {
-    try {
-      console.log('Generating comprehensive 50-page palmistry and astrology report...');
-      
-      // Format the image for the Gemini API
-      const formattedImage = this.formatImageForGemini(imageData);
-      
-      // Create the API request URL
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
-      
-      // Create comprehensive 50-page report prompt
-      const comprehensivePrompt = `You are a master palmist and astrologer with 30+ years of experience. Generate a comprehensive, 50-page in-depth life report based on the provided palm data and astrological data.
+## **PALM ANALYSIS STRUCTURE:**
 
-USER PROFILE:
-${JSON.stringify(userProfile, null, 2)}
+### **1. HAND SHAPE & ELEMENTAL TYPE**
+- Identify the hand shape (Earth, Air, Water, or Fire)
+- Describe the palm's proportions and what this reveals
+- Explain the personality traits associated with this hand type
 
-ANALYSIS REQUIREMENTS:
+### **2. MAJOR LINES ANALYSIS**
+**Heart Line (Love & Emotions):**
+- Length, depth, and curvature
+- Starting and ending points
+- Emotional nature and relationship patterns
+- Love life insights and romantic tendencies
 
-# PART 1: FOUNDATIONAL ANALYSIS (Pages 1-10)
-PAGE 1: Executive Summary & Life Blueprint Overview
-PAGE 2: Hand Shape & Elemental Analysis (Earth/Air/Fire/Water classification)
-PAGE 3: Finger Analysis (Length, flexibility, proportions, nail analysis)
-PAGE 4: Thumb Analysis (Will power, logic, energy levels)
-PAGE 5: Palm Texture & Skin Analysis (Energy levels, sensitivity)
-PAGE 6: Major Lines Overview (Heart, Head, Life, Fate lines)
-PAGE 7: Mount Analysis (All 7 classical mounts)
-PAGE 8: Special Markings & Symbols (Stars, crosses, triangles, squares)
-PAGE 9: Hand Dominance & Bilateral Comparison
-PAGE 10: Overall Hand Harmony & Balance Assessment
-
-# PART 2: ASTROLOGICAL FOUNDATION (Pages 11-15)
-PAGE 11: Birth Chart Overview & Planetary Positions
-PAGE 12: Ascendant & House Analysis
-PAGE 13: Major Planetary Aspects & Configurations
-PAGE 14: Nodal Analysis (Rahu/Ketu or North/South Node)
-PAGE 15: Current Dasha/Planetary Period Analysis
-
-# PART 3: PAST INFLUENCES & KARMIC PATTERNS (Pages 16-20)
-PAGE 16: Childhood & Early Life Indicators
-PAGE 17: Family Dynamics & Inherited Patterns
-PAGE 18: Past Life Karmic Influences
-PAGE 19: Educational Journey & Early Career
-PAGE 20: Formative Relationships & Their Impact
-
-# PART 4: PRESENT CIRCUMSTANCES & CURRENT PHASE (Pages 21-25)
-PAGE 21: Current Life Phase Analysis
-PAGE 22: Present Career & Professional Status
-PAGE 23: Current Relationship Dynamics
-PAGE 24: Health & Vitality Assessment
-PAGE 25: Financial Status & Resource Management
-
-# PART 5: PERSONALITY & PSYCHOLOGICAL PROFILE (Pages 26-30)
-PAGE 26: Core Personality Traits & Temperament
-PAGE 27: Emotional Intelligence & Processing Style
-PAGE 28: Communication Style & Social Interactions
-PAGE 29: Decision-Making Patterns & Mental Approach
-PAGE 30: Hidden Talents & Unexpressed Potentials
-
-# PART 6: RELATIONSHIPS & FAMILY (Pages 31-35)
-PAGE 31: Love Life & Romantic Patterns
-PAGE 32: Marriage Compatibility & Partnership Dynamics
-PAGE 33: Family Relationships & Dynamics
-PAGE 34: Children - Number, Nature & Timing
-PAGE 35: Social Circle & Friendship Patterns
-
-# PART 7: CAREER & FINANCIAL DESTINY (Pages 36-40)
-PAGE 36: Career Path Analysis & Professional Aptitudes
-PAGE 37: Business vs. Employment Suitability
-PAGE 38: Financial Patterns & Wealth Accumulation
-PAGE 39: Success Timing & Peak Achievement Periods
-PAGE 40: Professional Challenges & Growth Opportunities
-
-# PART 8: HEALTH & WELLBEING (Pages 41-45)
-PAGE 41: Physical Constitution & Health Patterns
-PAGE 42: Mental Health & Stress Management
-PAGE 43: Lifestyle Recommendations & Wellness Strategies
-PAGE 44: Health Timing & Preventive Measures
-PAGE 45: Longevity & Vitality Indicators
-
-# PART 9: FUTURE PREDICTIONS & OPPORTUNITIES (Pages 46-50)
-PAGE 46: Next 5 Years - Major Transitions & Opportunities
-PAGE 47: Long-term Life Trajectory (10-20 years)
-PAGE 48: Spiritual Evolution & Growth Path
-PAGE 49: Timing for Major Life Events
-PAGE 50: Final Guidance, Remedies & Success Strategies
-
-SPECIFIC REQUIREMENTS:
-- Each page should contain 300-500 words of detailed analysis
-- Include specific predictions where possible (career fields, earning potential, number of children, partner characteristics)
-- Provide actionable strategies and timing guidance
-- Use illustrative examples and analogies
-- Maintain professional yet compassionate tone
-- Include both palmistry and astrological insights for each topic
-- Format with clear headers and readable structure
-
-CRITICAL FORMATTING:
-- Use clear page headers: "PAGE X: [Title]"
-- Use markdown formatting for structure
-- Ensure all text is black and clearly readable
-- Include specific predictions and practical guidance
-- Avoid generic statements - be specific and personalized
-
-Generate the complete 50-page report now:`;
-
-      const body = {
-        contents: [
-          {
-            parts: [
-              {
-                text: comprehensivePrompt
-              },
-              formattedImage
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 8000,
-          topP: 0.95,
-          topK: 40
-        }
-      };
-
-      // Make the API request
-      console.log('Sending request for comprehensive 50-page report...');
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response from Gemini API:', errorText);
-        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log('Received comprehensive 50-page report response');
-      
-      if (result.error) {
-        console.error('Error from Gemini API:', result.error);
-        throw new Error(result.error.message || 'Unknown error from Gemini API');
-      }
-      
-      if (result.candidates && 
-          result.candidates[0] && 
-          result.candidates[0].content && 
-          result.candidates[0].content.parts && 
-          result.candidates[0].content.parts[0] && 
-          result.candidates[0].content.parts[0].text) {
-            
-        const analysisText = result.candidates[0].content.parts[0].text;
-        
-        if (!analysisText || analysisText.trim() === '') {
-          throw new Error('Empty response from Gemini API');
-        }
-        
-        console.log('Successfully generated comprehensive 50-page report');
-        return analysisText;
-      } else {
-        console.error('Invalid response structure from Gemini API:', result);
-        throw new Error('The response from Gemini API was not in the expected format');
-      }
-    } catch (error) {
-      console.error('Error generating comprehensive 50-page report:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Analyze a palm image using the Gemini API to generate a comprehensive 20-page report
-   * with detailed astrology insights for past, present, and future
-   */
-  async analyzeComprehensivePalm(imageData: string, userName: string = "User"): Promise<string> {
-    try {
-      console.log('Analyzing palm with Gemini API to generate comprehensive 20-page report with astrology...');
-      
-      // Format the image for the Gemini API
-      const formattedImage = this.formatImageForGemini(imageData);
-      
-      // Create the API request URL
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
-      console.log(`Using Gemini API endpoint: ${this.modelName}`);
-      
-      // Create the API request body with comprehensive 20-page palmistry prompt
-      const body = {
-        contents: [
-          {
-            parts: [
-              {
-                text: `Act as a world-class palmistry expert, astrologer, life coach, and personality psychologist. You are creating a 20-page personalized "PalmCode™ Life Blueprint Report" for ${userName}. 
-
-This is a premium, high-quality palm reading service that decodes the user's palm lines, mounts, shapes, and patterns using modern palmistry, advanced astrology, and psychology. Blend mystical insight with practical advice to create a truly personalized report that feels individualized and specific to this person.
-
-# Report Structure
-Create exactly 20 sections, each representing one page of the report. Label each section clearly as "PAGE 1", "PAGE 2", etc. Each page should cover a different aspect of the person's life and personality in considerable detail (minimum 500 words per page).
-
-# Content to Include
-Analyze the following aspects from the palm image:
-
-PAGE 1: Executive Summary - Life Blueprint Overview
-- Main characteristics revealed in the palm
-- Summary of key personality traits
-- Core life purpose indicators
-- Visual description of hand type and structure
-- Overview of past, present, and future trajectory
-
-PAGE 2: Hand Shape & Elemental Analysis
-- Hand shape classification (Earth, Air, Fire, Water)
-- What this reveals about core personality
-- Key strengths based on hand structure
-- Proportion analysis and its meaning
-- Detailed interpretation of finger size, shape, and alignment
-
-PAGE 3: Astrological Past - Formative Years & Origins
-- How planetary positions at birth influenced early development
-- Key karmic patterns from past lives visible in the palm
-- Early life challenges and gifts as shown in minor lines
-- Childhood indicators and formative experiences
-- Family dynamics and inherited patterns
-
-PAGE 4: Life Line Analysis
-- Detailed examination of life line characteristics
-- Vitality and energy indicators
-- Major life transitions revealed
-- Health patterns and longevity indications
-- Specific timing of important life events
-
-PAGE 5: Head Line Analysis
-- Thinking style and intellectual approach
+**Head Line (Mind & Intelligence):**
+- Length and direction (straight vs. curved)
+- Mental approach and thinking style
+- Learning preferences and intellectual strengths
 - Decision-making patterns
-- Mental strengths and potential challenges
-- Learning style and cognitive preferences
-- Critical thinking abilities and rational tendencies
 
-PAGE 6: Heart Line Insights
-- Emotional nature and expression
-- Love language and romantic tendencies
-- Emotional intelligence indicators
-- Relationship patterns and needs
-- Capacity for empathy and emotional depth
+**Life Line (Vitality & Life Changes):**
+- Curve and strength of the line
+- Energy levels and physical constitution
+- Major life transitions and turning points
+- Health and vitality indicators
 
-PAGE 7: Astrological Present - Current Life Phase
-- Current planetary influences and their manifestation
-- Active dasha/antardasha periods and their effects
-- Current life lessons and growth opportunities
-- Present challenges and how they align with palm indicators
-- Timing for current phase transitions
+**Fate Line (Career & Destiny):**
+- Presence and characteristics of the fate line
+- Career path and life direction
+- External influences on life path
+- Professional success indicators
 
-PAGE 8: Fate Line & Career Path
-- Career trajectory and professional aptitude
-- Success timing and key periods
-- Natural talents visible in the palm
-- Professional challenges and how to overcome them
-- Career advancement strategies based on palm structure
+### **3. MOUNTS ANALYSIS**
+Analyze the prominent mounts and their meanings:
+- Venus Mount (love, passion, family)
+- Jupiter Mount (leadership, ambition)
+- Saturn Mount (responsibility, discipline)
+- Sun Mount (creativity, recognition)
+- Mercury Mount (communication, business)
+- Mars Mounts (courage, determination)
 
-PAGE 9: Mount of Venus & Relationships
-- Love compatibility profile
-- Relationship strengths and potential challenges
-- Romantic timeline indicators
-- Partnership compatibility scores with different personality types
-- Deeper relationship patterns and attachment styles
+### **4. FINGER CHARACTERISTICS**
+- Finger lengths and proportions
+- Flexibility and positioning
+- Thumb analysis (willpower and logic)
+- Nail shapes and their significance
 
-PAGE 10: Money & Financial Pattern Analysis
-- Financial aptitude and money relationship
-- Wealth potential indicators
-- Resource management style
-- Prosperity periods and opportunities
-- Specific timing for financial growth and challenges
+### **5. SPECIAL MARKINGS**
+- Any crosses, stars, triangles, or islands
+- Unusual formations or secondary lines
+- Their specific meanings and influences
 
-PAGE 11: Astrological Future - Coming Life Phases
-- Future planetary transits and their likely effects
-- Upcoming life opportunities and challenges
-- Critical decision points in the next 5-10 years
-- Long-term destiny indicators
-- Prediction of major life transitions
+### **6. LIFE INSIGHTS & GUIDANCE**
+Based on your analysis, provide insights on:
+- **Personality Strengths:** Natural talents and abilities
+- **Life Challenges:** Areas for personal growth
+- **Relationship Patterns:** Love and friendship tendencies
+- **Career Guidance:** Professional path and success factors
+- **Health Indicators:** Physical and mental well-being signs
+- **Life Timing:** Approximate timing for major life events
 
-PAGE 12: Apollo Line & Creative Expression
-- Creative and artistic abilities
-- Fame and recognition potential
-- Self-expression channels
-- Optimal creative outlets based on palm structure
-- Unique gifts and how to manifest them
+### **7. PRACTICAL ADVICE**
+- Specific recommendations for personal growth
+- How to leverage natural strengths
+- Areas to focus on for improvement
+- Relationship and career guidance
 
-PAGE 13: Mercury Mount & Communication Style
-- Communication strengths and patterns
-- Business acumen and entrepreneurial potential
-- Persuasive abilities
-- Networking and social influence style
-- Optimal communication strategies
+**IMPORTANT:** Base your reading entirely on what you observe in this specific palm image. Make it personal, meaningful, and actionable for this individual. Avoid generic statements - focus on the unique characteristics you can see in their palm.
 
-PAGE 14: Jupiter Mount & Leadership Profile
-- Leadership style and strengths
-- Authority presence and charisma indicators
-- Ambition patterns and goal achievement
-- Personal power expression
-- Growth and expansion opportunities
+The reading should be 800-1200 words, comprehensive yet accessible, and provide genuine value to the person seeking guidance.
 
-PAGE 15: Saturn Line & Life Responsibilities
-- Core life responsibilities and duties
-- Discipline and structure indicators
-- Karmic patterns visible in the palm
-- Life lessons and growth areas
-- Managing obligations and commitments
+Analyze this palm image now:`;
 
-PAGE 16: Health & Wellness Blueprint
-- Physical vitality indicators
-- Stress response patterns
-- Health strengths and potential vulnerabilities
-- Wellness recommendations based on hand characteristics
-- Preventative health strategies and timing
+      const result = await this.model.generateContent([prompt, imagePart]);
+      const response = await result.response;
+      const text = response.text();
 
-PAGE 17: Marriage & Relationship Lines
-- Relationship count and quality indicators
-- Marriage timing indicators (if present)
-- Attachment style and emotional bonding
-- Partnership compatibility insights
-- Long-term relationship potential and challenges
-
-PAGE 18: Children Lines & Legacy
-- Family life indicators
-- Nurturing tendencies and parenting style
-- Legacy creation and impact potential
-- Generational patterns and influences
-- Creative and personal projects as extensions of self
-
-PAGE 19: Travel Lines & Life Experience
-- Geographic destiny indicators
-- Travel propensities and patterns
-- Cultural influences and international connections
-- Adaptability and exploration tendencies
-- Major relocations and their timing
-
-PAGE 20: Intuition, Psychic Abilities & Spiritual Path
-- Intuitive strengths visible in the palm
-- Psychic sensitivity indicators
-- Spiritual connection patterns
-- Intuition development recommendations
-- Higher purpose and soul mission
-
-# Format Guidelines
-- Create a visually descriptive, well-structured report with BLACK TEXT on white background
-- Use headings, subheadings, and bullet points for clarity
-- Include "compatibility scores" and "potential ratings" as text-based charts where appropriate
-- Bold important insights and key takeaways
-- Use markdown formatting for clean structure
-
-# Style Guidelines
-- Write in a warm, inspiring, and motivational tone
-- Balance mystical insight with practical, actionable advice
-- Be specific and personalized, avoiding generic statements
-- Focus on empowerment and growth opportunities
-- Address the reader directly in second person
-- Use a professional yet conversational tone
-
-The final report should read like a premium product that delivers genuine insight, self-understanding, and growth direction - something the recipient will want to save, revisit, and share with others.
-
-CRITICALLY IMPORTANT: Ensure ALL text is clearly visible and readable with high contrast. Use standard HTML text with NO colored text - only use regular black text that will display clearly on any background. DO NOT use any colors that might blend with the background.
-
-VERY IMPORTANT: Make sure to format the text so it's clearly readable with proper markdown formatting with clear section headers and paragraphs. Label each page clearly. The report should be detailed, comprehensive, and at least 500 words per page for a total of 10,000+ words.`
-              },
-              formattedImage
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 8000,
-          topP: 0.95,
-          topK: 40
-        }
-      };
-
-      // Make the API request
-      console.log('Sending request to Gemini API for comprehensive report...');
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      // Check if the response is OK
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response from Gemini API:', errorText);
-        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+      if (!text || text.trim().length === 0) {
+        throw new Error('Empty response from Gemini API');
       }
 
-      // Parse the response
-      const result = await response.json();
-      console.log('Received comprehensive report response from Gemini API');
-      
-      // Check if the response contains an error
-      if (result.error) {
-        console.error('Error from Gemini API:', result.error);
-        throw new Error(result.error.message || 'Unknown error from Gemini API');
-      }
-      
-      // Validate and process the response
-      if (result.candidates && 
-          result.candidates[0] && 
-          result.candidates[0].content && 
-          result.candidates[0].content.parts && 
-          result.candidates[0].content.parts[0] && 
-          result.candidates[0].content.parts[0].text) {
-            
-        const analysisText = result.candidates[0].content.parts[0].text;
-        
-        if (!analysisText || analysisText.trim() === '') {
-          throw new Error('Empty response from Gemini API');
-        }
-        
-        console.log('Successfully extracted comprehensive palm reading from Gemini response');
-        console.log('First 200 chars of response:', analysisText.substring(0, 200));
-        
-        // Ensure the report has a proper title
-        let formattedText = analysisText;
-        if (!formattedText.trim().startsWith('# ') && !formattedText.trim().includes('PAGE 1')) {
-          formattedText = '# PalmCode™ Life Blueprint Report\n\n' + formattedText;
-        }
-        
-        return formattedText;
-      } else {
-        console.error('Invalid response structure from Gemini API:', result);
-        throw new Error('The response from Gemini API was not in the expected format');
-      }
+      return text;
     } catch (error) {
-      console.error('Error in analyzeComprehensivePalm:', error);
-      throw error;
+      console.error('Error analyzing palm:', error);
+      throw new Error(`Palm analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  /**
-   * Analyze compatibility between two people based on palm readings
-   */
-  async analyzeCompatibility(person1Image: string, person2Image: string, person1Name: string, person2Name: string): Promise<string> {
+  async analyzeComprehensivePalm(imageData: string, userName: string = "User"): Promise<string> {
+    if (!this.model) {
+      throw new Error('Gemini not initialized. Please set your API key first.');
+    }
+
     try {
-      console.log('Analyzing compatibility with Gemini API...');
+      const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
       
-      // Format the images for the Gemini API
-      const formattedImage1 = this.formatImageForGemini(person1Image);
-      const formattedImage2 = this.formatImageForGemini(person2Image);
-      
-      // Create the API request URL
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
-      
-      // Create the API request body for compatibility analysis
-      const body = {
-        contents: [
-          {
-            parts: [
-              {
-                text: `You are a professional palm reader with extensive knowledge of palmistry traditions. 
-You'll analyze two palm images and provide a comprehensive compatibility analysis.
+      const imagePart = {
+        inlineData: {
+          data: base64Data,
+          mimeType: 'image/jpeg'
+        }
+      };
 
-Create a detailed compatibility report with these sections:
-1. Introduction - A brief welcome and overview of palmistry compatibility analysis
-2. Individual Analysis - Brief summary of each person's dominant traits
-3. Compatibility Score - Overall percentage compatibility with explanation
-4. Emotional Compatibility - Analysis based on heart lines and related features
-5. Communication Style - Analysis based on head lines and finger shapes
-6. Life Goals Alignment - Analysis based on fate lines and palm shapes
-7. Relationship Strengths - Positive aspects of the relationship
-8. Relationship Challenges - Potential areas of friction
-9. Guidance & Recommendations - Practical advice for harmonious relationship
+      const prompt = `You are creating a comprehensive 20-page PalmCode™ Life Blueprint Report for ${userName}. This is a premium, in-depth analysis that combines traditional palmistry with modern psychological insights.
 
-Format the report with clear section headings using markdown (##, ###).
-Be specific about what you observe in both images, making direct comparisons.
+REPORT STRUCTURE (20 pages, approximately 400-500 words per page):
 
-Use this formatting for your report:
-
-# **💑 Partner Compatibility Report**  
-**Generated by AI-Powered Palm Reading & Guna Milan Analysis**  
-
-📅 **Date of Analysis:** [Current Date]
-👤 **Partner 1:** ${person1Name}  
-👩 **Partner 2:** ${person2Name}  
-❤️ **Overall Compatibility Score:** **[Score]% – [Brief Label]**
-
-> **Analysis Summary:**  
-> [Brief summary of overall compatibility - 2-3 sentences]
+# **THE PALMCODE™ LIFE BLUEPRINT REPORT**
+## **A Comprehensive 20-Page Personal Analysis for ${userName}**
 
 ---
 
-## **🌟 Guna Milan (Vedic Compatibility Score)**  
-According to traditional Hindu matchmaking, there are **8 key factors (Ashta Koot) with a total of 36 Gunas (points)**. A score of **18+ is considered acceptable**, while **24+ is excellent compatibility**.  
+## **PAGE 1: EXECUTIVE SUMMARY & INTRODUCTION**
+Welcome ${userName} to your personalized PalmCode™ Life Blueprint Report. Provide an overview of the key findings and what makes their palm unique.
 
-| **Guna Category** | **Matched Points (Out of Max)** | **Remarks** |
-|------------------|-----------------------------|------------|
-| **Varna (Spiritual Compatibility)** | [Score]/1 | [Brief remark] |
-| **Vashya (Dominance & Mutual Influence)** | [Score]/2 | [Brief remark] |
-| **Tara (Health & Well-being in Marriage)** | [Score]/3 | [Brief remark] |
-| **Yoni (Physical & Sexual Compatibility)** | [Score]/4 | [Brief remark] |
-| **Maitri (Mental Compatibility & Bonding)** | [Score]/5 | [Brief remark] |
-| **Gana (Temperament Compatibility)** | [Score]/6 | [Brief remark] |
-| **Bhakoot (Wealth & Career Growth Together)** | [Score]/7 | [Brief remark] |
-| **Nadi (Health & Genetic Compatibility)** | [Score]/8 | [Brief remark] |
+## **PAGE 2: ELEMENTAL HAND TYPE & CORE PERSONALITY**
+Detailed analysis of hand shape (Earth, Air, Water, Fire) and fundamental personality traits.
 
-**✅ Total Guna Score: [Total]/36 → [Compatibility Label]**  
+## **PAGE 3: THE TRINITY OF MAJOR LINES**
+Deep dive into Heart, Head, and Life lines and their interconnected meanings.
 
-[... Rest of the report sections following the formatting shown in the example provided ...]
+## **PAGE 4: LOVE & RELATIONSHIPS BLUEPRINT**
+Comprehensive analysis of romantic patterns, compatibility, and relationship guidance.
 
-TEXT COLOR REQUIREMENT: Ensure that all text in your response will be clearly visible against both light and dark backgrounds. Do not use any background colors or colored text in your response. Use standard black text for optimal readability.
+## **PAGE 5: CAREER & PROFESSIONAL DESTINY**
+Detailed career path analysis, professional strengths, and success timing.
 
-IMPORTANT: DO NOT include any text like "demo," "sample," or "example" in your response.
-This should be a genuine, personalized compatibility analysis based on the actual uploaded images.`
-              },
-              formattedImage1,
-              {
-                text: `This is the palm of ${person2Name}:`
-              },
-              formattedImage2
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 4000,
+## **PAGE 6: FINANCIAL PROSPERITY PATTERNS**
+Money lines, wealth indicators, and financial success potential.
+
+## **PAGE 7: HEALTH & VITALITY INDICATORS**
+Physical constitution, health patterns, and wellness guidance.
+
+## **PAGE 8: FAMILY & SOCIAL CONNECTIONS**
+Family relationships, social patterns, and community involvement.
+
+## **PAGE 9: CREATIVE & ARTISTIC POTENTIAL**
+Creative abilities, artistic talents, and self-expression patterns.
+
+## **PAGE 10: SPIRITUAL & PHILOSOPHICAL NATURE**
+Spiritual inclinations, philosophical outlook, and higher purpose.
+
+## **PAGE 11: COMMUNICATION & INTELLECTUAL GIFTS**
+Mental patterns, communication style, and intellectual strengths.
+
+## **PAGE 12: LEADERSHIP & AUTHORITY POTENTIAL**
+Natural leadership abilities, management style, and influence patterns.
+
+## **PAGE 13: ADVENTURE & TRAVEL INDICATORS**
+Travel patterns, adventure seeking, and exploration tendencies.
+
+## **PAGE 14: CHALLENGES & GROWTH OPPORTUNITIES**
+Life challenges, obstacles, and pathways for personal development.
+
+## **PAGE 15: TIMING & LIFE PHASES**
+Age-based predictions and major life transition periods.
+
+## **PAGE 16: SPECIAL MARKINGS & UNIQUE FEATURES**
+Analysis of rare markings, unusual formations, and their significance.
+
+## **PAGE 17: COMPATIBILITY & RELATIONSHIP MATCHING**
+Ideal partner characteristics and relationship compatibility factors.
+
+## **PAGE 18: SUCCESS STRATEGIES & RECOMMENDATIONS**
+Personalized action plan for maximizing potential and achieving goals.
+
+## **PAGE 19: MONTHLY GUIDANCE & SEASONAL PATTERNS**
+Month-by-month guidance and seasonal influence patterns.
+
+## **PAGE 20: CONCLUSION & LIFE MASTERY ROADMAP**
+Summary of key insights and a roadmap for implementing the guidance.
+
+**IMPORTANT GUIDELINES:**
+- Each page should be 400-500 words minimum
+- Include specific details observed from the palm image
+- Provide actionable advice and practical guidance
+- Use ${userName}'s name throughout for personalization
+- Include timing predictions where appropriate
+- Maintain a professional yet warm, encouraging tone
+- Focus on empowerment and positive transformation
+
+Generate this comprehensive 20-page report now, ensuring each page provides valuable, specific insights based on the palm analysis:`;
+
+      const result = await this.model.generateContent([prompt, imagePart]);
+      const response = await result.response;
+      const text = response.text();
+
+      if (!text || text.trim().length === 0) {
+        throw new Error('Empty response from Gemini API');
+      }
+
+      return text;
+    } catch (error) {
+      console.error('Error generating comprehensive palm analysis:', error);
+      throw new Error(`Comprehensive analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async generateComprehensive50PageReport(imageData: string, userProfile: any): Promise<string> {
+    if (!this.model) {
+      throw new Error('Gemini not initialized. Please set your API key first.');
+    }
+
+    try {
+      const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+      
+      const imagePart = {
+        inlineData: {
+          data: base64Data,
+          mimeType: 'image/jpeg'
         }
       };
 
-      // Make the API request
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
+      // Calculate additional astrological insights
+      const birthDate = new Date(userProfile.dateOfBirth);
+      const zodiacSign = this.calculateZodiacSign(birthDate);
+      const chineseSign = this.calculateChineseSign(birthDate.getFullYear());
 
-      // Check if the response is OK
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response from Gemini API:', errorText);
-        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-      }
+      const prompt = `You are creating the ultimate 50-page comprehensive life analysis report that combines palmistry, astrology, and numerology for ${userProfile.fullName}. This is a premium, deeply personalized analysis that provides specific predictions, timing, and actionable guidance.
 
-      // Parse the response
-      const result = await response.json();
-      
-      // Check if the response contains an error
-      if (result.error) {
-        console.error('Error from Gemini API:', result.error);
-        throw new Error(result.error.message || 'Unknown error from Gemini API');
-      }
-      
-      // Validate the response structure
-      if (!result.candidates || 
-          !result.candidates[0] || 
-          !result.candidates[0].content || 
-          !result.candidates[0].content.parts || 
-          !result.candidates[0].content.parts[0] || 
-          !result.candidates[0].content.parts[0].text) {
-        console.error('Invalid response structure from Gemini API:', result);
-        throw new Error('The response from Gemini API was not in the expected format');
-      }
-      
-      // Get the text content from the response
-      const analysisText = result.candidates[0].content.parts[0].text;
-      
-      if (!analysisText || analysisText.trim() === '') {
+# **THE COMPLETE LIFE BLUEPRINT: 50-PAGE COMPREHENSIVE REPORT**
+## **For ${userProfile.fullName}**
+
+**PERSONAL DATA INTEGRATION:**
+- Full Name: ${userProfile.fullName}
+- Birth Date: ${userProfile.dateOfBirth} at ${userProfile.timeOfBirth}
+- Birth Place: ${userProfile.placeOfBirth}
+- Gender: ${userProfile.gender}
+- Zodiac Sign: ${zodiacSign}
+- Chinese Zodiac: ${chineseSign}
+- Life Path Number: ${userProfile.lifePathNumber}
+- Expression Number: ${userProfile.expressionNumber}
+- Dominant Hand: ${userProfile.dominantHand}
+- Hand Shape: ${userProfile.handShape}
+- Primary Concerns: ${userProfile.primaryConcerns?.join(', ') || 'General life guidance'}
+- Life Goals: ${userProfile.lifeGoals?.join(', ') || 'Personal fulfillment'}
+- Current Challenges: ${userProfile.currentChallenges?.join(', ') || 'Personal growth'}
+- Personality Traits: ${userProfile.personalityTraits?.join(', ') || 'Self-discovery'}
+
+**REPORT STRUCTURE (50 pages, 300-500 words each):**
+
+## **SECTION I: FOUNDATIONAL ANALYSIS (Pages 1-10)**
+
+**PAGE 1: Introduction & Cosmic Blueprint Overview**
+Welcome ${userProfile.fullName} to your comprehensive life analysis. Synthesize their cosmic signature combining palm, astrology, and numerology.
+
+**PAGE 2: Elemental Hand Classification & Core Nature**
+Detailed analysis of ${userProfile.handShape} hand type and its profound implications for personality and life approach.
+
+**PAGE 3: Astrological Foundation - ${zodiacSign} Influence**
+Deep dive into their ${zodiacSign} nature, planetary rulers, and cosmic influences.
+
+**PAGE 4: Numerological Blueprint - Life Path ${userProfile.lifePathNumber}**
+Comprehensive analysis of Life Path ${userProfile.lifePathNumber} and Expression ${userProfile.expressionNumber} meanings.
+
+**PAGE 5: The Trinity of Major Lines - Integration Analysis**
+Cross-validation between palm lines and astrological indicators for accuracy.
+
+**PAGE 6: Personality Architecture & Character Foundation**
+Integration of palm characteristics with ${userProfile.personalityTraits?.join(', ')} traits.
+
+**PAGE 7: Karmic Patterns & Soul Purpose**
+Past life influences and current life mission based on multiple divination systems.
+
+**PAGE 8: Strengths & Natural Talents Inventory**
+Comprehensive catalog of innate abilities and how to maximize them.
+
+**PAGE 9: Life Challenges & Growth Opportunities**
+Detailed analysis of ${userProfile.currentChallenges?.join(', ')} and transformation pathways.
+
+**PAGE 10: Cosmic Timing & Life Phases Overview**
+Major life phases and their approximate timing based on palm and astrological indicators.
+
+## **SECTION II: RELATIONSHIP & LOVE ANALYSIS (Pages 11-20)**
+
+**PAGE 11: Heart Line Deep Analysis & Love Nature**
+Comprehensive relationship patterns and emotional blueprint.
+
+**PAGE 12: Marriage & Partnership Timing Predictions**
+Specific timing for marriage, relationships, and partnership opportunities.
+
+**PAGE 13: Compatibility Matrix & Ideal Partner Profile**
+Detailed description of ideal partner characteristics and compatibility factors.
+
+**PAGE 14: Family Dynamics & Children Insights**
+Family relationships, parenting style, and children-related predictions.
+
+**PAGE 15: Venus & Relationship Planet Influences**
+Astrological love patterns and romantic destiny.
+
+**PAGE 16: Relationship Challenges & Solutions**
+Common relationship patterns and how to overcome them.
+
+**PAGE 17: Sexual & Intimacy Patterns**
+Physical and emotional intimacy characteristics and guidance.
+
+**PAGE 18: Social Connections & Friendship Patterns**
+Social nature, friendship dynamics, and community involvement.
+
+**PAGE 19: Communication in Relationships**
+How ${userProfile.fullName} communicates in relationships and improvement strategies.
+
+**PAGE 20: Long-term Relationship Success Strategies**
+Specific advice for maintaining and deepening relationships.
+
+## **SECTION III: CAREER & FINANCIAL PROSPERITY (Pages 21-30)**
+
+**PAGE 21: Career Line & Professional Destiny Analysis**
+Detailed career path based on fate line and astrological career houses.
+
+**PAGE 22: Ideal Profession & Career Fields**
+Specific career recommendations based on hand shape, lines, and astrological indicators.
+
+**PAGE 23: Business & Entrepreneurship Potential**
+Analysis of business acumen and entrepreneurial success factors.
+
+**PAGE 24: Financial Prosperity Patterns & Wealth Building**
+Money lines, wealth indicators, and financial success strategies.
+
+**PAGE 25: Career Timing & Professional Milestones**
+Specific years for career advancement, job changes, and professional success.
+
+**PAGE 26: Leadership Style & Management Approach**
+Natural leadership abilities and optimal management strategies.
+
+**PAGE 27: Creative & Artistic Career Potential**
+Analysis of creative talents and artistic career possibilities.
+
+**PAGE 28: Technology & Modern Career Adaptability**
+How to thrive in modern careers and technological changes.
+
+**PAGE 29: Work-Life Balance & Professional Satisfaction**
+Achieving harmony between career ambitions and personal fulfillment.
+
+**PAGE 30: Retirement & Later Career Transitions**
+Long-term career evolution and retirement planning insights.
+
+## **SECTION IV: HEALTH, WELLNESS & VITALITY (Pages 31-35)**
+
+**PAGE 31: Life Line & Constitutional Health Analysis**
+Physical constitution, energy patterns, and health predispositions.
+
+**PAGE 32: Specific Health Areas & Preventive Care**
+Body systems to monitor and preventive health strategies.
+
+**PAGE 33: Mental Health & Emotional Wellness Patterns**
+Psychological tendencies and mental wellness recommendations.
+
+**PAGE 34: Optimal Diet, Exercise & Lifestyle Recommendations**
+Personalized wellness plan based on constitutional type.
+
+**PAGE 35: Health Timing & Critical Periods**
+Ages and periods requiring extra health attention and care.
+
+## **SECTION V: SPIRITUAL & PERSONAL DEVELOPMENT (Pages 36-40)**
+
+**PAGE 36: Spiritual Inclinations & Higher Purpose**
+Spiritual nature, religious tendencies, and soul mission.
+
+**PAGE 37: Meditation, Mindfulness & Spiritual Practices**
+Recommended spiritual practices and mindfulness techniques.
+
+**PAGE 38: Intuitive Abilities & Psychic Potential**
+Natural intuitive gifts and how to develop them.
+
+**PAGE 39: Life Lessons & Karmic Themes**
+Major life lessons and karmic patterns to resolve.
+
+**PAGE 40: Personal Transformation & Enlightenment Path**
+Pathways for spiritual growth and consciousness expansion.
+
+## **SECTION VI: TIMING, PREDICTIONS & PRACTICAL GUIDANCE (Pages 41-50)**
+
+**PAGE 41: Year-by-Year Predictions (Next 5 Years)**
+Specific predictions for each of the next 5 years with key events and opportunities.
+
+**PAGE 42: Major Life Transitions & Turning Points**
+Significant life changes and how to navigate them successfully.
+
+**PAGE 43: Lucky Numbers, Colors & Timing**
+Personalized lucky elements and optimal timing for important decisions.
+
+**PAGE 44: Gemstones, Remedies & Enhancement Techniques**
+Traditional remedies, gemstones, and techniques for life enhancement.
+
+**PAGE 45: Travel & Relocation Guidance**
+Favorable directions, locations, and travel timing.
+
+**PAGE 46: Investment & Financial Decision Timing**
+Optimal timing for major financial decisions and investments.
+
+**PAGE 47: Daily, Weekly & Monthly Guidance Patterns**
+How to optimize daily life based on natural rhythms and patterns.
+
+**PAGE 48: Emergency Guidance & Crisis Navigation**
+How to handle unexpected challenges and crisis periods.
+
+**PAGE 49: Success Acceleration Strategies**
+Advanced techniques for accelerating success in all life areas.
+
+**PAGE 50: Master Life Plan & Implementation Roadmap**
+Comprehensive action plan for the next 10 years with specific steps and milestones.
+
+**CROSS-VALIDATION REQUIREMENTS:**
+- Ensure palmistry observations align with astrological indicators
+- Highlight any discrepancies and provide deeper analysis
+- Use multiple confirmation methods for major predictions
+- Provide specific timing based on multiple systems
+- Include both opportunities and challenges for balanced guidance
+
+**WRITING GUIDELINES:**
+- Each page must be 300-500 words minimum
+- Include specific details from the palm image analysis
+- Provide actionable, practical advice
+- Use ${userProfile.fullName}'s name throughout for personalization
+- Include specific timing predictions with approximate ages/years
+- Maintain professional yet warm, encouraging tone
+- Focus on empowerment and positive transformation
+- Address their specific concerns: ${userProfile.primaryConcerns?.join(', ')}
+- Align with their stated goals: ${userProfile.lifeGoals?.join(', ')}
+
+Generate this comprehensive 50-page report now, ensuring each page provides valuable, specific insights based on the integrated analysis of palmistry, astrology, and numerology:`;
+
+      const result = await this.model.generateContent([prompt, imagePart]);
+      const response = await result.response;
+      const text = response.text();
+
+      if (!text || text.trim().length === 0) {
         throw new Error('Empty response from Gemini API');
       }
-      
-      console.log('Successfully extracted compatibility analysis from Gemini response');
-      return analysisText;
+
+      return text;
     } catch (error) {
-      console.error('Error in analyzeCompatibility:', error);
-      throw error;
+      console.error('Error generating 50-page comprehensive report:', error);
+      throw new Error(`50-page report generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  private calculateZodiacSign(birthDate: Date): string {
+    const month = birthDate.getMonth() + 1;
+    const day = birthDate.getDate();
+    
+    if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "Aries";
+    if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "Taurus";
+    if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) return "Gemini";
+    if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) return "Cancer";
+    if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "Leo";
+    if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "Virgo";
+    if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return "Libra";
+    if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) return "Scorpio";
+    if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "Sagittarius";
+    if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "Capricorn";
+    if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "Aquarius";
+    return "Pisces";
+  }
+
+  private calculateChineseSign(year: number): string {
+    const signs = ["Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat", "Monkey", "Rooster", "Dog", "Pig"];
+    return signs[(year - 1900) % 12];
+  }
+
+  isInitialized(): boolean {
+    return this.model !== null;
   }
 }
 
-export default GeminiAI;
+export const createGeminiService = (apiKey?: string) => {
+  return new GeminiService(apiKey);
+};
